@@ -1,5 +1,7 @@
+
+from Pareto2GBfit.distributions import *
+from Pareto2GBfit.fitting import *
 import numpy as np
-import Pareto2GBfit
 
 np.set_printoptions(precision=4)
 
@@ -12,13 +14,13 @@ n = 10000
 # noise
 mu = 0
 sigma = 100
-random.seed(123)
+np.random.seed(123)
 noise = np.random.normal(mu, sigma, size=n)
 
 # linspace
 xmin = 0.1
 xmax = 10000
-x = linspace(xmin, xmax, n)
+x = np.linspace(xmin, xmax, n)
 x_noise = x + noise
 
 # random uniform
