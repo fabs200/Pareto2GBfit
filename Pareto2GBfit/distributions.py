@@ -9,7 +9,11 @@ from scipy.special import beta, betainc, digamma, gamma, gammaln, hyp2f1
 import progressbar
 
 
-""" Pareto """
+""" 
+---------------------------------------------------
+Pareto 
+---------------------------------------------------
+"""
 def Pareto_pdf(x, b, p):
     return (p*b**p) / (x**(p+1))
 
@@ -32,6 +36,7 @@ def Pareto_icdf(u, b, p):
 
 def Pareto_cdf_ne(x, b, p):
     """
+    numerical evaluated cdf based on Pareto_pdf()
     :param x: feed x with a linspace (-> range, size); Note: size needs to be sufficiently large!
     :param b: lower bound
     :param p: shape parameter
@@ -48,6 +53,14 @@ def Pareto_cdf_ne(x, b, p):
     return F_temp
 
 def Pareto_icdf_ne(x, b, p): # feed x with a linspace (-> range, size); Note: size needs to be sufficiently large!
+    """
+    First, F (=cdf) is generated numerically based on the linspace x (arg). Second, random.uniform (=u) is generated
+    and passed to icdf() (inverted cdf). Based on F,In icdf() x gets interpolated.
+    :param x: linspace
+    :param b: location parameter, fixed
+    :param p:
+    :return: simulated x and u [,] (1x2)
+    """
     x = x[x>b]
     k = len(x)
     # Generate cdf via numeric evaluation of pdf
@@ -63,8 +76,10 @@ def Pareto_icdf_ne(x, b, p): # feed x with a linspace (-> range, size); Note: si
         return icdf_F
     return icdf(u), u
 
-# Jacobian
 def Pareto_jac(x, b, p):
+    """
+    Jacobian of Pareto neg. log-likelihood, can be used in opt.minimize() to fasten the optimization
+    """
     n = len(x)
     sumlog = np.sum(np.log(x))
     δll_δb = (p*n)/b
@@ -72,8 +87,10 @@ def Pareto_jac(x, b, p):
     jac = (δll_δb, δll_δp)
     return np.transpose(jac)
 
-# Hessian
 def Pareto_hess(x, b, p):
+    """
+    Hessian of Pareto neg. log-likelihood, can be used in opt.minimize() to fasten the optimization
+    """
     n = len(x)
     δ2ll_δb2  = -(p*n) / (b**2)
     δ2ll_δbδp = -n / (b**2)
@@ -83,7 +100,11 @@ def Pareto_hess(x, b, p):
     return hess
 
 
-""" IB1 """
+""" 
+---------------------------------------------------
+IB1 
+---------------------------------------------------
+"""
 def IB1_pdf(x, b, p, q):
     return ((b**p)*((1-(b/x))**(q-1))) / ((x**(p+1))*beta(p,q))
 
@@ -91,7 +112,15 @@ def IB1_cdf(x, b, p, q):
     z = (b/x)
     return 1 - betainc(p, q, z)
 
-def IB1_icdf_ne(x, b, p, q): # Note: this gives two lists: x and the corresponding F
+def IB1_icdf_ne(x, b, p, q):
+    """
+    First, F (=cdf) is generated numerically based on the linspace x (arg). Second, random.uniform (=u) is generated
+    and passed to icdf() (inverted cdf). Based on F,In icdf() x gets interpolated.
+    :param x: linspace
+    :param b: location parameter, fixed
+    :param p:
+    :return: simulated x and u [,] (1x2)
+    """
     x = np.array(x)
     x_temp = x[x>b]
     k = len(x_temp)
@@ -109,6 +138,9 @@ def IB1_icdf_ne(x, b, p, q): # Note: this gives two lists: x and the correspondi
     return icdf(u), u
 
 def IB1_jac(x, b, p, q):
+    """
+    Jacobian of Pareto neg. log-likelihood, can be used in opt.minimize() to fasten the optimization, no Hessian found
+    """
     x = np.array(x)
     n = len(x)
     δll_δb = (n*p)/b + (q-1)*np.sum((-1/x)/(1-b/x))
@@ -118,7 +150,11 @@ def IB1_jac(x, b, p, q):
     return np.transpose(jac)
 
 
-""" GB1 """
+""" 
+---------------------------------------------------
+GB1 
+---------------------------------------------------
+"""
 def GB1_pdf(x, a, b, p, q):
     x = np.array(x)
     pdf = (np.abs(a)*(x**(a*p-1))*((1-((x/b)**a))**(q-1))) / (b**(a*p)*beta(p,q))
@@ -134,6 +170,9 @@ def GB1_cdf(x, a, b, p, q):
         return cdf
 
 def GB1_cdf_ne(x, a, b, p, q):
+    """
+
+    """
     x = np.array(x)
     F = []
     widgets = ['GB_cdf_ne  ', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
@@ -154,7 +193,15 @@ def GB1_cdf_ne(x, a, b, p, q):
     bar.finish()
     return F
 
-def GB1_icdf_ne(x, a, b, p, q): # Note: this gives two lists: x and the corresponding F
+def GB1_icdf_ne(x, a, b, p, q):
+    """
+    First, F (=cdf) is generated numerically based on the linspace x (arg). Second, random.uniform (=u) is generated
+    and passed to icdf() (inverted cdf). Based on F,In icdf() x gets interpolated.
+    :param x: linspace
+    :param b: location parameter, fixed
+    :param p:
+    :return: simulated x and u [,] (1x2)
+    """
     x = np.array(x)
     F_ne = GB1_cdf_ne(x, a, b, p, q)
     if a<0:
@@ -179,9 +226,13 @@ def GB1_icdf_ne(x, a, b, p, q): # Note: this gives two lists: x and the correspo
     return icdf(u), u
 
 
-""" GB """
+""" 
+---------------------------------------------------
+GB 
+---------------------------------------------------
+"""
 def GB_pdf(x, a, b, c, p, q):
-    x = np.array(x) #data
+    x = np.array(x)
     ## Pareto, IB1
     if (c==0) & (a==-1):
         # print("Pareto pdf")
@@ -229,7 +280,15 @@ def GB_cdf_ne(x, a, b, c, p, q):
             bar.update(idx)
     return F
 
-def GB_icdf_ne(x, a, b, c, p, q): # Note: this gives two lists: x and the corresponding F
+def GB_icdf_ne(x, a, b, c, p, q):
+    """
+    First, F (=cdf) is generated numerically based on the linspace x (arg). Second, random.uniform (=u) is generated
+    and passed to icdf() (inverted cdf). Based on F,In icdf() x gets interpolated.
+    :param x: linspace
+    :param b: location parameter, fixed
+    :param p:
+    :return: simulated x and u [,] (1x2)
+    """
     x = np.array(x)
     # distributions with x>b:
     # Pareto, IB1: c==0, a==1

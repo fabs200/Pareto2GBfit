@@ -10,7 +10,14 @@ from .distributions import Pareto_pdf, IB1_pdf, GB1_pdf, GB_pdf, Pareto_icdf, IB
 
 
 class gof:
+    """ Goodness of fit measures """
     def __init__(self, x, x_hat, parms, b):
+        """
+        :param x: model with same shape as data
+        :param x_hat: fitted data
+        :param parms: np.array []
+        :param b: location parameter, fixed
+        """
         self.n = n = len(x)
         self.e = e = np.array(x) - np.array(x_hat)
         self.mse = 1/n * np.sum(e**2)
@@ -35,9 +42,13 @@ class gof:
             self.aic = -2*ll + 2*4
             self.bic = -2*ll + np.log(n)*4
 
-# log-liklihood
-# NOTE: optimize p = parms (first args here), fixed parameters: x, b
 def Pareto_ll(parms, x, b):
+    """
+    :param parms: np.array [p], optimized
+    :param x: linspace, fixed
+    :param b: location parameter, fixed
+    :return: neg. logliklihood of Pareto
+    """
     p = parms[0]
     n = len(x)
     sum = np.sum(np.log(x))
@@ -45,28 +56,86 @@ def Pareto_ll(parms, x, b):
     ll = -ll/10000
     return ll
 
-## Note: only p, b fix
-def Pareto_extract_se(x, b, p_fitted, method=1, verbose=True, hess=False):
-    p = p_fitted
+def IB1_ll(parms, x, b):
+    """
+    :param parms: np.array [p, q] optimized
+    :param x: linspace or data, fixed
+    :param b: location parameter, fixed
+    :return: neg. log-likelihood of IB1
+    """
+    p = parms[0]
+    q = parms[1]
     x = np.array(x)
     x = x[x>b]
     n = len(x)
-    if method == 2: # derivative by hand
-        δ2ll_δp2 = -n / (p**2)
-        hess = [[δ2ll_δp2]]
-    if (method == 1) or (method == None): # derivative numerically evaluated with 'central difference formula' (scipy.misc.derivative)
-        def δll_δp(p,b,n):
-            return (n/p) - np.sum(np.log(x))
-        hess = [[derivative(δll_δp, p, args=[b,n], dx=1e-8)]]
-    info_matrix = np.dot(-1/n, hess)
-    # covvar = linalg.inv(info_matrix)
-    p_se = np.sqrt(info_matrix[0][0])
-    if verbose: print("p: {}, se: {}".format(np.around(p, 4), np.around(p_se, 4)))
-    # if hess: print("Hessian Matrix:", hess)
-    return p_se
+    lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
+    # ll = p*n*np.log(b) - n*np.log(beta(p,q)) + (q-1)*np.sum(np.log(1-b/x)) - (p+1)*np.sum(np.log(x)) # both work
+    ll = p*n*np.log(b) - n*lnb + (q-1)*np.sum(np.log(1-b/x)) - (p+1)*np.sum(np.log(x))
+    ll = -ll/10000
+    return ll
 
-def Paretofit(x, b, x0, bootstraps=500, method='SLSQP', verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-                     plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+
+# log-likelihood
+# NOTE: optimize a,p,q = parms (first args here), fixed parameters: x, b
+def GB1_ll(parms, x, b):
+    """
+    :param parms: np.array [a, p, q] optimized
+    :param x: linspace or data, fixed
+    :param b: location parameter, fixed
+    :return: neg. log-likelihood of GB1
+    """
+    a = parms[0] #a
+    p = parms[1] #p
+    q = parms[2] #q
+    x = np.array(x)
+    # x = x[x>b]
+    n = len(x)
+    lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
+    ll = n*np.log(abs(a)) + (a*p-1)*np.sum(np.log(x)) + (q-1)*np.sum(np.log(1-(x/b)**a)) - n*a*p*np.log(b) - n*lnb
+    ll = -ll/100
+    return ll
+
+def GB_ll(parm, x, b):
+    """
+    :param parm: np.array [a, c, p, q] optimized
+    :param x: linspace or data, fixed
+    :param b: location parameter, fixed
+    :return: neg. log-likelihood of GB1
+    """
+    a = parm[0] #a
+    c = parm[1] #c
+    p = parm[2] #p
+    q = parm[3] #q
+    n = len(x)
+    x = np.array(x)
+    x = x[x>b]
+    sum1 = np.sum(np.log(x))
+    sum2 = np.sum(np.log(1-(1-c)*(x/b)**a))
+    sum3 = np.sum(np.log(1+c*((x/b)**a)))
+    lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
+    # lnb = np.log(beta(p,q))
+    ll = n*(np.log(np.abs(a)) - a*p*np.log(b) - lnb) + (a*p-1)*sum1 + (q-1)*sum2 - (p+q)*sum3
+    ll = -ll/100
+    return ll
+
+def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
+              verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
+              plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+    """
+    Function to fit Pareto distribution to data
+    :param x: linspace or data, fixed
+    :param b: location parameter, fixed
+    :param x0: initial guess, np.array [p] or simply (p)
+    :param bootstraps: amount of bootstraps
+    :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
+    :param verbose_bootstrap: display each bootstrap
+    :param ci: default ci displayed
+    :param verbose: default true
+    :param fit: gof measurements, default false
+    :param plot: plot fit vs model
+    :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
+    :return: fitted parameters, gof, plot
+    """
     x = np.array(x)
     x = x[x>b]
     k = len(x)
@@ -167,54 +236,23 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP', verbose_bootstrap=False,
     return np.mean(p_fit_bs), np.std(p_fit_bs)
 
 
-# log-likelihood
-# NOTE: optimize p,q = parms (first args here), fixed parameters: x, b
-def IB1_ll(parms, x, b):
-    p = parms[0]
-    q = parms[1]
-    x = np.array(x)
-    x = x[x>b]
-    n = len(x)
-    lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
-    # ll = p*n*np.log(b) - n*np.log(beta(p,q)) + (q-1)*np.sum(np.log(1-b/x)) - (p+1)*np.sum(np.log(x)) # both work
-    ll = p*n*np.log(b) - n*lnb + (q-1)*np.sum(np.log(1-b/x)) - (p+1)*np.sum(np.log(x))
-    ll = -ll/10000
-    return ll
-
-def IB1_extract_se(x, fitted_parms, method, dx, display, display_hessian):
-    # method == 2: # derivative by hand - NOTE: no analytical solution found
-    b = fitted_parms[0]
-    p = fitted_parms[1]
-    q = fitted_parms[2]
-    x = x[x>b]
-    n = len(x)
-    if dx == None: dx = 1e-6
-    #dx = 1e-8 # temp
-    if (method == 1) or (method == None): # derivative numerically evaluated with 'central difference formula' (scipy.misc.derivative)
-        def δll_δb(b,p,q,n):
-            return (n*p)/b + (q-1)*np.sum((-1/x)/(1-b/x))
-        def δll_δp(p,b,q,n):
-            return n*(np.log(b) - digamma(p) - digamma(p+q)) - np.sum(np.log(x))
-        def δll_δq(p,q,n):
-            return -n*(digamma(q) - digamma(q+p)) + np.sum(np.log(1-b/x))
-        hess = [[derivative(δll_δb, b, args=[p,q,n], dx=dx), derivative(δll_δb, p, args=[b,q,n], dx=dx), derivative(δll_δb, q, args=[b,p,n], dx=dx)],
-                [derivative(δll_δp, b, args=[p,q,n], dx=dx), derivative(δll_δp, p, args=[b,q,n], dx=dx), derivative(δll_δp, q, args=[b,p,n], dx=dx)],
-                [0,                                            derivative(δll_δq, p, args=[q,n], dx=dx), derivative(δll_δq, q, args=[p,n], dx=dx)]]
-    info_matrix = np.dot(-n, hess)
-    covvar = linalg.inv(info_matrix)
-    b_se = np.sqrt(covvar[0][0])
-    p_se = np.sqrt(covvar[1][1])
-    q_se = np.sqrt(covvar[2][2])
-    if display == True:
-        print("b: {}, se: {}\np: {}, se: {}\nq: {}, se: {}".format(np.around(b,3), np.around(b_se,3),
-                                                                               np.around(p,3), np.around(p_se,3),
-                                                                               np.around(q,3), np.around(q_se,3)))
-    if display_hessian == True:
-        print("Hessian Matrix:", hess)
-    return b_se, p_se, q_se
-
 def IB1fit(x, b, x0, bootstraps=500, method='SLSQP', verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
               plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+    """
+    Function to fit the IB1 distribution to data
+    :param x: linspace or data, fixed
+    :param b: location parameter, fixed
+    :param x0: initial guess, np.array [p,q] or simply (p,q)
+    :param bootstraps: amount of bootstraps
+    :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
+    :param verbose_bootstrap: display each bootstrap
+    :param ci: default ci displayed
+    :param verbose: default true
+    :param fit: gof measurements, default false
+    :param plot: plot fit vs model
+    :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
+    :return: fitted parameters, gof, plot
+    """
     x = np.array(x)
     x = x[x>b]
     k = len(x)
@@ -323,22 +361,24 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP', verbose_bootstrap=False, ci
     return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-# log-likelihood
-# NOTE: optimize a,p,q = parms (first args here), fixed parameters: x, b
-def GB1_ll(parms, x, b):
-    a = parms[0] #a
-    p = parms[1] #p
-    q = parms[2] #q
-    x = np.array(x)
-    # x = x[x>b]
-    n = len(x)
-    lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
-    ll = n*np.log(abs(a)) + (a*p-1)*np.sum(np.log(x)) + (q-1)*np.sum(np.log(1-(x/b)**a)) - n*a*p*np.log(b) - n*lnb
-    ll = -ll/100
-    return ll
-
-def GB1fit(x, b, x0, bootstraps=250, method='SLSQP', verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-              plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
+           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
+           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+    """
+    Function to fit the GB1 distribution to data
+    :param x: linspace or data, fixed
+    :param b: location parameter, fixed
+    :param x0: initial guess, np.array [a,p,q] or simply (a,p,q)
+    :param bootstraps: amount of bootstraps
+    :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
+    :param verbose_bootstrap: display each bootstrap
+    :param ci: default ci displayed
+    :param verbose: default true
+    :param fit: gof measurements, default false
+    :param plot: plot fit vs model
+    :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
+    :return: fitted parameters, gof, plot
+    """
     x = np.array(x)
     x = x[x>b]
     k = len(x)
@@ -454,44 +494,24 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP', verbose_bootstrap=False, ci
 
 
 
-# set up log-liklihood
-def GB_ll(parm, x, b):
-    a = parm[0] #a
-    c = parm[1] #c
-    p = parm[2] #p
-    q = parm[3] #q
-    n = len(x)
-    x = np.array(x)
-    x = x[x>b]
-    sum1 = np.sum(np.log(x))
-    # sum2 = np.sum(np.log(1-(1-c)*((np.sum(x)/b)**a)))
-    # sum2 = np.log(1-(1-c)*((np.sum(x)/b)**a))
-    sum2 = np.sum(np.log(1-(1-c)*(x/b)**a))
-    # sum3 = np.sum(np.log(1+c*((np.sum(x)/b)**a)))
-    # sum3 = np.log(1+c*((np.sum(x)/b)**a))
-    sum3 = np.sum(np.log(1+c*((x/b)**a)))
-    lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
-    # lnb = np.log(beta(p,q))
-    ll = n*(np.log(np.abs(a)) - a*p*np.log(b) - lnb) + (a*p-1)*sum1 + (q-1)*sum2 - (p+q)*sum3
-    ll = -ll/100
-    return ll
-
-# set up log-liklihood
-def GB_ll2(parm, x, b, c):
-    a = parm[0] #a
-    p = parm[1] #p
-    q = parm[2] #q
-    n = len(x)
-    sum1 = np.sum(np.log(x))
-    sum2 = np.sum(np.log(1-(1-c)*((np.sum(x)/b)**a)))
-    sum3 = np.sum(np.log(1+c*((np.sum(x)/b)**a)))
-    lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
-    ll = n*(np.log(np.abs(a)) - a*p*np.log(b) - lnb) + (a*p-1)*sum1 + (q-1)*sum2 - (p+q)*sum3
-    return -ll
-
-
-def GBfit(x, b, x0, bootstraps=250, method='SLSQP', verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-              plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
+          verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
+          plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+    """
+    Function to fit the GB distribution to data
+    :param x: linspace or data, fixed
+    :param b: location parameter, fixed
+    :param x0: initial guess, np.array [a,c,p,q] or simply (q,c,p,q)
+    :param bootstraps: amount of bootstraps
+    :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
+    :param verbose_bootstrap: display each bootstrap
+    :param ci: default ci displayed
+    :param verbose: default true
+    :param fit: gof measurements, default false
+    :param plot: plot fit vs model
+    :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
+    :return: fitted parameters, gof, plot
+    """
     x = np.array(x)
     x = x[x>b]
     k = len(x)
@@ -619,3 +639,84 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP', verbose_bootstrap=False, ci=
                                          np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
             print("\n", tbl_gof, "\n")
     return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
+
+
+def Pareto_extract_se(x, b, p_fitted, method=1, verbose=True, hess=False):
+    """
+    NOTE: depreciated
+    This function returns the standard errors of the fitted parameter p. Unfortunately, the analytical solution of
+    the hessian only depends on n and p so varying b does not change the se. Alternatively, I tried to derive the
+    Jacobian numerically with scipy's derivative fct but this resulted not in satisfactiory/plausible solutions.
+    Finally, I bootstrap the se directly in the fitting fcts above.
+    :param x: linspace or data
+    :param b: location parameter, fixed
+    :param p_fitted: fitted parameter, for which we want se
+    :param method: 1=analytical solution, hessian, 2=scipy's derivative fct applied to Jacobian
+    :param verbose: display
+    :param hess: display hessian
+    :return: returns se
+    """
+    p = p_fitted
+    x = np.array(x)
+    x = x[x>b]
+    n = len(x)
+    if method == 2: # derivative by hand
+        δ2ll_δp2 = -n / (p**2)
+        hess = [[δ2ll_δp2]]
+    if (method == 1) or (method == None): # derivative numerically evaluated with 'central difference formula' (scipy.misc.derivative)
+        def δll_δp(p,b,n):
+            return (n/p) - np.sum(np.log(x))
+        hess = [[derivative(δll_δp, p, args=[b,n], dx=1e-8)]]
+    info_matrix = np.dot(-1/n, hess)
+    # covvar = linalg.inv(info_matrix)
+    p_se = np.sqrt(info_matrix[0][0])
+    if verbose: print("p: {}, se: {}".format(np.around(p, 4), np.around(p_se, 4)))
+    # if hess: print("Hessian Matrix:", hess)
+    return p_se
+
+
+def IB1_extract_se(x, fitted_parms, method, dx, display, display_hessian):
+    """
+    NOTE: depreciated
+    This function returns the standard errors of the fitted parameter p,q. Unfortunately, no plausible
+    analytical solution of the hessian could be derived. Alternatively, I tried to derive the
+    Jacobian numerically with scipy's derivative fct but this resulted not in satisfactiory/plausible solutions.
+    Finally, I bootstrap the se directly in the fitting fcts above.
+    :param x: linspace or data
+    :param method: 1=analytical solution, hessian, 2=scipy's derivative fct applied to Jacobian
+    :param fitted_parms:
+    :param dx: tolerance of scipy.misc.derivative
+    :param display: display results
+    :param display_hessian: display hessian
+    :return: return se
+    """
+    # method == 2: # derivative by hand - NOTE: no analytical solution found
+    b = fitted_parms[0]
+    p = fitted_parms[1]
+    q = fitted_parms[2]
+    x = x[x>b]
+    n = len(x)
+    if dx == None: dx = 1e-6
+    #dx = 1e-8 # temp
+    if (method == 1) or (method == None):
+        def δll_δb(b,p,q,n):
+            return (n*p)/b + (q-1)*np.sum((-1/x)/(1-b/x))
+        def δll_δp(p,b,q,n):
+            return n*(np.log(b) - digamma(p) - digamma(p+q)) - np.sum(np.log(x))
+        def δll_δq(p,q,n):
+            return -n*(digamma(q) - digamma(q+p)) + np.sum(np.log(1-b/x))
+        hess = [[derivative(δll_δb, b, args=[p,q,n], dx=dx), derivative(δll_δb, p, args=[b,q,n], dx=dx), derivative(δll_δb, q, args=[b,p,n], dx=dx)],
+                [derivative(δll_δp, b, args=[p,q,n], dx=dx), derivative(δll_δp, p, args=[b,q,n], dx=dx), derivative(δll_δp, q, args=[b,p,n], dx=dx)],
+                [0,                                            derivative(δll_δq, p, args=[q,n], dx=dx), derivative(δll_δq, q, args=[p,n], dx=dx)]]
+    info_matrix = np.dot(-n, hess)
+    covvar = linalg.inv(info_matrix)
+    b_se = np.sqrt(covvar[0][0])
+    p_se = np.sqrt(covvar[1][1])
+    q_se = np.sqrt(covvar[2][2])
+    if display == True:
+        print("b: {}, se: {}\np: {}, se: {}\nq: {}, se: {}".format(np.around(b,3), np.around(b_se,3),
+                                                                               np.around(p,3), np.around(p_se,3),
+                                                                               np.around(q,3), np.around(q_se,3)))
+    if display_hessian == True:
+        print("Hessian Matrix:", hess)
+    return b_se, p_se, q_se
