@@ -1,5 +1,5 @@
-
-from Pareto2GBfit import *
+import numpy as np
+import Pareto2GBfit
 
 np.set_printoptions(precision=4)
 
