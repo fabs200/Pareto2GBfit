@@ -84,9 +84,9 @@ def GB1_ll(parms, x, b):
     :param b: location parameter, fixed
     :return: neg. log-likelihood of GB1
     """
-    a = parms[0] #a
-    p = parms[1] #p
-    q = parms[2] #q
+    a = parms[0]
+    p = parms[1]
+    q = parms[2]
     x = np.array(x)
     # x = x[x>b]
     n = len(x)
@@ -102,10 +102,10 @@ def GB_ll(parm, x, b):
     :param b: location parameter, fixed
     :return: neg. log-likelihood of GB1
     """
-    a = parm[0] #a
-    c = parm[1] #c
-    p = parm[2] #p
-    q = parm[3] #q
+    a = parm[0]
+    c = parm[1]
+    p = parm[2]
+    q = parm[3]
     n = len(x)
     x = np.array(x)
     x = x[x>b]
@@ -119,8 +119,12 @@ def GB_ll(parm, x, b):
     return ll
 
 def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
-              verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-              plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+              verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, return_parameters=False,
+              plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
+              basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
+                                   'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
+              SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+                             'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
     Function to fit Pareto distribution to data
     :param x: linspace or data, fixed
@@ -133,43 +137,118 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
     :param verbose: default true
     :param fit: gof measurements, default false
     :param plot: plot fit vs model
+    :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
+    :param basinhoppin_options: dictionary with optimization options
+    :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
     x = np.array(x)
     x = x[x>b]
     k = len(x)
     x0 = np.array(x0)
+
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
+
     def Pareto_constraint(b):
         return np.min(boot_sample) - b
+
     bnd = (10**-14, np.inf)
     constr = {'type': 'ineq', 'fun': Pareto_constraint}
     bootstrapping, p_fit_bs = 1, []
+
     if method == 'L-BFGS-B':
+
+        # shorter variable name
+        opts = basinhoppin_options
+
+        if 'niter' not in opts.keys():
+            opts['niter'] = 20
+        if 'T' not in opts.keys():
+            opts['T'] = 1.0
+        if 'stepsize' not in opts.keys():
+            opts['stepsize'] = 0.5
+        if 'take_step' not in opts.keys():
+            opts['take_step'] = None
+        if 'accept_test' not in opts.keys():
+            opts['accept_test'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'interval' not in opts.keys():
+            opts['interval'] = 50
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'niter_success' not in opts.keys():
+            opts['niter_success'] = None
+        if 'seed' not in opts.keys():
+            opts['seed'] = 123
+
         while bootstrapping <= bootstraps:
+
             boot_sample = np.random.choice(x, size=k, replace=True)
-            minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample,b),
+
+            minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample, b),
                                 "bounds": (bnd,),
                                 "constraints": constr}
-            result = opt.basinhopping(Pareto_ll, x0, minimizer_kwargs=minimizer_kwargs, niter=20, disp=False, seed=123)
+
+            result = opt.basinhopping(Pareto_ll, x0,
+                                      minimizer_kwargs=minimizer_kwargs,
+                                      niter=opts['niter'],
+                                      T=opts['T'],
+                                      stepsize=opts['stepsize'],
+                                      take_step=opts['take_step'],
+                                      accept_test=opts['accept_test'],
+                                      callback=opts['callback'],
+                                      interval=opts['interval'],
+                                      disp=opts['disp'],
+                                      niter_success=opts['niter_success'],
+                                      seed=opts['seed'])
+
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
             p_fit = result.x.item(0)
             p_fit_bs.append(p_fit)
             bar.update(bootstrapping)
             bootstrapping += 1
+
         bar.finish()
+
     if method == 'SLSQP':
+
+        # shorter variable name
+        opts = SLSQP_options
+
+        if 'jac' not in opts.keys():
+            opts['jac'] = None
+        if 'tol' not in opts.keys():
+            opts['tol'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'func' not in opts.keys():
+            opts['func'] = None
+        if 'maxiter' not in opts.keys():
+            opts['maxiter'] = 300
+        if 'ftol' not in opts.keys():
+            opts['ftol'] = 1e-14
+        if 'iprint' not in opts.keys():
+            opts['iprint'] = 1
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'eps' not in opts.keys():
+            opts['eps'] = 1.4901161193847656e-08
+
         while bootstrapping <= bootstraps:
             boot_sample = np.random.choice(x, size=k, replace=True)
             result = opt.minimize(Pareto_ll, x0,
                                   method='SLSQP',
                                   bounds=(bnd,),
                                   args=(boot_sample, b),
-                                  tol=1e-12,
-                                  options=({'maxiter': 1000, 'disp': False, 'ftol': 1e-06}),
+                                  jac=opts['jac'],
+                                  tol=opts['tol'],
+                                  callback=opts['callback'],
+                                  options=({'maxiter': opts['maxiter'], 'disp': False, 'iprint': opts['iprint'],
+                                            'fun': opts['func'], 'ftol': opts['ftol'], 'eps': opts['eps']}),
                                   constraints=constr)
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
             p_fit = result.x.item(0)
@@ -183,8 +262,7 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
             print(tbl)
     if ci and verbose:
             tbl.field_names = ['parameter', 'value', 'se', 'cilo_95', 'cihi_95', 'n']
-            tbl.add_row(['p',
-                         np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4),
+            tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4),
                          np.around(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96, 4),
                          np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
             print(tbl)
@@ -229,15 +307,20 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).ll
         if verbose:
             tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'n']
-            tbl_gof.add_row(['GOF',
-                                         np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
-                                         np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
+            tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
+                                    np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
             print("\n", tbl_gof, "\n")
-    return np.mean(p_fit_bs), np.std(p_fit_bs)
+    if return_parameters:
+        return np.mean(p_fit_bs), np.std(p_fit_bs)
 
 
-def IB1fit(x, b, x0, bootstraps=500, method='SLSQP', verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-              plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
+           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, return_parameters=False,
+           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}
+              basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
+                                   'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
+              SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+                             'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
     Function to fit the IB1 distribution to data
     :param x: linspace or data, fixed
@@ -250,53 +333,135 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP', verbose_bootstrap=False, ci
     :param verbose: default true
     :param fit: gof measurements, default false
     :param plot: plot fit vs model
+    :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
+    :param basinhoppin_options: dictionary with optimization options
+    :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
     x = np.array(x)
     x = x[x>b]
     k = len(x)
     x0 = np.array(x0)
+
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
+
     def IB1_constraint(parms):
         a = parms[0]
         return (np.min(boot_sample)/b)**a
+
     constr = {'type': 'ineq', 'fun': IB1_constraint}
     bnds = (10**-14, np.inf)
     bootstrapping, p_fit_bs, q_fit_bs = 1, [], []
+
     if method == 'L-BFGS-B':
+
+        # shorter variable name
+        opts = basinhoppin_options
+
+        if 'niter' not in opts.keys():
+            opts['niter'] = 20
+        if 'T' not in opts.keys():
+            opts['T'] = 1.0
+        if 'stepsize' not in opts.keys():
+            opts['stepsize'] = 0.5
+        if 'take_step' not in opts.keys():
+            opts['take_step'] = None
+        if 'accept_test' not in opts.keys():
+            opts['accept_test'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'interval' not in opts.keys():
+            opts['interval'] = 50
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'niter_success' not in opts.keys():
+            opts['niter_success'] = None
+        if 'seed' not in opts.keys():
+            opts['seed'] = 123
+
         while bootstrapping <= bootstraps:
+
             boot_sample = np.random.choice(x, size=k, replace=True)
-            minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample,b),
+
+            minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample, b),
                                 "bounds": (bnds, bnds,),
                                 "constraints": constr}
-            result = opt.basinhopping(IB1_ll, x0, minimizer_kwargs=minimizer_kwargs, niter=20, disp=False, seed=123)
+
+            result = opt.basinhopping(IB1_ll, x0,
+                                      minimizer_kwargs=minimizer_kwargs,
+                                      niter=opts['niter'],
+                                      T=opts['T'],
+                                      stepsize=opts['stepsize'],
+                                      take_step=opts['take_step'],
+                                      accept_test=opts['accept_test'],
+                                      callback=opts['callback'],
+                                      interval=opts['interval'],
+                                      disp=opts['disp'],
+                                      niter_success=opts['niter_success'],
+                                      seed=opts['seed'])
+
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
             p_fit, q_fit = result.x.item(0), result.x.item(1)
             p_fit_bs.append(p_fit)
             q_fit_bs.append(q_fit)
             bar.update(bootstrapping)
             bootstrapping += 1
+
         bar.finish()
+
     if method == 'SLSQP':
+
+        # shorter variable name
+        opts = SLSQP_options
+
+        if 'jac' not in opts.keys():
+            opts['jac'] = None
+        if 'tol' not in opts.keys():
+            opts['tol'] = 1e-14
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'func' not in opts.keys():
+            opts['func'] = None
+        if 'maxiter' not in opts.keys():
+            opts['maxiter'] = 300
+        if 'ftol' not in opts.keys():
+            opts['ftol'] = 1e-14
+        if 'iprint' not in opts.keys():
+            opts['iprint'] = 1
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'eps' not in opts.keys():
+            opts['eps'] = 1.4901161193847656e-08
+
         while bootstrapping <= bootstraps:
+
             boot_sample = np.random.choice(x, size=k, replace=True)
+
             result = opt.minimize(IB1_ll, x0,
                                   method='SLSQP',
                                   bounds=(bnds, bnds,),
                                   args=(boot_sample, b),
-                                  tol=1e-14,
-                                  options=({'maxiter': 1000, 'disp': False, 'ftol': 1e-06}),
+                                  jac=opts['jac'],
+                                  tol=opts['tol'],
+                                  callback=opts['callback'],
+                                  options=({'maxiter': opts['maxiter'], 'disp': False, 'iprint': opts['iprint'],
+                                            'fun': opts['func'], 'ftol': opts['ftol'], 'eps': opts['eps']}),
                                   constraints=constr)
+
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
             p_fit, q_fit = result.x.item(0), result.x.item(1)
             p_fit_bs.append(p_fit)
             q_fit_bs.append(q_fit)
             bar.update(bootstrapping)
             bootstrapping += 1
+
         bar.finish()
+
     if ci is False and verbose is True:
         tbl.field_names = ['parameter', 'value', 'se']
         tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4)])
@@ -311,11 +476,12 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP', verbose_bootstrap=False, ci
                           np.around(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96, 4),
                           np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
         print(tbl)
+
     if plot:
         fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
         if 'bins' not in plot_cosmetics.keys():
-            num_bins=50
+            num_bins = 50
         else:
             num_bins = plot_cosmetics['bins']
         if 'col_fit' not in plot_cosmetics.keys():
@@ -339,6 +505,7 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP', verbose_bootstrap=False, ci
         ax.legend(['IB1 model', 'fit'])
         # fig.tight_layout()
         plt.show()
+
     if fit:
         if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05):
             model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
@@ -354,16 +521,21 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP', verbose_bootstrap=False, ci
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
             tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'n']
-            tbl_gof.add_row(['GOF',
-                                         np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
-                                         np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
+            tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
+                                    np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
             print("\n", tbl_gof, "\n")
-    return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
+
+    if return_parameters:
+        return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
 def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
-           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, return_parameters=False,
+           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}
+              basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
+                                   'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
+              SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+                             'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
     Function to fit the GB1 distribution to data
     :param x: linspace or data, fixed
@@ -376,61 +548,145 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
     :param verbose: default true
     :param fit: gof measurements, default false
     :param plot: plot fit vs model
+    :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
+    :param basinhoppin_options: dictionary with optimization options
+    :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
     x = np.array(x)
     x = x[x>b]
     k = len(x)
     x0 = np.array(x0)
+
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
+
     def GB1_constraint(parms):
         a = parms[0]
         return (np.min(boot_sample)/b)**a
+
     constr = {'type': 'ineq', 'fun': GB1_constraint}
     a_bnd, bnds = (-10, -1e-10), (10**-14, np.inf)
     bootstrapping, a_fit_bs, p_fit_bs, q_fit_bs = 1, [], [], []
+
     if method == 'L-BFGS-B':
+
+        # shorter variable name
+        opts = basinhoppin_options
+
+        if 'niter' not in opts.keys():
+            opts['niter'] = 20
+        if 'T' not in opts.keys():
+            opts['T'] = 1.0
+        if 'stepsize' not in opts.keys():
+            opts['stepsize'] = 0.5
+        if 'take_step' not in opts.keys():
+            opts['take_step'] = None
+        if 'accept_test' not in opts.keys():
+            opts['accept_test'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'interval' not in opts.keys():
+            opts['interval'] = 50
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'niter_success' not in opts.keys():
+            opts['niter_success'] = None
+        if 'seed' not in opts.keys():
+            opts['seed'] = 123
+
         while bootstrapping <= bootstraps:
+
             boot_sample = np.random.choice(x, size=k, replace=True)
-            minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample,b),
+
+            minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample, b),
                                 "bounds": (a_bnd, bnds, bnds,),
                                 "constraints": constr}
-            result = opt.basinhopping(GB1_ll, x0, minimizer_kwargs=minimizer_kwargs, niter=20, disp=False, seed=123)
+
+            result = opt.basinhopping(GB1_ll, x0,
+                                      minimizer_kwargs=minimizer_kwargs,
+                                      niter=opts['niter'],
+                                      T=opts['T'],
+                                      stepsize=opts['stepsize'],
+                                      take_step=opts['take_step'],
+                                      accept_test=opts['accept_test'],
+                                      callback=opts['callback'],
+                                      interval=opts['interval'],
+                                      disp=opts['disp'],
+                                      niter_success=opts['niter_success'],
+                                      seed=opts['seed'])
+
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
             a_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2)
             a_fit_bs.append(a_fit)
             p_fit_bs.append(p_fit)
             q_fit_bs.append(q_fit)
             bar.update(bootstrapping)
+
             bootstrapping += 1
+
         bar.finish()
+
     if method == 'SLSQP':
+
+        # shorter variable name
+        opts = SLSQP_options
+
+        if 'jac' not in opts.keys():
+            opts['jac'] = None
+        if 'tol' not in opts.keys():
+            opts['tol'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'func' not in opts.keys():
+            opts['func'] = None
+        if 'maxiter' not in opts.keys():
+            opts['maxiter'] = 300
+        if 'ftol' not in opts.keys():
+            opts['ftol'] = 1e-14
+        if 'iprint' not in opts.keys():
+            opts['iprint'] = 1
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'eps' not in opts.keys():
+            opts['eps'] = 1.4901161193847656e-08
+
+
         while bootstrapping <= bootstraps:
             boot_sample = np.random.choice(x, size=k, replace=True)
+
             result = opt.minimize(GB1_ll, x0,
                                   method='SLSQP',
                                   bounds=(a_bnd, bnds, bnds,),
                                   args=(boot_sample, b),
-                                  tol=1e-14,
-                                  options=({'maxiter': 1000, 'disp': False, 'ftol': 1e-06}),
+                                  jac=opts['jac'],
+                                  tol=opts['tol'],
+                                  callback=opts['callback'],
+                                  options=({'maxiter': opts['maxiter'], 'disp': False, 'iprint': opts['iprint'],
+                                            'fun': opts['func'], 'ftol': opts['ftol'], 'eps': opts['eps']}),
                                   constraints=constr)
+
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
             a_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2)
             a_fit_bs.append(a_fit)
             p_fit_bs.append(p_fit)
             q_fit_bs.append(q_fit)
             bar.update(bootstrapping)
             bootstrapping += 1
+
         bar.finish()
+
     if ci is False and verbose is True:
         tbl.field_names = ['parameter', 'value', 'se']
         tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), np.around(np.std(a_fit_bs), 4)])
         tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4)])
         tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), np.around(np.std(q_fit_bs), 4)])
         print(tbl)
+
     if ci and verbose:
         tbl.field_names = ['parameter', 'value', 'se', 'cilo_95', 'cihi_95', 'n']
         tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), np.around(np.std(a_fit_bs), 4),
@@ -443,11 +699,12 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
                           np.around(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96, 4),
                           np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
         print(tbl)
+
     if plot:
         fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
         if 'bins' not in plot_cosmetics.keys():
-            num_bins=50
+            num_bins = 50
         else:
             num_bins = plot_cosmetics['bins']
         if 'col_fit' not in plot_cosmetics.keys():
@@ -471,6 +728,7 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
         ax.legend(['GB1 model', 'fit'])
         # fig.tight_layout()
         plt.show()
+
     if fit:
         if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05) and (-1.05<np.mean(a_fit_bs)<-.95) | (-1.05<a_fit<-.95):
             model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
@@ -486,17 +744,22 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
             tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'n']
-            tbl_gof.add_row(['GOF',
-                                         np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
-                                         np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
+            tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
+                                    np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
             print("\n", tbl_gof, "\n")
-    return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
+
+    if return_parameters:
+        return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
 
 def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
-          verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-          plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}):
+          verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, return_parameters=False,
+          plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}
+              basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
+                                   'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
+              SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+                             'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
     Function to fit the GB distribution to data
     :param x: linspace or data, fixed
@@ -509,54 +772,137 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
     :param verbose: default true
     :param fit: gof measurements, default false
     :param plot: plot fit vs model
+    :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
+    :param basinhoppin_options: dictionary with optimization options
+    :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
     x = np.array(x)
     x = x[x>b]
     k = len(x)
     x0 = np.array(x0)
+
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
+
     def GB_constraint1(parms):
         a = parms[0]
         c = parms[1]
         return (b**a)/(1-c) - np.min(boot_sample)**a
+
     def GB_constraint2(parms):
         a = parms[0]
         c = parms[1]
         return (b**a)/(1-c) - np.max(boot_sample)**a
+
     constr = ({'type': 'ineq', 'fun': GB_constraint1},
               {'type': 'ineq', 'fun': GB_constraint2})
+
     a_bnd, c_bnd, bnds = (-10, -1e-10), (0, 1), (10**-14, np.inf)
     bootstrapping, a_fit_bs, c_fit_bs, p_fit_bs, q_fit_bs = 1, [], [], [], []
+
     if method == 'L-BFGS-B':
+
+        # shorter variable name
+        opts = basinhoppin_options
+
+        if 'niter' not in opts.keys():
+            opts['niter'] = 20
+        if 'T' not in opts.keys():
+            opts['T'] = 1.0
+        if 'stepsize' not in opts.keys():
+            opts['stepsize'] = 0.5
+        if 'take_step' not in opts.keys():
+            opts['take_step'] = None
+        if 'accept_test' not in opts.keys():
+            opts['accept_test'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'interval' not in opts.keys():
+            opts['interval'] = 50
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'niter_success' not in opts.keys():
+            opts['niter_success'] = None
+        if 'seed' not in opts.keys():
+            opts['seed'] = 123
+
         while bootstrapping <= bootstraps:
+
             boot_sample = np.random.choice(x, size=k, replace=True)
-            minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample,b),
+
+            minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample, b),
                                 "bounds": (a_bnd, c_bnd, bnds, bnds,),
                                 "constraints": constr}
-            result = opt.basinhopping(GB_ll, x0, minimizer_kwargs=minimizer_kwargs, niter=20, disp=False, seed=123)
+
+            result = opt.basinhopping(GB_ll, x0,
+                                      minimizer_kwargs=minimizer_kwargs,
+                                      niter=opts['niter'],
+                                      T=opts['T'],
+                                      stepsize=opts['stepsize'],
+                                      take_step=opts['take_step'],
+                                      accept_test=opts['accept_test'],
+                                      callback=opts['callback'],
+                                      interval=opts['interval'],
+                                      disp=opts['disp'],
+                                      niter_success=opts['niter_success'],
+                                      seed=opts['seed'])
+
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
             a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
             a_fit_bs.append(a_fit)
             c_fit_bs.append(c_fit)
             p_fit_bs.append(p_fit)
             q_fit_bs.append(q_fit)
             bar.update(bootstrapping)
+
             bootstrapping += 1
+
         bar.finish()
+
     if method == 'SLSQP':
+
+        # shorter variable name
+        opts = SLSQP_options
+
+        if 'jac' not in opts.keys():
+            opts['jac'] = None
+        if 'tol' not in opts.keys():
+            opts['tol'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'func' not in opts.keys():
+            opts['func'] = None
+        if 'maxiter' not in opts.keys():
+            opts['maxiter'] = 300
+        if 'ftol' not in opts.keys():
+            opts['ftol'] = 1e-14
+        if 'iprint' not in opts.keys():
+            opts['iprint'] = 1
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'eps' not in opts.keys():
+            opts['eps'] = 1.4901161193847656e-08
+
         while bootstrapping <= bootstraps:
             boot_sample = np.random.choice(x, size=k, replace=True)
-            result = opt.minimize(GB_ll, x0, method='SLSQP',
+
+            result = opt.minimize(GB_ll, x0,
+                                  method='SLSQP',
                                   bounds=(a_bnd, c_bnd, bnds, bnds,),
                                   args=(boot_sample, b),
-                                  tol=1e-14,
-                                  options=({'maxiter': 1000, 'disp': False, 'ftol': 1e-06}),
+                                  jac=opts['jac'],
+                                  tol=opts['tol'],
+                                  callback=opts['callback'],
+                                  options=({'maxiter': opts['maxiter'], 'disp': False, 'iprint': opts['iprint'],
+                                            'fun': opts['func'], 'ftol': opts['ftol'], 'eps': opts['eps']}),
                                   constraints=constr)
+
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
             a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
             a_fit_bs.append(a_fit)
             c_fit_bs.append(c_fit)
@@ -564,7 +910,9 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
             q_fit_bs.append(q_fit)
             bar.update(bootstrapping)
             bootstrapping += 1
+
         bar.finish()
+
     if ci is False and verbose is True:
         tbl.field_names = ['parameter', 'value', 'se']
         tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), np.around(np.std(a_fit_bs), 4)])
@@ -572,6 +920,7 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
         tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4)])
         tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), np.around(np.std(q_fit_bs), 4)])
         print(tbl)
+
     if ci and verbose:
         tbl.field_names = ['parameter', 'value', 'se', 'cilo_95', 'cihi_95', 'n']
         tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), np.around(np.std(a_fit_bs), 4),
@@ -587,11 +936,12 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
                           np.around(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96, 4),
                           np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
         print(tbl)
+
     if plot:
         fit = True # if plot is True, also display tbl_gof so set fit=True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
         if 'bins' not in plot_cosmetics.keys():
-            num_bins=50
+            num_bins = 50
         else:
             num_bins = plot_cosmetics['bins']
         if 'col_fit' not in plot_cosmetics.keys():
@@ -634,11 +984,11 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
             tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'n']
-            tbl_gof.add_row(['GOF',
-                                         np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
-                                         np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
+            tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
+                                    np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
             print("\n", tbl_gof, "\n")
-    return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
+    if return_parameters:
+        return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
 def Pareto_extract_se(x, b, p_fitted, method=1, verbose=True, hess=False):
@@ -688,7 +1038,7 @@ def IB1_extract_se(x, fitted_parms, method, dx, display, display_hessian):
     :param dx: tolerance of scipy.misc.derivative
     :param display: display results
     :param display_hessian: display hessian
-    :return: return se
+    :return: returns se
     """
     # method == 2: # derivative by hand - NOTE: no analytical solution found
     b = fitted_parms[0]
