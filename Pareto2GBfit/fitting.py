@@ -119,7 +119,8 @@ def GB_ll(parm, x, b):
     return ll
 
 def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
-              verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, return_parameters=False,
+              verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
+              return_parameters=False, return_gofs=False,
               plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
               basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                    'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
@@ -260,16 +261,16 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
         bar.finish()
 
     if ci is False and verbose:
-            tbl.field_names = ['parameter', 'value', 'se']
-            tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4)])
-            print(tbl)
+        tbl.field_names = ['parameter', 'value', 'se']
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4)])
+        print(tbl)
 
     if ci and verbose:
-            tbl.field_names = ['parameter', 'value', 'se', 'cilo_95', 'cihi_95', 'n']
-            tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4),
-                         np.around(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96, 4),
-                         np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
-            print(tbl)
+        tbl.field_names = ['parameter', 'value', 'se', 'cilo_95', 'cihi_95', 'n']
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4),
+                     np.around(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96, 4),
+                     np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
+        print(tbl)
 
     if plot:
         fit = True # if plot is True, also display tbl_gof so set fit==True
@@ -314,15 +315,18 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
         if verbose:
             tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'n']
             tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
-                                    np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
+                             np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
             print("\n{}\n".format(tbl_gof))
+        if return_gofs:
+            return aic, bic, mae, mse, rmse, rrmse, ll, n
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs)
 
 
 def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
-           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, return_parameters=False,
+           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
+           return_parameters=False, return_gofs=False,
            plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
            basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
@@ -532,13 +536,16 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
             tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
                                     np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
             print("\n{}\n".format(tbl_gof))
+        if return_gofs:
+            return aic, bic, mae, mse, rmse, rrmse, ll, n
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
 def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
-           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, return_parameters=False,
+           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
+           return_parameters=False, return_gofs=False,
            plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
            basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
@@ -755,14 +762,18 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
             tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
                                     np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
             print("\n{}\n".format(tbl_gof))
+        if return_gofs:
+            return aic, bic, mae, mse, rmse, rrmse, ll, n
 
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
 
+
 def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
-          verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, return_parameters=False,
+          verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
+          return_parameters=False, return_gofs=False,
           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
     basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
@@ -996,6 +1007,9 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
             tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
                                     np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
             print("\n{}\n".format(tbl_gof))
+        if return_gofs:
+            return aic, bic, mae, mse, rmse, rrmse, ll, n
+
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
