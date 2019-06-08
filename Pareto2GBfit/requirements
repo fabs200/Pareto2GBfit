@@ -1,0 +1,7 @@
+# pip3 install -U -r requirements.txt
+# conda install numpy opencv matplotlib tqdm pillow && conda install pytorch torchvision -c pytorch
+numpy
+scipy
+matplotlib
+progressbar
+prettytable

@@ -41,9 +41,11 @@ To fit the distributions, I provide following functions:
 
 |        	| fit  &nbsp; &nbsp; &nbsp; |
 |--------	|--------------------------	|
-| Pareto 	| Paretofit(x, b, x0, ...) 	|
-| IB1    	| IB1fit(x, b, x0, ...)    	|
-| GB1    	| GB1fit(x, b, x0, ...)    	|
-| GB     	| GBfit(x, b, x0, ...)     	|
+| Pareto 	| `Paretofit(x, b, x0, ...)`|
+| IB1    	| `IB1fit(x, b, x0, ...)`   |
+| GB1    	| `GB1fit(x, b, x0, ...)`   |
+| GB     	| `GBfit(x, b, x0, ...)`    |
 
 with following options:
+
+TODO
