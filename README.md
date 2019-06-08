@@ -9,10 +9,8 @@ parameters in the GB tree when we focus on the Pareto branch.
 
 GB tree: 
 
-<img src="GBtree.jpg" alt="drawing" width="400"/>
-
+<img src="GBtree.jpg" width="24.25%"></img> 
 (Source: Wikipedia)
-
 
 
 #### Distributions
