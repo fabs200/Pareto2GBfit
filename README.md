@@ -1,4 +1,4 @@
-# Pareto2GBfit
+## Description
 
 This small package provides distributions and functions to fit 4 of the
 Generalized Beta distribution family. The theoretical framework bases on
@@ -9,11 +9,21 @@ parameters in the GB tree when we focus on the Pareto branch.
 
 GB tree: 
 
-<img src="GBtree.jpg" width="24.25%"></img> 
+<img src="GBtree.jpg" width="400"></img> 
+
 (Source: Wikipedia)
 
+## Requirements
+Python 3.7 or later with the following `pip3 install -U -r requirements.txt` packages:
 
-#### Distributions
+- `numpy`
+- `scipy`
+- `matplotlib`
+- `progressbar`
+- `prettytable`
+
+
+## Distributions
 
 I implemented following functions:
 
@@ -24,7 +34,7 @@ I implemented following functions:
 | GB1    	| GB1_pdf(x, a, b, p, q)   	| GB1_cdf(x, a, b, p, q) GB1_cdf_ne(x, a, b, p, q) 	| GB1_icdf_ne(x, a, b, p, q)                   	|                     	|                      	|
 | GB     	| GB_pdf(x, a, b, c, p, q) 	| GB_cdf_ne(x, a, b, c, p, q)                      	| GB_icdf_ne(x, a, b, c, p, q)                 	|                     	|                      	|
 
-#### Fitting
+## Fitting
 
 To fit the distributions, I provide following functions:
 
