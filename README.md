@@ -1,4 +1,4 @@
-## Description
+# Pareto2GBfit
 
 This small package provides distributions and functions to fit 4 of the
 Generalized Beta distribution family. The theoretical framework bases on
@@ -13,7 +13,7 @@ GB tree:
 
 (Source: Wikipedia)
 
-## Requirements
+### Requirements
 Python 3.7 or later with the following `pip3 install -U -r requirements.txt` packages:
 
 - `numpy`
@@ -23,9 +23,9 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 - `prettytable`
 
 
-## Distributions
+### Distributions
 
-I implemented following functions:
+Following functions are implemented:
 
 |        	| pdf                        	| cdf                                                  	| icdf                                             	| Jacobian              	| Hessian                	|
 |--------	|----------------------------	|------------------------------------------------------	|--------------------------------------------------	|-----------------------	|------------------------	|
@@ -35,9 +35,9 @@ I implemented following functions:
 | GB     	| `GB_pdf(x, a, b, c, p, q)` 	| `GB_cdf_ne(x, a, b, c, p, q)`                        	| `GB_icdf_ne(x, a, b, c, p, q)`                   	| --                    	| --                     	|
 
 
-## Fitting
+### Fitting
 
-To fit the distributions, I provide following functions:
+To fit the distributions, the package provides following functions:
 
 |        	| fit  &nbsp; &nbsp; &nbsp; |
 |--------	|--------------------------	|
@@ -48,4 +48,160 @@ To fit the distributions, I provide following functions:
 
 with following options:
 
+| arg                    | default                                                                                                                                                                 | description                                                                                                                                                                                                                                                                                                                                                         |
+|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|           `x`          |                                                                                    --                                                                                   | actual data                                                                                                                                                                                                                                                                                                                                                         |
+|           `b`          |                                                                                    --                                                                                   | lower bound                                                                                                                                                                                                                                                                                                                                                         |
+|      `bootstraps`      |                                                                              `500` (`250` for GB1, GB)                                                                  | number of bootstraps, for Pareto and IB1 default =500, for GB1, GB =250, the more parameters one need to optimize, to more time-consuming will the optimization take. Thus, less bootstraps are set as default.                                                                                                                                                     |
+|        `method`        |                                                                                 `SLSQP`                                                                                 | either run `SLSQP` (= local optimization with bounds, constraints, much faster), or chose 'L-BFGS-B' which bases on Basin-Hopping (=global optimization) . Note that depending on the selected method different optimization options are available (see [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html)) |
+|   `verbose_bootstrap`  |                                                                                 `False`                                                                                 | display each bootstrap round                                                                                                                                                                                                                                                                                                                                        |
+|          `ci`          |                                                                                  `True`                                                                                 | display fitted parameters with 95th confidence intervals                                                                                                                                                                                                                                                                                                            |
+|        `verbose`       |                                                                                  `True`                                                                                 | display any results, if set `False`, no output is printed                                                                                                                                                                                                                                                                                                           |
+|          `fit`         |                                                                                 `False`                                                                                 | display goodness of fit measures in a table (aic, bic, mae, mse, rmse, rrmse, ll, n)                                                                                                                                                                                                                                                                                |
+|         `plot`         |                                                                                 `False`                                                                                 | If `True`, a graph of the fit will be plottet, graphical cosmetics can be adjusted with the dictionary `plot_cosmetics`                                                                                                                                                                                                                                             |
+|   `return_parameters`  |                                                                                 `False`                                                                                 | If `True`, fitted parameters with standard errors are returned. E.g. `Paretofit(...)` would return the 1x2-array: `=[p_fit, p_se]`, `IB1fit(...)` 1x4-array: `=[p_fit, p_se, q_fit, p_se]`, etc.                                                                                                                                                                    |
+|      `return_gof`      |                                                                                 `False`                                                                                 | If `True`, goodness of fit measures are returned. 1x8-array: `=[aic, bic, mae, mse, rmse, rrmse, ll, n]`                                                                                                                                                                                                                                                            |
+|    `plot_cosmetics`    | `{'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}`                                                                                                                | Specify bins by adding the dictionary `plot_cosmetics={'bins': 250}`                                                                                                                                                                                                                                                                                                |
+| `basinhopping_options` | `{'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None, 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}` | if `method='basinhopping'`, the user can specify arguments to the optimizer which are then passed to `scipy.optimize.basinhopping`. For further information, refer to [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.basinhopping.html#scipy.optimize.basinhopping).                                                   |
+|     `SLSQP_options`    | `{'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14, 'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}`                  | if `method='SLSQP'`, the user can specify arguments to the optimizer which are then passed to `scipy.optimize.minimize(method='SLSQP', ...)`. For further information, refer to [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html).                                                                                   |
+
+### Example
+
+#### Example 1
+
+Lets generate a pareto distributed dataset for which we know the true parameters. Then, we run the `Paretofit()`-function and expect that the model with the true parameters will be fitted to the data.
+
+1. Load packages
+```
+import numpy as np
+from Pareto2GBfit.fitting import *
+```
+2. Specify parameters for synthetic dataset
+```
+b, p = 500, 2.5
+```
+3. Linspace
+```
+n = 10000
+xmin = 0.1
+xmax = 10000
+x = np.linspace(xmin, xmax, n)
+```
+4. Generate synthetic dataset, e.g. Pareto
+```
+data = Pareto_icdf(u, b, p)
+```
+5. Run Optimization
+```
+Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=1000, method='SLSQP')
+```
+which returns following output:
+
+```
+Bootstrapping 100%|##############################################|Time: 0:00:04
++-----------+--------+--------+---------+--------+---------+---------+-------+
+| parameter | value  |   se   |    z    | P>|z|  | cilo_95 | cihi_95 |   n   |
++-----------+--------+--------+---------+--------+---------+---------+-------+
+|     p     | 2.4764 | 0.0247 | 100.457 | 0.0000 |  2.4281 |  2.5247 | 10000 |
++-----------+--------+--------+---------+--------+---------+---------+-------+
+```
+
+#### Example 2
+
+Lets load the netwealth-dataset and fit the Pareto- and the IB1-distribution to the data.
+Then, we test the equality of the shared parameters.
+
+1. Load packages
+```
+from Pareto2GBfit.fitting import *
+import numpy as np
+from scipy.stats import describe
+```
+2. Load dataset
+```
+netwealth = np.loadtxt("netwealth.csv", delimiter = ",")
+```
+3. Describe dataset
+```
+describe(netwealth)
+```
+this returns following:
+```
+DescribeResult(nobs=28072, minmax=(-4434000.0, 207020000.0), mean=142245.32003419776, variance=6263377257629.95, skewness=69.73674629459225, kurtosis=5340.710623236435)
+```
+
+4. Lets fit the Pareto distribution to the data
+```
+Paretofit(x=netwealth, b=100000, x0=1, bootstraps=1000, method='SLSQP', fit=True, plot=True, plot_cosmetics={'bins': 500})
+```
+This returns following output:
+```
+Bootstrapping 100%|##############################################|Time: 0:00:03
++-----------+--------+--------+---------+--------+---------+---------+------+
+| parameter | value  |   se   |    z    | P>|z|  | cilo_95 | cihi_95 |  n   |
++-----------+--------+--------+---------+--------+---------+---------+------+
+|     p     | 1.2003 | 0.0127 | 94.5339 | 0.0000 |  1.1755 |  1.2252 | 7063 |
++-----------+--------+--------+---------+--------+---------+---------+------+
++-----+-------------+-------------+------------+--------------------+---------------+--------+-------------+------+
+|     |     AIC     |     BIC     |    MAE     |        MSE         |      RMSE     | RRMSE  |      LL     |  n   |
++-----+-------------+-------------+------------+--------------------+---------------+--------+-------------+------+
+| GOF | 185948.2486 | 185955.1112 | 793147.028 | 551367829496230.94 | 23481222.9131 | 4.6038 | -92973.1243 | 7063 |
++-----+-------------+-------------+------------+--------------------+---------------+--------+-------------+------+
+
+```
+<img src="Figure_1.png" width="400">
+
+
+5. Lets go one parameter level upwards in the GB-tree and fit the IB1 distribution
+```
+IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=1000, method='SLSQP', fit=True, plot=True, plot_cosmetics={'bins': 500})
+```
+Output:
+```
+Bootstrapping 100%|##############################################|Time: 0:00:14
++-----------+--------+--------+---------+--------+---------+---------+------+
+| parameter | value  |   se   |    z    | P>|z|  | cilo_95 | cihi_95 |  n   |
++-----------+--------+--------+---------+--------+---------+---------+------+
+|     p     | 1.4464 | 0.0254 | 57.0174 | 0.0000 |  1.3966 |  1.4961 | 7063 |
+|     q     | 1.3022 | 0.0219 | 59.4884 | 0.0000 |  1.2593 |  1.3451 | 7063 |
++-----------+--------+--------+---------+--------+---------+---------+------+
++-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
+|     |     AIC     |     BIC     |     MAE     |        MSE         |     RMSE     | RRMSE  |     LL     |  n   |
++-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
+| GOF | 185686.9459 | 185700.6712 | 549988.3777 | 22899226860951.406 | 4785313.6638 | 4.0645 | -92841.473 | 7063 |
++-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
+
+```
+<img src="Figure_2.png" width="400">
+
+6. Lets run the global optimization of the `IB1fit()`, plot the fit and return the gofs
+```
+IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=1000, method='L-BFGS-B', fit=True, plot=True, plot_cosmetics={'bins': 500}, basinhopping_options={'niter': 50, 'stepsize': .75})
+```
+Output:
+```
+Bootstrapping 100%|##############################################|Time: 0:00:14
++-----------+--------+--------+---------+--------+---------+---------+------+
+| parameter | value  |   se   |    z    | P>|z|  | cilo_95 | cihi_95 |  n   |
++-----------+--------+--------+---------+--------+---------+---------+------+
+|     p     | 1.4464 | 0.0254 | 57.0174 | 0.0000 |  1.3966 |  1.4961 | 7063 |
+|     q     | 1.3022 | 0.0219 | 59.4884 | 0.0000 |  1.2593 |  1.3451 | 7063 |
++-----------+--------+--------+---------+--------+---------+---------+------+
++-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
+|     |     AIC     |     BIC     |     MAE     |        MSE         |     RMSE     | RRMSE  |     LL     |  n   |
++-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
+| GOF | 185686.9459 | 185700.6712 | 549988.3777 | 22899226860951.406 | 4785313.6638 | 4.0645 | -92841.473 | 7063 |
++-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
+```
+Note that the global optimization process took about 5 mins.
+
+<img src="Figure_3.png" width="400">
+
+7. Lets test the equality of the parameters: <img src="https://latex.codecogs.com/svg.latex?\Large&space;\hat{p}_{Pareto}=\hat{p}_{IB1}" />
+```
 TODO
+```
+
+
+### Author
+Fabian Nemeczek, Freie Universität Berlin
