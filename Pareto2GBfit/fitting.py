@@ -3,6 +3,7 @@ import scipy.optimize as opt
 from scipy import linalg
 from scipy.misc import derivative
 from scipy.special import digamma, gammaln
+from scipy.stats import norm
 import matplotlib.pyplot as plt
 import progressbar
 from prettytable import PrettyTable
@@ -191,8 +192,7 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
             boot_sample = np.random.choice(x, size=k, replace=True)
 
             minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample, b),
-                                "bounds": (bnd,),
-                                "constraints": constr}
+                                "bounds": (bnd,)} #, "constraints": constr} constraint not needed, because b not optimized
 
             result = opt.basinhopping(Pareto_ll, x0,
                                       minimizer_kwargs=minimizer_kwargs,
@@ -262,12 +262,16 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
 
     if ci is False and verbose:
         tbl.field_names = ['parameter', 'value', 'se']
-        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4)])
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), "{:.4f}".format(np.around(np.std(p_fit_bs), 4))])
         print(tbl)
 
     if ci and verbose:
-        tbl.field_names = ['parameter', 'value', 'se', 'cilo_95', 'cihi_95', 'n']
-        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4),
+        # calculation of zscores, p-values related to Stata's regression outputs
+        p_zscore = np.around(np.mean(p_fit_bs)/np.std(p_fit_bs), 4)
+        p_pval = 2*norm.cdf(-np.abs((np.mean(p_fit_bs)/np.std(p_fit_bs))))
+        tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'cilo_95', 'cihi_95', 'n']
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), "{:.4f}".format(np.around(np.std(p_fit_bs), 4)),
+                     p_zscore, "{:.4f}".format(p_pval),
                      np.around(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96, 4),
                      np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
         print(tbl)
@@ -398,8 +402,7 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
             boot_sample = np.random.choice(x, size=k, replace=True)
 
             minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample, b),
-                                "bounds": (bnds, bnds,),
-                                "constraints": constr}
+                                "bounds": (bnds, bnds,)} # , "constraints": constr} # constr not needed here
 
             result = opt.basinhopping(IB1_ll, x0,
                                       minimizer_kwargs=minimizer_kwargs,
@@ -475,16 +478,22 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
 
     if ci is False and verbose is True:
         tbl.field_names = ['parameter', 'value', 'se']
-        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4)])
-        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), np.around(np.std(q_fit_bs), 4)])
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), "{:.4f}".format(np.around(np.std(p_fit_bs), 4))])
+        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), "{:.4f}".format(np.around(np.std(q_fit_bs), 4))])
         print(tbl)
 
     if ci and verbose:
-        tbl.field_names = ['parameter', 'value', 'se', 'cilo_95', 'cihi_95', 'n']
-        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4),
+        p_zscore = np.around(np.mean(p_fit_bs)/np.std(p_fit_bs), 4)
+        q_zscore = np.around(np.mean(q_fit_bs)/np.std(q_fit_bs), 4)
+        p_pval = 2*norm.cdf(-np.abs((np.mean(p_fit_bs)/np.std(p_fit_bs))))
+        q_pval = 2*norm.cdf(-np.abs((np.mean(q_fit_bs)/np.std(q_fit_bs))))
+
+        tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'cilo_95', 'cihi_95', 'n']
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), "{:.4f}".format(np.around(np.std(p_fit_bs), 4)),
+                     p_zscore, "{:.4f}".format(p_pval),
                           np.around(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96, 4),
                           np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
-        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), np.around(np.std(q_fit_bs), 4),
+        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), "{:.4f}".format(np.around(np.std(q_fit_bs), 4)), q_zscore, "{:.4f}".format(q_pval),
                           np.around(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96, 4),
                           np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
         print(tbl)
@@ -617,8 +626,7 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
             boot_sample = np.random.choice(x, size=k, replace=True)
 
             minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample, b),
-                                "bounds": (a_bnd, bnds, bnds,),
-                                "constraints": constr}
+                                "bounds": (a_bnd, bnds, bnds,)} #, "constraints": constr} not needed
 
             result = opt.basinhopping(GB1_ll, x0,
                                       minimizer_kwargs=minimizer_kwargs,
@@ -697,22 +705,32 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
 
     if ci is False and verbose is True:
         tbl.field_names = ['parameter', 'value', 'se']
-        tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), np.around(np.std(a_fit_bs), 4)])
-        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4)])
-        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), np.around(np.std(q_fit_bs), 4)])
+        tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), "{:.4f}".format(np.around(np.std(a_fit_bs), 4))])
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), "{:.4f}".format(np.around(np.std(p_fit_bs), 4))])
+        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), "{:.4f}".format(np.around(np.std(q_fit_bs), 4))])
         print(tbl)
 
     if ci and verbose:
-        tbl.field_names = ['parameter', 'value', 'se', 'cilo_95', 'cihi_95', 'n']
-        tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), np.around(np.std(a_fit_bs), 4),
-                          np.around(np.mean(a_fit_bs)-np.std(a_fit_bs)*1.96, 4),
-                          np.around(np.mean(a_fit_bs)+np.std(a_fit_bs)*1.96, 4), k])
-        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4),
-                          np.around(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96, 4),
-                          np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
-        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), np.around(np.std(q_fit_bs), 4),
-                          np.around(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96, 4),
-                          np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
+        a_zscore = np.around(np.mean(a_fit_bs)/np.std(a_fit_bs), 4)
+        p_zscore = np.around(np.mean(p_fit_bs)/np.std(p_fit_bs), 4)
+        q_zscore = np.around(np.mean(q_fit_bs)/np.std(q_fit_bs), 4)
+        a_pval = 2*norm.cdf(-np.abs((np.mean(a_fit_bs)/np.std(a_fit_bs))))
+        p_pval = 2*norm.cdf(-np.abs((np.mean(p_fit_bs)/np.std(p_fit_bs))))
+        q_pval = 2*norm.cdf(-np.abs((np.mean(q_fit_bs)/np.std(q_fit_bs))))
+
+        tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'cilo_95', 'cihi_95', 'n']
+        tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), "{:.4f}".format(np.around(np.std(a_fit_bs), 4)),
+                     a_zscore, "{:.4f}".format(a_pval),
+                     np.around(np.mean(a_fit_bs)-np.std(a_fit_bs)*1.96, 4),
+                     np.around(np.mean(a_fit_bs)+np.std(a_fit_bs)*1.96, 4), k])
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), "{:.4f}".format(np.around(np.std(p_fit_bs), 4)),
+                     p_zscore, "{:.4f}".format(p_pval),
+                     np.around(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96, 4),
+                     np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
+        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), "{:.4f}".format(np.around(np.std(q_fit_bs), 4)),
+                     q_zscore, "{:.4f}".format(q_pval),
+                     np.around(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96, 4),
+                     np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
         print(tbl)
 
     if plot:
@@ -853,8 +871,7 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
             boot_sample = np.random.choice(x, size=k, replace=True)
 
             minimizer_kwargs = {"method": "L-BFGS-B", "args": (boot_sample, b),
-                                "bounds": (a_bnd, c_bnd, bnds, bnds,),
-                                "constraints": constr}
+                                "bounds": (a_bnd, c_bnd, bnds, bnds,)} #, "constraints": constr} not needed
 
             result = opt.basinhopping(GB_ll, x0,
                                       minimizer_kwargs=minimizer_kwargs,
@@ -934,27 +951,41 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
         bar.finish()
 
     if ci is False and verbose is True:
+
         tbl.field_names = ['parameter', 'value', 'se']
-        tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), np.around(np.std(a_fit_bs), 4)])
-        tbl.add_row(['c', np.around(np.mean(c_fit_bs), 4), np.around(np.std(c_fit_bs), 4)])
-        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4)])
-        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), np.around(np.std(q_fit_bs), 4)])
+        tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), "{:.4f}".format(np.around(np.std(a_fit_bs), 4))])
+        tbl.add_row(['c', np.around(np.mean(c_fit_bs), 4), "{:.4f}".format(np.around(np.std(c_fit_bs), 4))])
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), "{:.4f}".format(np.around(np.std(p_fit_bs), 4))])
+        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), "{:.4f}".format(np.around(np.std(q_fit_bs), 4))])
         print(tbl)
 
     if ci and verbose:
-        tbl.field_names = ['parameter', 'value', 'se', 'cilo_95', 'cihi_95', 'n']
-        tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), np.around(np.std(a_fit_bs), 4),
-                          np.around(np.mean(a_fit_bs)-np.std(a_fit_bs)*1.96, 4),
-                          np.around(np.mean(a_fit_bs)+np.std(a_fit_bs)*1.96, 4), k])
-        tbl.add_row(['c', np.around(np.mean(c_fit_bs), 4), np.around(np.std(c_fit_bs), 4),
-                          np.around(np.mean(c_fit_bs)-np.std(c_fit_bs)*1.96, 4),
-                          np.around(np.mean(c_fit_bs)+np.std(c_fit_bs)*1.96, 4), k])
-        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), np.around(np.std(p_fit_bs), 4),
-                          np.around(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96, 4),
-                          np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
-        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), np.around(np.std(q_fit_bs), 4),
-                          np.around(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96, 4),
-                          np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
+        a_zscore = np.around(np.mean(a_fit_bs)/np.std(a_fit_bs), 4)
+        c_zscore = np.around(np.mean(c_fit_bs)/np.std(c_fit_bs), 4)
+        p_zscore = np.around(np.mean(p_fit_bs)/np.std(p_fit_bs), 4)
+        q_zscore = np.around(np.mean(q_fit_bs)/np.std(q_fit_bs), 4)
+        a_pval = 2*norm.cdf(-np.abs((np.mean(a_fit_bs)/np.std(a_fit_bs))))
+        c_pval = 2*norm.cdf(-np.abs((np.mean(c_fit_bs)/np.std(c_fit_bs))))
+        p_pval = 2*norm.cdf(-np.abs((np.mean(p_fit_bs)/np.std(p_fit_bs))))
+        q_pval = 2*norm.cdf(-np.abs((np.mean(q_fit_bs)/np.std(q_fit_bs))))
+
+        tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'cilo_95', 'cihi_95', 'n']
+        tbl.add_row(['a', np.around(np.mean(a_fit_bs), 4), "{:.4f}".format(np.around(np.std(a_fit_bs), 4)),
+                     a_zscore, "{:.4f}".format(a_pval),
+                     np.around(np.mean(a_fit_bs)-np.std(a_fit_bs)*1.96, 4),
+                     np.around(np.mean(a_fit_bs)+np.std(a_fit_bs)*1.96, 4), k])
+        tbl.add_row(['c', np.around(np.mean(c_fit_bs), 4), "{:.4f}".format(np.around(np.std(c_fit_bs), 4)),
+                     c_zscore, "{:.4f}".format(c_pval),
+                     np.around(np.mean(c_fit_bs)-np.std(c_fit_bs)*1.96, 4),
+                     np.around(np.mean(c_fit_bs)+np.std(c_fit_bs)*1.96, 4), k])
+        tbl.add_row(['p', np.around(np.mean(p_fit_bs), 4), "{:.4f}".format(np.around(np.std(p_fit_bs), 4)),
+                     p_zscore, "{:.4f}".format(p_pval),
+                     np.around(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96, 4),
+                     np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
+        tbl.add_row(['q', np.around(np.mean(q_fit_bs), 4), "{:.4f}".format(np.around(np.std(q_fit_bs), 4)),
+                     q_zscore, "{:.4f}".format(q_pval),
+                     np.around(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96, 4),
+                     np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
         print(tbl)
 
     if plot:
