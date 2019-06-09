@@ -123,7 +123,7 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
               verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
               return_parameters=False, return_gofs=False,
               plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
-              basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
+              basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                    'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
               SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                              'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
@@ -141,7 +141,7 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
     :param plot: plot fit vs model
     :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
-    :param basinhoppin_options: dictionary with optimization options
+    :param basinhopping_options: dictionary with optimization options
     :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
@@ -164,7 +164,7 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
     if method == 'L-BFGS-B':
 
         # shorter variable name
-        opts = basinhoppin_options
+        opts = basinhopping_options
 
         if 'niter' not in opts.keys():
             opts['niter'] = 20
@@ -332,7 +332,7 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
            return_parameters=False, return_gofs=False,
            plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
-           basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
+           basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
            SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                           'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
@@ -350,7 +350,7 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
     :param plot: plot fit vs model
     :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
-    :param basinhoppin_options: dictionary with optimization options
+    :param basinhopping_options: dictionary with optimization options
     :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
@@ -374,7 +374,7 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
     if method == 'L-BFGS-B':
 
         # shorter variable name
-        opts = basinhoppin_options
+        opts = basinhopping_options
 
         if 'niter' not in opts.keys():
             opts['niter'] = 20
@@ -556,7 +556,7 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
            return_parameters=False, return_gofs=False,
            plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
-           basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
+           basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
            SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                           'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
@@ -574,7 +574,7 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
     :param plot: plot fit vs model
     :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
-    :param basinhoppin_options: dictionary with optimization options
+    :param basinhopping_options: dictionary with optimization options
     :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
@@ -598,7 +598,7 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
     if method == 'L-BFGS-B':
 
         # shorter variable name
-        opts = basinhoppin_options
+        opts = basinhopping_options
 
         if 'niter' not in opts.keys():
             opts['niter'] = 20
@@ -793,7 +793,7 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
           return_parameters=False, return_gofs=False,
           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
-    basinhoppin_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
+    basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
           SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                          'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
@@ -811,7 +811,7 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
     :param plot: plot fit vs model
     :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
-    :param basinhoppin_options: dictionary with optimization options
+    :param basinhopping_options: dictionary with optimization options
     :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
@@ -843,7 +843,7 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
     if method == 'L-BFGS-B':
 
         # shorter variable name
-        opts = basinhoppin_options
+        opts = basinhopping_options
 
         if 'niter' not in opts.keys():
             opts['niter'] = 20
