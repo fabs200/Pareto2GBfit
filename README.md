@@ -13,7 +13,7 @@ GB tree:
 
 (Source: Wikipedia)
 
-### Requirements
+## Requirements
 Python 3.7 or later with the following `pip3 install -U -r requirements.txt` packages:
 
 - `numpy`
@@ -23,7 +23,7 @@ Python 3.7 or later with the following `pip3 install -U -r requirements.txt` pac
 - `prettytable`
 
 
-### Distributions
+## Distributions
 
 Following functions are implemented:
 
@@ -35,7 +35,7 @@ Following functions are implemented:
 | GB     	| `GB_pdf(x, a, b, c, p, q)` 	| `GB_cdf_ne(x, a, b, c, p, q)`                        	| `GB_icdf_ne(x, a, b, c, p, q)`                   	| --                    	| --                     	|
 
 
-### Fitting
+## Fitting
 
 To fit the distributions, the package provides following functions:
 
@@ -65,9 +65,9 @@ with following options:
 | `basinhopping_options` | `{'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None, 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}` | if `method='basinhopping'`, the user can specify arguments to the optimizer which are then passed to `scipy.optimize.basinhopping`. For further information, refer to [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.basinhopping.html#scipy.optimize.basinhopping).                                                   |
 |     `SLSQP_options`    | `{'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14, 'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}`                  | if `method='SLSQP'`, the user can specify arguments to the optimizer which are then passed to `scipy.optimize.minimize(method='SLSQP', ...)`. For further information, refer to [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html).                                                                                   |
 
-### Examples
+## Examples
 
-#### Example 1
+### Example 1
 
 Lets generate a pareto distributed dataset for which we know the true parameters. Then, we run the `Paretofit()`-function and expect that the model with the true parameters will be fitted to the data.
 
@@ -106,7 +106,7 @@ Bootstrapping 100%|##############################################|Time: 0:00:04
 +-----------+--------+--------+---------+--------+---------+---------+-------+
 ```
 
-#### Example 2
+### Example 2
 
 Lets load the netwealth-dataset and fit the Pareto- and the IB1-distribution to the data.
 Then, we test the equality of the shared parameter p.
