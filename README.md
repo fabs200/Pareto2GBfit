@@ -65,7 +65,7 @@ with following options:
 | `basinhopping_options` | `{'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None, 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}` | if `method='basinhopping'`, the user can specify arguments to the optimizer which are then passed to `scipy.optimize.basinhopping`. For further information, refer to [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.basinhopping.html#scipy.optimize.basinhopping).                                                   |
 |     `SLSQP_options`    | `{'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14, 'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}`                  | if `method='SLSQP'`, the user can specify arguments to the optimizer which are then passed to `scipy.optimize.minimize(method='SLSQP', ...)`. For further information, refer to [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html).                                                                                   |
 
-### Example
+### Examples
 
 #### Example 1
 
@@ -87,15 +87,15 @@ xmin = 0.1
 xmax = 10000
 x = np.linspace(xmin, xmax, n)
 ```
-4. Generate synthetic dataset, e.g. Pareto
+4. Generate synthetic dataset, e.g. that is pareto distributed
 ```
 data = Pareto_icdf(u, b, p)
 ```
-5. Run Optimization
+5. Run optimization
 ```
-Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=1000, method='SLSQP')
+Paretofit(x=data, b=500, x0=2, bootstraps=1000, method='SLSQP')
 ```
-which returns following output:
+this returns following output:
 
 ```
 Bootstrapping 100%|##############################################|Time: 0:00:04
@@ -109,7 +109,7 @@ Bootstrapping 100%|##############################################|Time: 0:00:04
 #### Example 2
 
 Lets load the netwealth-dataset and fit the Pareto- and the IB1-distribution to the data.
-Then, we test the equality of the shared parameters.
+Then, we test the equality of the shared parameter p.
 
 1. Load packages
 ```
@@ -134,7 +134,7 @@ DescribeResult(nobs=28072, minmax=(-4434000.0, 207020000.0), mean=142245.3200341
 ```
 Paretofit(x=netwealth, b=100000, x0=1, bootstraps=1000, method='SLSQP', fit=True, plot=True, plot_cosmetics={'bins': 500})
 ```
-This returns following output:
+Output:
 ```
 Bootstrapping 100%|##############################################|Time: 0:00:03
 +-----------+--------+--------+---------+--------+---------+---------+------+
@@ -174,26 +174,27 @@ Bootstrapping 100%|##############################################|Time: 0:00:14
 ```
 <img src="Figure_2.png" width="400">
 
-6. Lets run the global optimization of the `IB1fit()`, plot the fit and return the gofs
+6. Lets run the global optimization of the `IB1fit()` and compare this result to the local optimization in step 5.
 ```
 IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=1000, method='L-BFGS-B', fit=True, plot=True, plot_cosmetics={'bins': 500}, basinhopping_options={'niter': 50, 'stepsize': .75})
 ```
 Output:
 ```
-Bootstrapping 100%|##############################################|Time: 0:00:14
+Bootstrapping 100%|##############################################|Time: 0:05:09
 +-----------+--------+--------+---------+--------+---------+---------+------+
 | parameter | value  |   se   |    z    | P>|z|  | cilo_95 | cihi_95 |  n   |
 +-----------+--------+--------+---------+--------+---------+---------+------+
-|     p     | 1.4464 | 0.0254 | 57.0174 | 0.0000 |  1.3966 |  1.4961 | 7063 |
-|     q     | 1.3022 | 0.0219 | 59.4884 | 0.0000 |  1.2593 |  1.3451 | 7063 |
+|     p     | 1.4479 | 0.0251 | 57.6374 | 0.0000 |  1.3987 |  1.4971 | 7063 |
+|     q     | 1.3038 | 0.0223 | 58.5595 | 0.0000 |  1.2602 |  1.3475 | 7063 |
 +-----------+--------+--------+---------+--------+---------+---------+------+
-+-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
-|     |     AIC     |     BIC     |     MAE     |        MSE         |     RMSE     | RRMSE  |     LL     |  n   |
-+-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
-| GOF | 185686.9459 | 185700.6712 | 549988.3777 | 22899226860951.406 | 4785313.6638 | 4.0645 | -92841.473 | 7063 |
-+-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
++-----+-------------+-------------+-------------+--------------------+--------------+--------+-------------+------+
+|     |     AIC     |     BIC     |     MAE     |        MSE         |     RMSE     | RRMSE  |      LL     |  n   |
++-----+-------------+-------------+-------------+--------------------+--------------+--------+-------------+------+
+| GOF | 185686.9583 | 185700.6836 | 541010.4802 | 22794194873280.457 | 4774326.6408 | 4.0531 | -92841.4792 | 7063 |
++-----+-------------+-------------+-------------+--------------------+--------------+--------+-------------+------+
 ```
-Note that the global optimization process took about 5 mins.
+Note that the global optimization process took about 5 mins compared to the local optimization with 14 seconds.
+Indeed, both optimizations result in the same parameters.
 
 <img src="Figure_3.png" width="400">
 
