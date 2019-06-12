@@ -1,5 +1,6 @@
 
 from Pareto2GBfit.fitting import *
+from Pareto2GBfit.testing import *
 import numpy as np
 from scipy.stats import describe
 
@@ -62,3 +63,10 @@ GBfit(x=netwealth, b=100000, x0=(-.5,.1,1,1), bootstraps=100, method='SLSQP', pl
 
 basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}
+
+
+# testing parameters
+#TODO
+
+
+

@@ -9,7 +9,11 @@ import progressbar
 from prettytable import PrettyTable
 from .distributions import Pareto_pdf, IB1_pdf, GB1_pdf, GB_pdf, Pareto_icdf, IB1_icdf_ne, GB1_icdf_ne, GB_icdf_ne
 
-
+""" 
+---------------------------------------------------
+Goddness of fit measures
+---------------------------------------------------
+"""
 class gof:
     """ Goodness of fit measures """
     def __init__(self, x, x_hat, parms, b):
@@ -43,6 +47,11 @@ class gof:
             self.aic = -2*ll + 2*4
             self.bic = -2*ll + np.log(n)*4
 
+""" 
+---------------------------------------------------
+Neg. Log-Likelihoods
+---------------------------------------------------
+"""
 def Pareto_ll(parms, x, b):
     """
     :param parms: np.array [p], optimized
@@ -119,6 +128,11 @@ def GB_ll(parm, x, b):
     ll = -ll/100
     return ll
 
+""" 
+---------------------------------------------------
+Fitting
+---------------------------------------------------
+"""
 def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
               verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
               return_parameters=False, return_gofs=False,
