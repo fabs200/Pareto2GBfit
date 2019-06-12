@@ -105,17 +105,17 @@ def GB1_ll(parms, x, b):
     ll = -ll/100
     return ll
 
-def GB_ll(parm, x, b):
+def GB_ll(parms, x, b):
     """
-    :param parm: np.array [a, c, p, q] optimized
+    :param parms=np.array [a, c, p, q] optimized
     :param x: linspace or data, fixed
     :param b: location parameter, fixed
     :return: neg. log-likelihood of GB1
     """
-    a = parm[0]
-    c = parm[1]
-    p = parm[2]
-    q = parm[3]
+    a = parms[0]
+    c = parms[1]
+    p = parms[2]
+    q = parms[3]
     n = len(x)
     x = np.array(x)
     x = x[x>b]

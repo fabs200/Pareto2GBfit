@@ -64,7 +64,21 @@ GBfit(x=netwealth, b=100000, x0=(-.5,.1,1,1), bootstraps=100, method='SLSQP', pl
 basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}
 
+
+# test parameters
+p_fit, p_se = Paretofit(x=netwealth, b=100000, x0=1, bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
+p_fit, p_se, q_fit, q_se = IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
+a_fit, a_se, p_fit, p_se, q_fit, q_se = GB1fit(x=netwealth, b=100000, x0=(-0.5,1,1), bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
+
+
 # testing parameters
-LRtest()
+x = netwealth
+b = 100000
+LRtest(x=netwealth, b=100000, p=p_fit, test='Pareto_vs_IB1')
+LRtest(x=netwealth, b=100000, p=p_fit, test='Pareto_vs_GB1')
+LRtest(x=netwealth, b=100000, p=p_fit, test='Pareto_vs_GB')
+LRtest(x=netwealth, b=100000, p=p_fit, q=q_fit, test='IB1_vs_GB1')
+LRtest(x=netwealth, b=100000, p=p_fit, q=q_fit, test='IB1_vs_GB')
+LRtest(x=netwealth, b=100000, a=a_fit, p=p_fit, q=q_fit, test='GB1_vs_GB')
 
 
