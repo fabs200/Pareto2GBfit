@@ -52,6 +52,10 @@ GBfit(x=Pareto_data, b=500, x0=(-.1,0,2,1), bootstraps=10, method='SLSQP')
 # test with actual data
 netwealth = np.loadtxt("netwealth.csv", delimiter = ",")
 
+# set lower bound
+b = 100000
+
+# describe data
 print("netwealth\n", describe(netwealth))
 
 Paretofit(x=netwealth, b=100000, x0=1, bootstraps=1000, method='SLSQP', fit=True, plot=True, plot_cosmetics={'bins': 500})
@@ -65,20 +69,12 @@ basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}
 
 
-# test parameters
-p_fit, p_se = Paretofit(x=netwealth, b=100000, x0=1, bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
-p_fit, p_se, q_fit, q_se = IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
-a_fit, a_se, p_fit, p_se, q_fit, q_se = GB1fit(x=netwealth, b=100000, x0=(-0.5,1,1), bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
+# save fitted parameters
+p_fit1, p_se1 = Paretofit(x=netwealth, b=100000, x0=1, bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
+p_fit2, p_se2, q_fit2, q_se2 = IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
+a_fit3, a_se3, p_fit3, p_se3, q_fit3, q_se3 = GB1fit(x=netwealth, b=100000, x0=(-0.5,1,1), bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
 
-
-# testing parameters
-x = netwealth
-b = 100000
-LRtest(x=netwealth, b=100000, p=p_fit, test='Pareto_vs_IB1')
-LRtest(x=netwealth, b=100000, p=p_fit, test='Pareto_vs_GB1')
-LRtest(x=netwealth, b=100000, p=p_fit, test='Pareto_vs_GB')
-LRtest(x=netwealth, b=100000, p=p_fit, q=q_fit, test='IB1_vs_GB1')
-LRtest(x=netwealth, b=100000, p=p_fit, q=q_fit, test='IB1_vs_GB')
-LRtest(x=netwealth, b=100000, a=a_fit, p=p_fit, q=q_fit, test='GB1_vs_GB')
-
-
+# testing fitted parameters
+LRtest(Pareto(x=netwealth, b=b, p=p_fit1).LL, IB1(x=netwealth, b=b, p=p_fit2, q=q_fit2).LL, df=2)
+LRtest(Pareto(x=netwealth, b=b, p=p_fit1).LL, GB1(x=netwealth, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, df=3)
+LRtest(IB1(x=netwealth, b=b, p=p_fit2, q=q_fit2).LL, GB1(x=netwealth, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, df=3)

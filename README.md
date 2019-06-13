@@ -198,10 +198,64 @@ Indeed, both optimizations result in the same parameters.
 
 <img src="Figure_3.png" width="400">
 
-7. Lets test the equality of the parameters: <img src="https://latex.codecogs.com/svg.latex?\Large&space;\hat{p}_{Pareto}=\hat{p}_{IB1}" />
+7. Save the fitted parameters, e.g. for Pareto, IB1, GB1
 ```
-TODO
+p_fit1, p_se1 = Paretofit(x=netwealth, b=100000, x0=1, bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
+p_fit2, p_se2, q_fit2, q_se2 = IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
+a_fit3, a_se3, p_fit3, p_se3, q_fit3, q_se3 = GB1fit(x=netwealth, b=100000, x0=(-0.5,1,1), bootstraps=250, method='SLSQP', verbose=False, return_parameters=True)
 ```
+
+Output:
+```
+Bootstrapping 100%|##############################################|Time: 0:00:00
+Bootstrapping 100%|##############################################|Time: 0:00:04
+Bootstrapping 100%|##############################################|Time: 0:01:08
+```
+
+8. Finally, lets test the validity of the GB tree restriction
+```
+LRtest(Pareto(x=netwealth, b=b, p=p_fit1).LL, IB1(x=netwealth, b=b, p=p_fit2, q=q_fit2).LL, df=2)
+```
+Output:
+```
++-------------+-----------+
+|   LR test	  |           |
++-------------+-----------+
+|  chi2(2) =  | -263.3045 |
+| Prob > chi2 |   1.0000  |
++-------------+-----------+
+```
+We highly cannot reject the null that the GB tree restriction q=1 is not valid.
+
+```
+LRtest(Pareto(x=netwealth, b=b, p=p_fit1).LL, GB1(x=netwealth, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, df=3)
+```
+Output:
+```
++-------------+----------+
+|   LR test	  |          |
++-------------+----------+
+|  chi2(3) =  | 200.1362 |
+| Prob > chi2 |  0.0000  |
++-------------+----------+
+```
+We can highly reject the null that the GB tree restrictions a=-1 and q=1 are valid.
+
+
+```
+LRtest(IB1(x=netwealth, b=b, p=p_fit2, q=q_fit2).LL, GB1(x=netwealth, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, df=3)
+```
+Output:
+```
++-------------+----------+
+|   LR test	  |          |
++-------------+----------+
+|  chi2(3) =  | 463.4407 |
+| Prob > chi2 |  0.0000  |
++-------------+----------+
+```
+We can highly reject the null that the GB tree restriction a=-1 is valid.
+
 
 
 ### Author
