@@ -47,7 +47,7 @@ class LRtest:
         self.w = w = 2*(LL1 - LL2)
         self.pval = pval = chi2.sf(w, df=df)
         tbl = PrettyTable()
-        tbl.field_names = ['LR test\t', '']
+        tbl.field_names = ['LR test', '']
         tbl.add_row(['chi2({}) = '.format(df), '{:.4f}'.format(w)])
         tbl.add_row(['Prob > chi2', '{:.4f}'.format(pval)])
         if verbose: print(tbl)

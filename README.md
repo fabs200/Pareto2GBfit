@@ -219,9 +219,9 @@ LRtest(Pareto(x=netwealth, b=b, p=p_fit1).LL, IB1(x=netwealth, b=b, p=p_fit2, q=
 Output:
 ```
 +-------------+-----------+
-|   LR test	  |           |
+|   LR test   |           |
 +-------------+-----------+
-|  chi2(2) =  | -263.3045 |
+|  chi2(2) =  | -263.3104 |
 | Prob > chi2 |   1.0000  |
 +-------------+-----------+
 ```
@@ -233,9 +233,9 @@ LRtest(Pareto(x=netwealth, b=b, p=p_fit1).LL, GB1(x=netwealth, b=b, a=a_fit3, p=
 Output:
 ```
 +-------------+----------+
-|   LR test	  |          |
+|   LR test   |          |
 +-------------+----------+
-|  chi2(3) =  | 200.1362 |
+|  chi2(3) =  | 461.9817 |
 | Prob > chi2 |  0.0000  |
 +-------------+----------+
 ```
@@ -248,9 +248,9 @@ LRtest(IB1(x=netwealth, b=b, p=p_fit2, q=q_fit2).LL, GB1(x=netwealth, b=b, a=a_f
 Output:
 ```
 +-------------+----------+
-|   LR test	  |          |
+|   LR test   |          |
 +-------------+----------+
-|  chi2(3) =  | 463.4407 |
+|  chi2(3) =  | 725.2921 |
 | Prob > chi2 |  0.0000  |
 +-------------+----------+
 ```
