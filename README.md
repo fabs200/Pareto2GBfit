@@ -116,7 +116,7 @@ Bootstrapping 100%|##############################################|Time: 0:00:04
 ```
 Paretofit(x=data_noise, b=500, x0=2, bootstraps=1000, method='SLSQP')
 ```
-Output: 
+Output:
 ```
 Bootstrapping 100%|##############################################|Time: 0:00:03
 +-----------+--------+--------+----------+--------+---------+---------+------+
@@ -125,6 +125,8 @@ Bootstrapping 100%|##############################################|Time: 0:00:03
 |     p     | 2.0992 | 0.0183 | 114.4548 | 0.0000 |  2.0633 |  2.1352 | 8678 |
 +-----------+--------+--------+----------+--------+---------+---------+------+
 ```
+Note that die observations of `data_noise` reduced from n=10000 to
+n=8678. This is due to the gaussian noise and Pareto constraint x>b.
 
 ### Example 2
 
@@ -170,7 +172,7 @@ Bootstrapping 100%|##############################################|Time: 0:00:03
 
 ```
 <img src="Figure_1.png" width="400">
-
+Note: In the plot window, you have the option to zoom in.
 
 5. Lets go one parameter level upwards in the GB-tree and fit the IB1 distribution
 ```

@@ -15,7 +15,7 @@ Goddness of fit measures
 ---------------------------------------------------
 """
 class gof:
-    """ Goodness of fit measures """
+    """ Goodness of fit measures and descriptive statistics data vs fit """
     def __init__(self, x, x_hat, parms, b):
         """
         :param x: model with same shape as data
@@ -24,7 +24,15 @@ class gof:
         :param b: location parameter, fixed
         """
         self.n = n = len(x)
+        self.emp_mean = np.mean(x)
+        self.emp_var = np.var(x)
+        self.pred_mean = np.mean(x_hat)
+        self.pred_var = np.var(x_hat)
         self.e = e = np.array(x) - np.array(x_hat)
+        self.soe = soe = np.sum(e)
+        self.ssr = ssr = soe**2
+        self.sse = sse = np.sum(e**2)
+        self.sst = ssr + sse
         self.mse = 1/n * np.sum(e**2)
         self.rmse = np.sqrt(1/n * np.sum(e**2))
         self.mae = 1/n * np.sum(np.abs(e))
@@ -322,6 +330,14 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
     if fit:
         u = np.array(np.random.uniform(.0, 1., len(x)))
         model = Pareto_icdf(u=u, b=b, p=np.mean(p_fit_bs))
+        soe = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).soe
+        # ssr = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).ssr
+        # sse = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).sse
+        # sst = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).sst
+        emp_mean = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).emp_mean
+        emp_var = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).emp_var
+        pred_mean = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).pred_mean
+        pred_var = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).pred_var
         mae = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).mae
         mse = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).mse
         rmse = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).rmse
@@ -331,9 +347,11 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
         n = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).n
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'n']
-            tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
-                             np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n']
+            tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
+                             np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
+                             np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
+                             np.around(pred_var, 3), np.around(n, 3)])
             print("\n{}\n".format(tbl_gof))
         if return_gofs:
             return aic, bic, mae, mse, rmse, rrmse, ll, n
@@ -546,6 +564,14 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
             model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
         else:
             model, u = IB1_icdf_ne(x=x, b=b, p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
+        soe = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
+        # ssr = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).ssr
+        # sse = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).sse
+        # sst = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).sst
+        emp_mean = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_mean
+        emp_var = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_var
+        pred_mean = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_mean
+        pred_var = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_var
         mae = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).mae
         mse = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).mse
         rmse = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).rmse
@@ -555,9 +581,11 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
         n = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'n']
-            tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
-                                    np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n']
+            tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
+                             np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
+                             np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
+                             np.around(pred_var, 3), np.around(n, 3)])
             print("\n{}\n".format(tbl_gof))
         if return_gofs:
             return aic, bic, mae, mse, rmse, rrmse, ll, n
@@ -781,6 +809,14 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
             model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
         else:
             model, u = GB1_icdf_ne(x=x, b=b, a=np.mean(a_fit_bs), p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
+        soe = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
+        # ssr = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).ssr
+        # sse = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).sse
+        # sst = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).sst
+        emp_mean = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_mean
+        emp_var = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_var
+        pred_mean = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_mean
+        pred_var = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_var
         mae = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mae
         mse = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mse
         rmse = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rmse
@@ -790,9 +826,11 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
         n = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'n']
-            tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
-                                    np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n']
+            tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
+                             np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
+                             np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
+                             np.around(pred_var, 3), np.around(n, 3)])
             print("\n{}\n".format(tbl_gof))
         if return_gofs:
             return aic, bic, mae, mse, rmse, rrmse, ll, n
@@ -1039,6 +1077,14 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
             model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
         else:
             model, u = GB_icdf_ne(x=x, b=b, a=np.mean(a_fit_bs), c=np.mean(c_fit_bs), p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
+        soe = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
+        # ssr = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).ssr
+        # sse = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).sse
+        # sst = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).sst
+        emp_mean = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_mean
+        emp_var = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_var
+        pred_mean = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_mean
+        pred_var = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_var
         mae = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mae
         mse = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mse
         rmse = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rmse
@@ -1048,9 +1094,11 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
         n = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'n']
-            tbl_gof.add_row(['GOF', np.around(aic, 4), np.around(bic, 4), np.around(mae, 4), np.around(mse, 4),
-                                    np.around(rmse, 4), np.around(rrmse, 4), np.around(ll, 4), np.around(n, 4)])
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n']
+            tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
+                             np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
+                             np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
+                             np.around(pred_var, 3), np.around(n, 3)])
             print("\n{}\n".format(tbl_gof))
         if return_gofs:
             return aic, bic, mae, mse, rmse, rrmse, ll, n
