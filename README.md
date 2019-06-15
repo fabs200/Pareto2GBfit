@@ -87,16 +87,23 @@ xmin = 0.1
 xmax = 10000
 x = np.linspace(xmin, xmax, n)
 ```
-4. Generate synthetic dataset, e.g. that is pareto distributed
+4. Noise
+```
+mu = 0
+sigma = 100
+random.seed(123)
+noise = np.random.normal(mu, sigma, size=n)
+```
+5. Generate synthetic (noised) dataset, e.g. that is pareto distributed
 ```
 data = Pareto_icdf(u, b, p)
+data_noised = Pareto_icdf(u, b, p) + noise
 ```
-5. Run optimization
+6. Run optimization for data
 ```
 Paretofit(x=data, b=500, x0=2, bootstraps=1000, method='SLSQP')
 ```
 this returns following output:
-
 ```
 Bootstrapping 100%|##############################################|Time: 0:00:04
 +-----------+--------+--------+---------+--------+---------+---------+-------+
@@ -104,6 +111,19 @@ Bootstrapping 100%|##############################################|Time: 0:00:04
 +-----------+--------+--------+---------+--------+---------+---------+-------+
 |     p     | 2.4764 | 0.0247 | 100.457 | 0.0000 |  2.4281 |  2.5247 | 10000 |
 +-----------+--------+--------+---------+--------+---------+---------+-------+
+```
+7. Run optimization for data_noised
+```
+Paretofit(x=data_noise, b=500, x0=2, bootstraps=1000, method='SLSQP')
+```
+Output: 
+```
+Bootstrapping 100%|##############################################|Time: 0:00:03
++-----------+--------+--------+----------+--------+---------+---------+------+
+| parameter | value  |   se   |    z     | P>|z|  | cilo_95 | cihi_95 |  n   |
++-----------+--------+--------+----------+--------+---------+---------+------+
+|     p     | 2.0992 | 0.0183 | 114.4548 | 0.0000 |  2.0633 |  2.1352 | 8678 |
++-----------+--------+--------+----------+--------+---------+---------+------+
 ```
 
 ### Example 2
