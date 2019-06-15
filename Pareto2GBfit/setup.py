@@ -4,12 +4,12 @@ import setuptools
 #     long_description = fh.read()
 
 setuptools.setup(
-    name="Pareto2GBfit-FN",
+    name="Pareto2GBfit",
     version="0.1",
     author="Fabian Nemeczek",
     author_email="fnemeczek@diw.de",
     description="Fitting Pareto to GB",
-    # long_description=This package provides functions to fit the distributions Pareto, IB1, GB1 and GB,
+    # long_description=README.md,
     # long_description_content_type="text/markdown",
     # url="https://github.com/pypa/sampleproject",
     packages=setuptools.find_packages(),
