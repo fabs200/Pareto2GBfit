@@ -24,10 +24,10 @@ class gof:
         :param b: location parameter, fixed
         """
         self.n = n = len(x)
-        self.emp_mean = np.mean(x)
-        self.emp_var = np.var(x)
-        self.pred_mean = np.mean(x_hat)
-        self.pred_var = np.var(x_hat)
+        self.emp_mean = np.mean(x, dtype=np.float64)
+        self.emp_var = np.var(x, dtype=np.float64)
+        self.pred_mean = np.mean(x_hat, dtype=np.float64)
+        self.pred_var = np.var(x_hat, dtype=np.float64)
         self.e = e = np.array(x) - np.array(x_hat)
         self.soe = soe = np.sum(e)
         self.ssr = ssr = soe**2
@@ -141,7 +141,7 @@ def GB_ll(parms, x, b):
 Fitting
 ---------------------------------------------------
 """
-def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
+def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
               verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
               return_parameters=False, return_gofs=False,
               plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
@@ -154,6 +154,7 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
     :param x: linspace or data, fixed
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [p] or simply (p)
+    :param weights: weight, default: numpy.ones array of same shape as x
     :param bootstraps: amount of bootstraps
     :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
     :param verbose_bootstrap: display each bootstrap
@@ -168,6 +169,33 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
     :return: fitted parameters, gof, plot
     """
     x = np.array(x)
+    n_sample = len(x[x>b])
+
+    """ Weights """
+    # if default, assign weight of ones if no W specified
+    if len(weights) == 1:
+        weights = np.ones(len(x))
+
+    # if user specified both x and W with same shape, calculate x*W
+    if len(weights) == len(x):
+        pass
+    else:
+        raise Exception("error - the length of W does not match the length of x {}".format(len(weights), len(x)))
+
+    # if weights not roundes (like Stata), raise error
+    try:
+        x_inflated = []
+        for idx, i in enumerate(x):
+            weight = np.int64(weights[idx])
+            x_extended = [i] * weight
+            x_inflated.append(x_extended)
+    except:
+        print("error - probably, your weights are no integers, round first!")
+
+    # flatten list
+    x = [item for sublist in x_inflated for item in sublist]
+    x = np.array(x)
+
     x = x[x>b]
     k = len(x)
     x0 = np.array(x0)
@@ -360,7 +388,7 @@ def Paretofit(x, b, x0, bootstraps=500, method='SLSQP',
         return np.mean(p_fit_bs), np.std(p_fit_bs)
 
 
-def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
+def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
            return_parameters=False, return_gofs=False,
            plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
@@ -373,6 +401,7 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
     :param x: linspace or data, fixed
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [p,q] or simply (p,q)
+    :param weights: weight, default: numpy.ones array of same shape as x
     :param bootstraps: amount of bootstraps
     :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
     :param verbose_bootstrap: display each bootstrap
@@ -387,6 +416,33 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
     :return: fitted parameters, gof, plot
     """
     x = np.array(x)
+    n_sample = len(x[x>b])
+
+    """ Weights """
+    # if default, assign weight of ones if no W specified
+    if len(weights) == 1:
+        weights = np.ones(len(x))
+
+    # if user specified both x and W with same shape, calculate x*W
+    if len(weights) == len(x):
+        pass
+    else:
+        raise Exception("error - the length of W does not match the length of x {}".format(len(weights), len(x)))
+
+    # if weights not roundes (like Stata), raise error
+    try:
+        x_inflated = []
+        for idx, i in enumerate(x):
+            weight = np.int64(weights[idx])
+            x_extended = [i] * weight
+            x_inflated.append(x_extended)
+    except:
+        print("error - probably, your weights are no integers, round first!")
+
+    # flatten list
+    x = [item for sublist in x_inflated for item in sublist]
+    x = np.array(x)
+
     x = x[x>b]
     k = len(x)
     x0 = np.array(x0)
@@ -560,6 +616,7 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
         plt.show()
 
     if fit:
+        # save calculation time and use Pareto_icdf which is equivalent if parms fall in Pareto branch restrictions
         if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05):
             model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
         else:
@@ -594,7 +651,7 @@ def IB1fit(x, b, x0, bootstraps=500, method='SLSQP',
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
+def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
            return_parameters=False, return_gofs=False,
            plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
@@ -607,6 +664,7 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
     :param x: linspace or data, fixed
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [a,p,q] or simply (a,p,q)
+    :param weights: weight, default: numpy.ones array of same shape as x
     :param bootstraps: amount of bootstraps
     :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
     :param verbose_bootstrap: display each bootstrap
@@ -621,6 +679,33 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
     :return: fitted parameters, gof, plot
     """
     x = np.array(x)
+    n_sample = len(x[x>b])
+
+    """ Weights """
+    # if default, assign weight of ones if no W specified
+    if len(weights) == 1:
+        weights = np.ones(len(x))
+
+    # if user specified both x and W with same shape, calculate x*W
+    if len(weights) == len(x):
+        pass
+    else:
+        raise Exception("error - the length of W does not match the length of x {}".format(len(weights), len(x)))
+
+    # if weights not roundes (like Stata), raise error
+    try:
+        x_inflated = []
+        for idx, i in enumerate(x):
+            weight = np.int64(weights[idx])
+            x_extended = [i] * weight
+            x_inflated.append(x_extended)
+    except:
+        print("error - probably, your weights are no integers, round first!")
+
+    # flatten list
+    x = [item for sublist in x_inflated for item in sublist]
+    x = np.array(x)
+
     x = x[x>b]
     k = len(x)
     x0 = np.array(x0)
@@ -805,6 +890,7 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
         plt.show()
 
     if fit:
+        # save calculation time and use Pareto_icdf which is equivalent if parms fall in Pareto branch restrictions
         if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05) and (-1.05<np.mean(a_fit_bs)<-.95) | (-1.05<a_fit<-.95):
             model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
         else:
@@ -841,7 +927,7 @@ def GB1fit(x, b, x0, bootstraps=250, method='SLSQP',
 
 
 
-def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
+def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
           return_parameters=False, return_gofs=False,
           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
@@ -854,6 +940,7 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
     :param x: linspace or data, fixed
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [a,c,p,q] or simply (q,c,p,q)
+    :param weights: weight, default: numpy.ones array of same shape as x
     :param bootstraps: amount of bootstraps
     :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
     :param verbose_bootstrap: display each bootstrap
@@ -868,6 +955,33 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
     :return: fitted parameters, gof, plot
     """
     x = np.array(x)
+    n_sample = len(x[x>b])
+
+    """ Weights """
+    # if default, assign weight of ones if no W specified
+    if len(weights) == 1:
+        weights = np.ones(len(x))
+
+    # if user specified both x and W with same shape, calculate x*W
+    if len(weights) == len(x):
+        pass
+    else:
+        raise Exception("error - the length of W does not match the length of x {}".format(len(weights), len(x)))
+
+    # if weights not roundes (like Stata), raise error
+    try:
+        x_inflated = []
+        for idx, i in enumerate(x):
+            weight = np.int64(weights[idx])
+            x_extended = [i] * weight
+            x_inflated.append(x_extended)
+    except:
+        print("error - probably, your weights are no integers, round first!")
+
+    # flatten list
+    x = [item for sublist in x_inflated for item in sublist]
+    x = np.array(x)
+
     x = x[x>b]
     k = len(x)
     x0 = np.array(x0)
@@ -1071,6 +1185,7 @@ def GBfit(x, b, x0, bootstraps=250, method='SLSQP',
         # fig.tight_layout()
         plt.show()
     if fit:
+        # save calculation time and use Pareto_icdf which is equivalent if parms fall in Pareto branch restrictions
         if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05) \
                 and (-1.05<np.mean(a_fit_bs)<-.95) | (-1.05<a_fit<-.95) \
                 and (-.05<np.mean(c_fit_bs)<.05) | (-.05<c_fit<-.05):

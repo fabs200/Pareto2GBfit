@@ -37,7 +37,6 @@ Pareto_data = Pareto_icdf(u, b, p)
 # Pareto simulated data + noise
 Pareto_data_noise = Pareto_icdf(u, b, p) + noise
 
-
 # test fits with Pareto_data plots
 Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=10, verbose=True, method='L-BFGS-B', plot=True)
 Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=10, verbose=True, method='SLSQP', plot=True)
@@ -67,16 +66,16 @@ b = 100000
 
 # describe data
 print("netwealth\n", describe(netwealth))
-
+w = np.ones(len(netwealth)) * 5
 Paretofit(x=netwealth, b=100000, x0=1, bootstraps=1000, method='SLSQP', fit=True, plot=True, plot_cosmetics={'bins': 500})
 IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=1000, method='SLSQP', fit=True, plot=True, plot_cosmetics={'bins': 500})
 IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=1000, method='L-BFGS-B', fit=True, plot=True, plot_cosmetics={'bins': 500}, basinhopping_options={'niter': 50, 'stepsize': .75})
 
-GB1fit(x=netwealth, b=100000, x0=(-.5,1,1), bootstraps=100, method='SLSQP', plot=True)
-GBfit(x=netwealth, b=100000, x0=(-.5,.1,1,1), bootstraps=100, method='SLSQP', plot=True)
+GB1fit(x=netwealth, b=100000, x0=(-.5,1,1), weights=w, bootstraps=100, method='SLSQP', plot=True)
+GBfit(x=netwealth, b=100000, x0=(-.5,.1,1,1), weights=w, bootstraps=100, method='SLSQP', plot=True)
 
 basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
-                                'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}
+                      'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}
 
 
 # save fitted parameters
