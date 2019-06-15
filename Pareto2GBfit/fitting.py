@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import progressbar
 from prettytable import PrettyTable
 from .distributions import Pareto_pdf, IB1_pdf, GB1_pdf, GB_pdf, Pareto_icdf, IB1_icdf_ne, GB1_icdf_ne, GB_icdf_ne
+from .testing import *
 
 """ 
 ---------------------------------------------------
@@ -138,7 +139,7 @@ def GB_ll(parms, x, b):
 
 """ 
 ---------------------------------------------------
-Fitting
+Fitting Functions
 ---------------------------------------------------
 """
 def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
@@ -355,6 +356,8 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         # fig.tight_layout()
         plt.show()
 
+    if return_gofs:
+        fit = True
     if fit:
         u = np.array(np.random.uniform(.0, 1., len(x)))
         model = Pareto_icdf(u=u, b=b, p=np.mean(p_fit_bs))
@@ -381,8 +384,10 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
                              np.around(pred_var, 3), np.around(n, 3)])
             print("\n{}\n".format(tbl_gof))
+
         if return_gofs:
-            return aic, bic, mae, mse, rmse, rrmse, ll, n
+            return_parameters = False
+            return np.mean(p_fit_bs), np.std(p_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, n
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs)
@@ -615,6 +620,8 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         # fig.tight_layout()
         plt.show()
 
+    if return_gofs:
+        fit = True
     if fit:
         # save calculation time and use Pareto_icdf which is equivalent if parms fall in Pareto branch restrictions
         if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05):
@@ -644,8 +651,10 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
                              np.around(pred_var, 3), np.around(n, 3)])
             print("\n{}\n".format(tbl_gof))
+
         if return_gofs:
-            return aic, bic, mae, mse, rmse, rrmse, ll, n
+            return_parameters = False
+            return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, n
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
@@ -889,6 +898,8 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         # fig.tight_layout()
         plt.show()
 
+    if return_gofs:
+        fit = True
     if fit:
         # save calculation time and use Pareto_icdf which is equivalent if parms fall in Pareto branch restrictions
         if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05) and (-1.05<np.mean(a_fit_bs)<-.95) | (-1.05<a_fit<-.95):
@@ -918,13 +929,13 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
                              np.around(pred_var, 3), np.around(n, 3)])
             print("\n{}\n".format(tbl_gof))
+
         if return_gofs:
-            return aic, bic, mae, mse, rmse, rrmse, ll, n
+            return_parameters = False
+            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, n
 
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
-
-
 
 
 def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
@@ -1184,6 +1195,9 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         ax.legend(['GB model', 'fit'])
         # fig.tight_layout()
         plt.show()
+
+    if return_gofs:
+        fit = True
     if fit:
         # save calculation time and use Pareto_icdf which is equivalent if parms fall in Pareto branch restrictions
         if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05) \
@@ -1215,12 +1229,193 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
                              np.around(pred_var, 3), np.around(n, 3)])
             print("\n{}\n".format(tbl_gof))
+
         if return_gofs:
-            return aic, bic, mae, mse, rmse, rrmse, ll, n
+            return_parameters = False
+            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), \
+                   np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, n
 
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
+
+""" 
+---------------------------------------------------
+Pareto branch fitting
+---------------------------------------------------
+"""
+
+def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', verbose_bootstrap=False,
+                    ci=True, verbose=True, fit=False, plot=False, return_parameters=False, return_gofs=False,
+                    rejecting_criteria="LRtest",
+          plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
+    basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
+                         'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
+          SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+                         'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
+    """
+    This function fits the Pareto branch upwards, starting from the Pareto distribution. This function is a wrapper that
+    calls all above fitting functions, runs all optimizations and compares the parameters according the Pareto branch
+    restrictions. Comparing the Pareto distribution to the IB1, the LRtest (AIC) decides, whether there is a improvement.
+    If the IB1 delivers a better fit, we go one level upwards and compare the IB1 vs the GB1 and so on.
+    Following comparison structure: compare 1v2 -> 2 improvement -> compare 2v3 -> 3 improvement -> compare 3v4
+    :param x: as above
+    :param b: as above
+    :param x0: either pass an 1x5 array (GB init guess structure) OR pass [[p_guess], [p_guess, q_guess], [a_guess, p_guess, q_guess], [a_guess, c_guess, p_guess, q_guess]]
+    :param weights: as above
+    :param bootstraps: either 1x1 OR 1x2 array (1st arg: Pareto+IB1, 2nd arg: GB1+GB) OR pass 1x4 array [Pareto_bs, IB1_bs, GB1_bs, GB_bs]
+    :param method: as above
+    :param verbose_bootstrap: as above
+    :param ci: as above
+    :param verbose: as above
+    :param fit: as above
+    :param plot: as above
+    :param return_parameters: as above and parameters, se of all distributions are returned
+    :param return_gofs: as above
+    :param plot_cosmetics: as above
+    :param basinhopping_options: as above
+    :param SLSQP_options: as above
+    :return:
+    """
+
+    # Prepare args for passing to below fitting functions
+    # TODO: preparation passing to
+    # x0
+    try:
+        x0_temp = [item for sublist in x0 for item in sublist]
+        if len(x0_temp) == 10:
+            Pareto_x0, IB1_x0, GB1_x0, GB_x0 = x0_temp[0], x0_temp[1:3], x0_temp[3:5], x0_temp[6:]
+    except TypeError:
+        if len(x0) == 4:
+            Pareto_x0, IB1_x0, GB1_x0, GB_x0 = x0[0], x0[:2], x0[:3], x0[:4]
+        else:
+            raise Exception("error - x0 not correctly specified")
+
+    # bootstraps
+    try:
+        if int(bootstraps):
+            Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps, bootstraps, bootstraps, bootstraps
+    except TypeError:
+        if len(bootstraps) == 4:
+            Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps[0], bootstraps[1], bootstraps[2], bootstraps[3]
+        elif len(bootstraps) == 2:
+            Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps[0], bootstraps[0], bootstraps[1], bootstraps[1]
+        else:
+            raise Exception("error - bootstrap not correctly specified")
+
+
+
+    Pareto_fit = Paretofit(x=x, b=b, x0=Pareto_x0, weights=weights, bootstraps=Pareto_bs, method=method,
+                           return_parameters=True, return_gofs=True,
+                           verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
+                           plot_cosmetics={'bins': plot_cosmetics['bins'], 'col_fit': plot_cosmetics['blue'],
+                                           'col_model': plot_cosmetics['col_model']},
+                           basinhopping_options={'niter': basinhopping_options['niter'], 'T': basinhopping_options['T'],
+                                                 'stepsize': basinhopping_options['stepsize'], 'take_step': basinhopping_options['take_step'],
+                                                 'accept_test': basinhopping_options['accept_test'], 'callback': basinhopping_options['callback'],
+                                                 'interval': basinhopping_options['interval'], 'disp': basinhopping_options['disp'],
+                                                 'niter_success': basinhopping_options['niter_success'], 'seed': basinhopping_options['seed']},
+                           SLSQP_options={'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'], 'callback': SLSQP_options['callback'],
+                                          'func': SLSQP_options['func'], 'maxiter': SLSQP_options['maxiter'], 'ftol': SLSQP_options['ftol'],
+                                          'iprint': SLSQP_options['iprint'], 'disp': SLSQP_options['disp'], 'eps': SLSQP_options['eps']})
+
+    IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=np.array([1]), bootstraps=IB1_bs, method=method,
+                     return_parameters=True, return_gofs=True,
+                     verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
+                     plot_cosmetics={'bins': plot_cosmetics['bins'], 'col_fit': plot_cosmetics['blue'],
+                                     'col_model': plot_cosmetics['col_model']},
+                     basinhopping_options={'niter': basinhopping_options['niter'],
+                                           'T': basinhopping_options['T'],
+                                           'stepsize': basinhopping_options['stepsize'],
+                                           'take_step': basinhopping_options['take_step'],
+                                           'accept_test': basinhopping_options['accept_test'],
+                                           'callback': basinhopping_options['callback'],
+                                           'interval': basinhopping_options['interval'],
+                                           'disp': basinhopping_options['disp'],
+                                           'niter_success': basinhopping_options['niter_success'],
+                                           'seed': basinhopping_options['seed']},
+                     SLSQP_options={'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'],
+                                    'callback': SLSQP_options['callback'], 'func': SLSQP_options['func'],
+                                    'maxiter': SLSQP_options['maxiter'], 'ftol': SLSQP_options['ftol'],
+                                    'iprint': SLSQP_options['iprint'], 'disp': SLSQP_options['disp'],
+                                    'eps': SLSQP_options['eps']})
+
+    GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=np.array([1]), bootstraps=GB1_bs, method=method,
+                     return_parameters=True, return_gofs=True,
+                     verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
+                     plot_cosmetics={'bins': plot_cosmetics['bins'], 'col_fit': plot_cosmetics['blue'],
+                                     'col_model': plot_cosmetics['col_model']},
+                     basinhopping_options={'niter': basinhopping_options['niter'], 'T': basinhopping_options['T'],
+                                           'stepsize': basinhopping_options['stepsize'],
+                                           'take_step': basinhopping_options['take_step'],
+                                           'accept_test': basinhopping_options['accept_test'],
+                                           'callback': basinhopping_options['callback'],
+                                           'interval': basinhopping_options['interval'],
+                                           'disp': basinhopping_options['disp'],
+                                           'niter_success': basinhopping_options['niter_success'],
+                                           'seed': basinhopping_options['seed']},
+                     SLSQP_options={'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'],
+                                    'callback': SLSQP_options['callback'],
+                                    'func': SLSQP_options['func'],
+                                    'maxiter': SLSQP_options['maxiter'],
+                                    'ftol': SLSQP_options['ftol'],
+                                    'iprint': SLSQP_options['iprint'],
+                                    'disp': SLSQP_options['disp'],
+                                    'eps': SLSQP_options['eps']})
+
+    GB_fit = GBfit(x=x, b=b, x0=GB_x0, weights=np.array([1]), bootstraps=GB_bs, method=method,
+                   return_parameters=True, return_gofs=True,
+                   verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
+                   plot_cosmetics={'bins': plot_cosmetics['bins'],
+                                   'col_fit': plot_cosmetics['blue'],
+                                   'col_model': plot_cosmetics['col_model']},
+                   basinhopping_options={'niter': basinhopping_options['niter'],
+                                         'T': basinhopping_options['T'],
+                                         'stepsize': basinhopping_options['stepsize'],
+                                         'take_step': basinhopping_options['take_step'],
+                                         'accept_test': basinhopping_options['accept_test'],
+                                         'callback': basinhopping_options['callback'],
+                                         'interval': basinhopping_options['interval'],
+                                         'disp': basinhopping_options['disp'],
+                                         'niter_success': basinhopping_options['niter_success'],
+                                         'seed': basinhopping_options['seed']},
+                   SLSQP_options={'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'],
+                                  'callback': SLSQP_options['callback'], 'func': SLSQP_options['func'],
+                                  'maxiter': SLSQP_options['maxiter'], 'ftol': SLSQP_options['ftol'],
+                                  'iprint': SLSQP_options['iprint'], 'disp': SLSQP_options['disp'],
+                                  'eps': SLSQP_options['eps']})
+    # saving parameters
+    # TODO: save parameters here
+
+    # if rejecting_criteria == "LRtest":
+    # TODO: LRtest
+
+    #     # 1. LRtest Pareto vs IB1
+    #     LRtest(Pareto(x=x, b=b, p=p_fit1).LL, IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL, df=2)
+    #     # 2. LRtest IB1 vs GB1
+    #     LRtest(IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL, GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, df=3)
+    #     # 3. LRtest GB1 vs GB
+    #     LRtest(GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL, df=4)
+    #
+    # if rejecting_criteria == "AIC":
+
+        # 1. LRtest Pareto vs IB1
+
+        # 2. LRtest IB1 vs GB1
+
+        # 3. LRtest GB1 vs GB
+
+
+    # TODO: all fit functions in row
+    # TODO: LRtest (AIC) decision
+    # TODO: return_parameters
+    # TODO: result summary
+
+""" 
+---------------------------------------------------
+Pareto and IB1: se extracting
+---------------------------------------------------
+"""
 
 def Pareto_extract_se(x, b, p_fitted, method=1, verbose=True, hess=False):
     """

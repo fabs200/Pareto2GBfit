@@ -87,3 +87,11 @@ a_fit3, a_se3, p_fit3, p_se3, q_fit3, q_se3 = GB1fit(x=netwealth, b=100000, x0=(
 LRtest(Pareto(x=netwealth, b=b, p=p_fit1).LL, IB1(x=netwealth, b=b, p=p_fit2, q=q_fit2).LL, df=2)
 LRtest(Pareto(x=netwealth, b=b, p=p_fit1).LL, GB1(x=netwealth, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, df=3)
 LRtest(IB1(x=netwealth, b=b, p=p_fit2, q=q_fit2).LL, GB1(x=netwealth, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, df=3)
+
+
+Paretofit(x=netwealth, b=100000, x0=1, bootstraps=100, method='SLSQP', verbose=False, return_parameters=True, return_gofs=True)
+IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=100, method='SLSQP', verbose=False, return_parameters=True, return_gofs=True)
+GB1fit(x=netwealth, b=100000, x0=(-.1,1,1), bootstraps=100, method='SLSQP', verbose=False, return_parameters=True, return_gofs=True)
+# XXXXXXX TEST
+GBfit(x=netwealth, b=100000, x0=(-.1,.1,1,1), bootstraps=4, method='SLSQP', verbose=False, return_parameters=True, return_gofs=True)
+# XXXXXXX TEST
