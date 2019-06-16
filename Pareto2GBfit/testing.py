@@ -1,6 +1,5 @@
 from scipy.stats.distributions import chi2
 from .distributions import *
-from .fitting import *
 from prettytable import PrettyTable
 
 # def LRtest(llmin, llmax):
@@ -43,7 +42,7 @@ class GB:
         self.LL = n*(np.log(np.abs(a)) - a*p*np.log(b) - lnb) + (a*p-1)*sum1 + (q-1)*sum2 - (p+q)*sum3
 
 class LRtest:
-    def __init__(self, LL1, LL2, df, verbose=True, return_parameters=False):
+    def __init__(self, LL1, LL2, df, verbose=True):
         self.w = w = 2*(LL1 - LL2)
         self.pval = pval = chi2.sf(w, df=df)
         tbl = PrettyTable()
@@ -51,5 +50,3 @@ class LRtest:
         tbl.add_row(['chi2({}) = '.format(df), '{:.4f}'.format(w)])
         tbl.add_row(['Prob > chi2', '{:.4f}'.format(pval)])
         if verbose: print(tbl)
-        if return_parameters:
-            return w, pval

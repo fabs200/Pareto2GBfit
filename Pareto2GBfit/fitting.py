@@ -10,6 +10,7 @@ from prettytable import PrettyTable
 from .distributions import Pareto_pdf, IB1_pdf, GB1_pdf, GB_pdf, Pareto_icdf, IB1_icdf_ne, GB1_icdf_ne, GB_icdf_ne
 from .testing import *
 
+
 """ 
 ---------------------------------------------------
 Goddness of fit measures
@@ -938,6 +939,13 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
+""" 
+---------------------------------------------------
+Pareto branch fitting
+---------------------------------------------------
+"""
+
+
 def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
           return_parameters=False, return_gofs=False,
@@ -1238,13 +1246,6 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
-
-""" 
----------------------------------------------------
-Pareto branch fitting
----------------------------------------------------
-"""
-
 def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', verbose_bootstrap=False,
                     ci=True, verbose=True, fit=False, plot=False, return_parameters=False, return_gofs=False,
                     rejecting_criteria="LRtest",
@@ -1278,7 +1279,7 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
     :return:
     """
 
-    # Prepare args for passing to below fitting functions
+    ### Prepare args for passing to below fitting functions
     # TODO: preparation passing to
     # x0
     try:
@@ -1308,21 +1309,34 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
     Pareto_fit = Paretofit(x=x, b=b, x0=Pareto_x0, weights=weights, bootstraps=Pareto_bs, method=method,
                            return_parameters=True, return_gofs=True,
                            verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
-                           plot_cosmetics={'bins': plot_cosmetics['bins'], 'col_fit': plot_cosmetics['blue'],
+                           plot_cosmetics={'bins': plot_cosmetics['bins'],
+                                           'col_fit': plot_cosmetics['blue'],
                                            'col_model': plot_cosmetics['col_model']},
-                           basinhopping_options={'niter': basinhopping_options['niter'], 'T': basinhopping_options['T'],
-                                                 'stepsize': basinhopping_options['stepsize'], 'take_step': basinhopping_options['take_step'],
-                                                 'accept_test': basinhopping_options['accept_test'], 'callback': basinhopping_options['callback'],
-                                                 'interval': basinhopping_options['interval'], 'disp': basinhopping_options['disp'],
-                                                 'niter_success': basinhopping_options['niter_success'], 'seed': basinhopping_options['seed']},
-                           SLSQP_options={'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'], 'callback': SLSQP_options['callback'],
-                                          'func': SLSQP_options['func'], 'maxiter': SLSQP_options['maxiter'], 'ftol': SLSQP_options['ftol'],
-                                          'iprint': SLSQP_options['iprint'], 'disp': SLSQP_options['disp'], 'eps': SLSQP_options['eps']})
+                           basinhopping_options={'niter': basinhopping_options['niter'],
+                                                 'T': basinhopping_options['T'],
+                                                 'stepsize': basinhopping_options['stepsize'],
+                                                 'take_step': basinhopping_options['take_step'],
+                                                 'accept_test': basinhopping_options['accept_test'],
+                                                 'callback': basinhopping_options['callback'],
+                                                 'interval': basinhopping_options['interval'],
+                                                 'disp': basinhopping_options['disp'],
+                                                 'niter_success': basinhopping_options['niter_success'],
+                                                 'seed': basinhopping_options['seed']},
+                           SLSQP_options={'jac': SLSQP_options['jac'],
+                                          'tol': SLSQP_options['tol'],
+                                          'callback': SLSQP_options['callback'],
+                                          'func': SLSQP_options['func'],
+                                          'maxiter': SLSQP_options['maxiter'],
+                                          'ftol': SLSQP_options['ftol'],
+                                          'iprint': SLSQP_options['iprint'],
+                                          'disp': SLSQP_options['disp'],
+                                          'eps': SLSQP_options['eps']})
 
     IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=np.array([1]), bootstraps=IB1_bs, method=method,
                      return_parameters=True, return_gofs=True,
                      verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
-                     plot_cosmetics={'bins': plot_cosmetics['bins'], 'col_fit': plot_cosmetics['blue'],
+                     plot_cosmetics={'bins': plot_cosmetics['bins'],
+                                     'col_fit': plot_cosmetics['blue'],
                                      'col_model': plot_cosmetics['col_model']},
                      basinhopping_options={'niter': basinhopping_options['niter'],
                                            'T': basinhopping_options['T'],
@@ -1334,18 +1348,24 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
                                            'disp': basinhopping_options['disp'],
                                            'niter_success': basinhopping_options['niter_success'],
                                            'seed': basinhopping_options['seed']},
-                     SLSQP_options={'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'],
-                                    'callback': SLSQP_options['callback'], 'func': SLSQP_options['func'],
-                                    'maxiter': SLSQP_options['maxiter'], 'ftol': SLSQP_options['ftol'],
-                                    'iprint': SLSQP_options['iprint'], 'disp': SLSQP_options['disp'],
+                     SLSQP_options={'jac': SLSQP_options['jac'],
+                                    'tol': SLSQP_options['tol'],
+                                    'callback': SLSQP_options['callback'],
+                                    'func': SLSQP_options['func'],
+                                    'maxiter': SLSQP_options['maxiter'],
+                                    'ftol': SLSQP_options['ftol'],
+                                    'iprint': SLSQP_options['iprint'],
+                                    'disp': SLSQP_options['disp'],
                                     'eps': SLSQP_options['eps']})
 
     GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=np.array([1]), bootstraps=GB1_bs, method=method,
                      return_parameters=True, return_gofs=True,
                      verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
-                     plot_cosmetics={'bins': plot_cosmetics['bins'], 'col_fit': plot_cosmetics['blue'],
+                     plot_cosmetics={'bins': plot_cosmetics['bins'],
+                                     'col_fit': plot_cosmetics['blue'],
                                      'col_model': plot_cosmetics['col_model']},
-                     basinhopping_options={'niter': basinhopping_options['niter'], 'T': basinhopping_options['T'],
+                     basinhopping_options={'niter': basinhopping_options['niter'],
+                                           'T': basinhopping_options['T'],
                                            'stepsize': basinhopping_options['stepsize'],
                                            'take_step': basinhopping_options['take_step'],
                                            'accept_test': basinhopping_options['accept_test'],
@@ -1354,7 +1374,8 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
                                            'disp': basinhopping_options['disp'],
                                            'niter_success': basinhopping_options['niter_success'],
                                            'seed': basinhopping_options['seed']},
-                     SLSQP_options={'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'],
+                     SLSQP_options={'jac': SLSQP_options['jac'],
+                                    'tol': SLSQP_options['tol'],
                                     'callback': SLSQP_options['callback'],
                                     'func': SLSQP_options['func'],
                                     'maxiter': SLSQP_options['maxiter'],
@@ -1379,37 +1400,111 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
                                          'disp': basinhopping_options['disp'],
                                          'niter_success': basinhopping_options['niter_success'],
                                          'seed': basinhopping_options['seed']},
-                   SLSQP_options={'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'],
-                                  'callback': SLSQP_options['callback'], 'func': SLSQP_options['func'],
-                                  'maxiter': SLSQP_options['maxiter'], 'ftol': SLSQP_options['ftol'],
-                                  'iprint': SLSQP_options['iprint'], 'disp': SLSQP_options['disp'],
+                   SLSQP_options={'jac': SLSQP_options['jac'],
+                                  'tol': SLSQP_options['tol'],
+                                  'callback': SLSQP_options['callback'],
+                                  'func': SLSQP_options['func'],
+                                  'maxiter': SLSQP_options['maxiter'],
+                                  'ftol': SLSQP_options['ftol'],
+                                  'iprint': SLSQP_options['iprint'],
+                                  'disp': SLSQP_options['disp'],
                                   'eps': SLSQP_options['eps']})
-    # saving parameters
-    # TODO: save parameters here
+    # unpack parameters
+    p_fit1, p_se1 = Pareto_fit
+    p_fit2, p_se2, q_fit2, q_se2 = IB1_fit
+    a_fit3, a_se3, p_fit3, p_se3, q_fit3, q_se3 = GB1_fit
+    a_fit4, a_se4, c_fit4, c_se4, p_fit4, p_se4, q_fit4, q_se4 = GB_fit
 
-    # if rejecting_criteria == "LRtest":
+    if rejecting_criteria == "LRtest":
+        alpha = .05
     # TODO: LRtest
-
-    #     # 1. LRtest Pareto vs IB1
-    #     LRtest(Pareto(x=x, b=b, p=p_fit1).LL, IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL, df=2)
-    #     # 2. LRtest IB1 vs GB1
-    #     LRtest(IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL, GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, df=3)
-    #     # 3. LRtest GB1 vs GB
-    #     LRtest(GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL, df=4)
-    #
-    # if rejecting_criteria == "AIC":
-
         # 1. LRtest Pareto vs IB1
-
+        LRtest1v2 = LRtest(Pareto(x=x, b=b, p=p_fit1).LL,
+                                IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
+                                df=2, verbose=False)
         # 2. LRtest IB1 vs GB1
-
+        LRtest2v3 = LRtest(IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
+                                GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
+                                df=3, verbose=False)
         # 3. LRtest GB1 vs GB
+        LRtest3v4 = LRtest(GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
+                                GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
+                                df=4, verbose=False)
 
+        # 1v2, 2v3, 3v4
+        Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
+        GB_remaining = False
+        if alpha < LRtest1v2.pval:
+            if alpha < LRtest2v3.pval:
+                bestmodel, Pareto_marker = '--', 'IB1'
+                if alpha < LRtest3v4.pval:
+                    GB_bm, bestmodel, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
+                    Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
+                else:
+                    bestmodel, IB1_marker, GB1_marker = '--', 'XX', 'GB1'
+            else:
+                IB1_bm, bestmodel, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
+        else:
+            Pareto_bm, bestmodel, Pareto_marker = 'Pareto', 'Pareto', 'XX'
 
-    # TODO: all fit functions in row
-    # TODO: LRtest (AIC) decision
-    # TODO: return_parameters
-    # TODO: result summary
+        # save LRtest results to tbl
+        tbl = PrettyTable()
+        tbl.field_names = ['comparison', 'H0', 'LR test', '', 'stop', 'best model']
+        tbl.add_row(['Pareto vs IB1', 'q=1', 'chi2({}) = '.format(2), '{:.4f}'.format(LRtest1v2.w), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.add_row(['', '', 'Prob > chi2', '{:.4f}'.format(LRtest1v2.pval), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.add_row(['IB1 vs GB1', 'a=-1', 'chi2({}) = '.format(3), '{:.4f}'.format(LRtest2v3.w), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['', '', 'Prob > chi2', '{:.4f}'.format(LRtest2v3.pval), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['GB1 vs GB', 'c=0', 'chi2({}) = '.format(4), '{:.4f}'.format(LRtest3v4.w), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+        tbl.add_row(['', '', 'Prob > chi2', '{:.4f}'.format(LRtest3v4.pval), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+        if GB_remaining:
+            tbl.add_row(['GB', '', '', '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
+        print(tbl)
+
+    if rejecting_criteria == "AIC":
+
+        # unpack aic
+        Pareto_aic = Pareto_fit[2]
+        IB1_aic = IB1_fit[4]
+        GB1_aic = GB1_fit[6]
+        GB_aic = GB_fit[8]
+
+        # 1v2, 2v3, 3v4
+        Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
+        GB_remaining = False
+        if Pareto_aic > IB1_aic:
+            if IB1_aic > GB1_aic:
+                bestmodel, Pareto_marker = '--', 'IB1'
+                if GB1_aic > GB_aic:
+                    GB_bm, bestmodel, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
+                    Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
+                else:
+                    GB1_bm, bestmodel, IB1_marker, GB1_marker = 'GB1', 'GB1', '--', 'XX'
+            else:
+                IB1_bm, bestmodel, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
+        else:
+            Pareto_bm, bestmodel, Pareto_marker = 'Pareto', 'Pareto', 'XX'
+
+        # save LRtest results to tbl
+        tbl = PrettyTable()
+        tbl.field_names = ['comparison', 'AIC1', 'AIC2', 'stop', 'best model']
+        tbl.add_row(['Pareto vs IB1', '{:.3f}'.format(Pareto_aic), '{:.3f}'.format(IB1_aic), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.add_row(['IB1 vs GB1', '{:.3f}'.format(IB1_aic), '{:.3f}'.format(GB1_aic), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['GB1 vs GB', '{:.3f}'.format(GB1_aic), '{:.3f}'.format(GB_aic), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+
+        if GB_remaining:
+            tbl.add_row(['GB', '{:.3f}'.format(GB_aic), '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
+        print(tbl)
+
+    if return_parameters:
+            if bestmodel == 'Pareto':
+                return Pareto_fit
+            if bestmodel == 'IB1':
+                return IB1_fit
+            if bestmodel == 'GB1':
+                return GB1_fit
+            if bestmodel == 'GB':
+                return GB_fit
+
 
 """ 
 ---------------------------------------------------
@@ -1496,3 +1591,21 @@ def IB1_extract_se(x, fitted_parms, method, dx, display, display_hessian):
     if display_hessian == True:
         print("Hessian Matrix:", hess)
     return b_se, p_se, q_se
+
+
+
+# ⣿⠄⡇⢸⣟⠄⠁⢸⡽⠖⠛⠈⡉⣉⠉⠋⣁⢘⠉⢉⠛⡿⢿⣿⣿⣿⣿⣿⣿⣿
+# ⣷⣶⣷⣤⠄⣠⠖⠁⠄⠂⠁⠄⠄⠉⠄⠄⠎⠄⠠⠎⢐⠄⢑⣛⠻⣿⣿⣿⣿⣿
+# ⣿⣿⣿⠓⠨⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠈⠐⠅⠄⠉⠄⠗⠆⣸⣿⣿⣿⣿⣿
+# ⣿⣿⣿⡣⠁⠄⠄⠄⠄⠄⠄⠄⠄⠄⢰⣤⣦⠄⠄⠄⠄⠄⠄⠄⡀⡙⣿⣿⣿⣿
+# ⣿⣿⡛⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠔⠿⡿⠿⠒⠄⠠⢤⡀⡀⠄⠁⠄⢻⣿⣿⣿
+# ⣿⣿⠄⠄⠄⠄⠄⠄⣠⡖⠄⠁⠁⠄⠄⠄⠄⠄⠄⠄⣽⠟⡖⠄⠄⠄⣼⣿⣿⣿
+# ⣿⣿⠄⠄⠄⠄⠄⠄⢠⣠⣀⠄⠄⠄⠄⢀⣾⣧⠄⠂⠸⣈⡏⠄⠄⠄⣿⣿⣿⣿
+# ⣿⣿⡞⠄⠄⠄⠄⠄⢸⣿⣶⣶⣶⣶⣶⡿⢻⡿⣻⣶⣿⣿⡇⠄⠄⠄⣿⣿⣿⣿
+# ⣿⣿⡷⡂⠄⠄⠁⠄⠸⣿⣿⣿⣿⣿⠟⠛⠉⠉⠙⠛⢿⣿⡇⠄⠄⢀⣿⣿⣿⣿
+# ⣶⣶⠃⠄⠄⠄⠄⠄⠄⣾⣿⣿⡿⠁⣀⣀⣤⣤⣤⣄⢈⣿⡇⠄⠄⢸⣿⣿⣿⣿
+# ⣿⣯⠄⠄⠄⠄⠄⠄⠄⢻⣿⣿⣷⣶⣿⣿⣥⣬⣿⣿⣟⣿⠃⠄⠨⠺⢿⣿⣿⣿
+# ⠱⠂⠄⠄⠄⠄⠄⠄⠄⣬⣸⡝⠿⢿⣿⡿⣿⠻⠟⠻⢫⡁⠄⠄⠄⡐⣾⣿⣿⣿
+# ⡜⠄⠄⠄⠄⠄⠆⡐⡇⢿⣽⣻⣷⣦⣧⡀⡀⠄⠄⣴⣺⡇⠄⠁⠄⢣⣿⣿⣿⣿
+# ⠡⠱⠄⠄⠡⠄⢠⣷⠆⢸⣿⣿⣿⣿⣿⣿⣷⣿⣾⣿⣿⡇⠄⠄⠠⠁⠿⣿⣿⣿
+# ⢀⣲⣧⣷⣿⢂⣄⡉⠄⠘⠿⣿⣿⣿⡟⣻⣯⠿⠟⠋⠉⢰⢦⠄⠊⢾⣷⣮⣽⣛
