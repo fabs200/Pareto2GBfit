@@ -109,3 +109,10 @@ LRtest2v3 = LRtest(IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
 LRtest3v4 = LRtest(GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
                    GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
                    df=4, verbose=False)
+
+Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejecting_criteria='LRtest')
+Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejecting_criteria='LRtest')
+Paretobranchfit(x=Pareto_data, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejecting_criteria='LRtest')
+Paretobranchfit(x=Pareto_data_noise, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejecting_criteria='LRtest')
+
+

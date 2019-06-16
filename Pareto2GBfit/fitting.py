@@ -32,9 +32,9 @@ class gof:
         self.pred_var = np.var(x_hat, dtype=np.float64)
         self.e = e = np.array(x) - np.array(x_hat)
         self.soe = soe = np.sum(e)
-        self.ssr = ssr = soe**2
-        self.sse = sse = np.sum(e**2)
-        self.sst = ssr + sse
+        # self.ssr = ssr = soe**2
+        # self.sse = sse = np.sum(e**2)
+        # self.sst = ssr + sse
         self.mse = 1/n * np.sum(e**2)
         self.rmse = np.sqrt(1/n * np.sum(e**2))
         self.mae = 1/n * np.sum(np.abs(e))
@@ -1247,7 +1247,7 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', verbose_bootstrap=False,
-                    ci=True, verbose=True, fit=False, plot=False, return_parameters=False, return_gofs=False,
+                    ci=False, verbose=False, fit=False, plot=False, return_parameters=False, return_gofs=False,
                     rejecting_criteria="LRtest",
           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
@@ -1280,7 +1280,6 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
     """
 
     ### Prepare args for passing to below fitting functions
-    # TODO: preparation passing to
     # x0
     try:
         x0_temp = [item for sublist in x0 for item in sublist]
@@ -1288,7 +1287,10 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
             Pareto_x0, IB1_x0, GB1_x0, GB_x0 = x0_temp[0], x0_temp[1:3], x0_temp[3:5], x0_temp[6:]
     except TypeError:
         if len(x0) == 4:
-            Pareto_x0, IB1_x0, GB1_x0, GB_x0 = x0[0], x0[:2], x0[:3], x0[:4]
+            Pareto_x0 = x0[3]
+            IB1_x0 = x0[2:4]
+            GB1_x0 = (x0[0], x0[2], x0[3])
+            GB_x0 = x0
         else:
             raise Exception("error - x0 not correctly specified")
 
@@ -1304,120 +1306,47 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
         else:
             raise Exception("error - bootstrap not correctly specified")
 
+    # plot_options
+    plt_cosm = {'bins': plot_cosmetics['bins'], 'col_fit': plot_cosmetics['col_fit'], 'col_model': plot_cosmetics['col_model']}
+    # basinhopping options
+    bh_opts = {'niter': basinhopping_options['niter'], 'T': basinhopping_options['T'], 'stepsize': basinhopping_options['stepsize'],
+             'take_step': basinhopping_options['take_step'], 'accept_test': basinhopping_options['accept_test'],
+             'callback': basinhopping_options['callback'], 'interval': basinhopping_options['interval'],
+             'disp': basinhopping_options['disp'], 'niter_success': basinhopping_options['niter_success'],
+             'seed': basinhopping_options['seed']}
+    # SLSQP options
+    slsqp_opts = {'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'], 'callback': SLSQP_options['callback'],
+                  'func': SLSQP_options['func'], 'maxiter': SLSQP_options['maxiter'], 'ftol': SLSQP_options['ftol'],
+                  'iprint': SLSQP_options['iprint'], 'disp': SLSQP_options['disp'], 'eps': SLSQP_options['eps']}
 
 
     Pareto_fit = Paretofit(x=x, b=b, x0=Pareto_x0, weights=weights, bootstraps=Pareto_bs, method=method,
                            return_parameters=True, return_gofs=True,
                            verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
-                           plot_cosmetics={'bins': plot_cosmetics['bins'],
-                                           'col_fit': plot_cosmetics['blue'],
-                                           'col_model': plot_cosmetics['col_model']},
-                           basinhopping_options={'niter': basinhopping_options['niter'],
-                                                 'T': basinhopping_options['T'],
-                                                 'stepsize': basinhopping_options['stepsize'],
-                                                 'take_step': basinhopping_options['take_step'],
-                                                 'accept_test': basinhopping_options['accept_test'],
-                                                 'callback': basinhopping_options['callback'],
-                                                 'interval': basinhopping_options['interval'],
-                                                 'disp': basinhopping_options['disp'],
-                                                 'niter_success': basinhopping_options['niter_success'],
-                                                 'seed': basinhopping_options['seed']},
-                           SLSQP_options={'jac': SLSQP_options['jac'],
-                                          'tol': SLSQP_options['tol'],
-                                          'callback': SLSQP_options['callback'],
-                                          'func': SLSQP_options['func'],
-                                          'maxiter': SLSQP_options['maxiter'],
-                                          'ftol': SLSQP_options['ftol'],
-                                          'iprint': SLSQP_options['iprint'],
-                                          'disp': SLSQP_options['disp'],
-                                          'eps': SLSQP_options['eps']})
+                           plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
     IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=np.array([1]), bootstraps=IB1_bs, method=method,
                      return_parameters=True, return_gofs=True,
                      verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
-                     plot_cosmetics={'bins': plot_cosmetics['bins'],
-                                     'col_fit': plot_cosmetics['blue'],
-                                     'col_model': plot_cosmetics['col_model']},
-                     basinhopping_options={'niter': basinhopping_options['niter'],
-                                           'T': basinhopping_options['T'],
-                                           'stepsize': basinhopping_options['stepsize'],
-                                           'take_step': basinhopping_options['take_step'],
-                                           'accept_test': basinhopping_options['accept_test'],
-                                           'callback': basinhopping_options['callback'],
-                                           'interval': basinhopping_options['interval'],
-                                           'disp': basinhopping_options['disp'],
-                                           'niter_success': basinhopping_options['niter_success'],
-                                           'seed': basinhopping_options['seed']},
-                     SLSQP_options={'jac': SLSQP_options['jac'],
-                                    'tol': SLSQP_options['tol'],
-                                    'callback': SLSQP_options['callback'],
-                                    'func': SLSQP_options['func'],
-                                    'maxiter': SLSQP_options['maxiter'],
-                                    'ftol': SLSQP_options['ftol'],
-                                    'iprint': SLSQP_options['iprint'],
-                                    'disp': SLSQP_options['disp'],
-                                    'eps': SLSQP_options['eps']})
+                     plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
     GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=np.array([1]), bootstraps=GB1_bs, method=method,
                      return_parameters=True, return_gofs=True,
                      verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
-                     plot_cosmetics={'bins': plot_cosmetics['bins'],
-                                     'col_fit': plot_cosmetics['blue'],
-                                     'col_model': plot_cosmetics['col_model']},
-                     basinhopping_options={'niter': basinhopping_options['niter'],
-                                           'T': basinhopping_options['T'],
-                                           'stepsize': basinhopping_options['stepsize'],
-                                           'take_step': basinhopping_options['take_step'],
-                                           'accept_test': basinhopping_options['accept_test'],
-                                           'callback': basinhopping_options['callback'],
-                                           'interval': basinhopping_options['interval'],
-                                           'disp': basinhopping_options['disp'],
-                                           'niter_success': basinhopping_options['niter_success'],
-                                           'seed': basinhopping_options['seed']},
-                     SLSQP_options={'jac': SLSQP_options['jac'],
-                                    'tol': SLSQP_options['tol'],
-                                    'callback': SLSQP_options['callback'],
-                                    'func': SLSQP_options['func'],
-                                    'maxiter': SLSQP_options['maxiter'],
-                                    'ftol': SLSQP_options['ftol'],
-                                    'iprint': SLSQP_options['iprint'],
-                                    'disp': SLSQP_options['disp'],
-                                    'eps': SLSQP_options['eps']})
+                     plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
     GB_fit = GBfit(x=x, b=b, x0=GB_x0, weights=np.array([1]), bootstraps=GB_bs, method=method,
                    return_parameters=True, return_gofs=True,
                    verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
-                   plot_cosmetics={'bins': plot_cosmetics['bins'],
-                                   'col_fit': plot_cosmetics['blue'],
-                                   'col_model': plot_cosmetics['col_model']},
-                   basinhopping_options={'niter': basinhopping_options['niter'],
-                                         'T': basinhopping_options['T'],
-                                         'stepsize': basinhopping_options['stepsize'],
-                                         'take_step': basinhopping_options['take_step'],
-                                         'accept_test': basinhopping_options['accept_test'],
-                                         'callback': basinhopping_options['callback'],
-                                         'interval': basinhopping_options['interval'],
-                                         'disp': basinhopping_options['disp'],
-                                         'niter_success': basinhopping_options['niter_success'],
-                                         'seed': basinhopping_options['seed']},
-                   SLSQP_options={'jac': SLSQP_options['jac'],
-                                  'tol': SLSQP_options['tol'],
-                                  'callback': SLSQP_options['callback'],
-                                  'func': SLSQP_options['func'],
-                                  'maxiter': SLSQP_options['maxiter'],
-                                  'ftol': SLSQP_options['ftol'],
-                                  'iprint': SLSQP_options['iprint'],
-                                  'disp': SLSQP_options['disp'],
-                                  'eps': SLSQP_options['eps']})
+                   plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
     # unpack parameters
-    p_fit1, p_se1 = Pareto_fit
-    p_fit2, p_se2, q_fit2, q_se2 = IB1_fit
-    a_fit3, a_se3, p_fit3, p_se3, q_fit3, q_se3 = GB1_fit
-    a_fit4, a_se4, c_fit4, c_se4, p_fit4, p_se4, q_fit4, q_se4 = GB_fit
+    p_fit1, p_se1 = Pareto_fit[:2]
+    p_fit2, p_se2, q_fit2, q_se2 = IB1_fit[:4]
+    a_fit3, a_se3, p_fit3, p_se3, q_fit3, q_se3 = GB1_fit[:6]
+    a_fit4, a_se4, c_fit4, c_se4, p_fit4, p_se4, q_fit4, q_se4 = GB_fit[:8]
 
     if rejecting_criteria == "LRtest":
         alpha = .05
-    # TODO: LRtest
         # 1. LRtest Pareto vs IB1
         LRtest1v2 = LRtest(Pareto(x=x, b=b, p=p_fit1).LL,
                                 IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
@@ -1458,6 +1387,7 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
         tbl.add_row(['', '', 'Prob > chi2', '{:.4f}'.format(LRtest3v4.pval), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
         if GB_remaining:
             tbl.add_row(['GB', '', '', '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
+        print("\n")
         print(tbl)
 
     if rejecting_criteria == "AIC":
@@ -1493,6 +1423,7 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
 
         if GB_remaining:
             tbl.add_row(['GB', '{:.3f}'.format(GB_aic), '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
+        print("\n")
         print(tbl)
 
     if return_parameters:
