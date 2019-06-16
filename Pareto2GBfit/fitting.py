@@ -379,16 +379,16 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         n = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).n
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n_sample', 'n']
             tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
                              np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
-                             np.around(pred_var, 3), np.around(n, 3)])
+                             np.around(pred_var, 3), n_sample, n])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
-            return np.mean(p_fit_bs), np.std(p_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, n
+            return np.mean(p_fit_bs), np.std(p_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, n_sample, n
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs)
@@ -646,16 +646,16 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         n = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n_sample', 'n']
             tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
                              np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
-                             np.around(pred_var, 3), np.around(n, 3)])
+                             np.around(pred_var, 3), n_sample, n])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
-            return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, n
+            return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, n_sample, n
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
@@ -924,16 +924,16 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         n = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n_sample', 'n']
             tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
                              np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
-                             np.around(pred_var, 3), np.around(n, 3)])
+                             np.around(pred_var, 3), n_sample, n])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
-            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, n
+            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, n_sample, n
 
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
@@ -1231,24 +1231,24 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         n = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=model, x_hat=x, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n_sample', 'n']
             tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
                              np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
-                             np.around(pred_var, 3), np.around(n, 3)])
+                             np.around(pred_var, 3), n_sample, n])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
             return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), \
-                   np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, n
+                   np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, n_sample, n
 
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
-def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', verbose_bootstrap=False,
-                    ci=False, verbose=False, fit=False, plot=False, return_parameters=False, return_gofs=False,
-                    rejecting_criteria="LRtest",
+def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', rejection_criteria="LRtest",
+                    verbose_bootstrap=False, verbose_single=False, verbose=True,
+                    fit=False, plot=False, return_bestmodel=False, return_all=False,
           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
@@ -1267,8 +1267,8 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
     :param bootstraps: either 1x1 OR 1x2 array (1st arg: Pareto+IB1, 2nd arg: GB1+GB) OR pass 1x4 array [Pareto_bs, IB1_bs, GB1_bs, GB_bs]
     :param method: as above
     :param verbose_bootstrap: as above
-    :param ci: as above
-    :param verbose: as above
+    :param verbose: table with parameters and another with gofs, display only final result
+    :param verbose_single: display each optimization results
     :param fit: as above
     :param plot: as above
     :param return_parameters: as above and parameters, se of all distributions are returned
@@ -1314,38 +1314,40 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
              'callback': basinhopping_options['callback'], 'interval': basinhopping_options['interval'],
              'disp': basinhopping_options['disp'], 'niter_success': basinhopping_options['niter_success'],
              'seed': basinhopping_options['seed']}
+
     # SLSQP options
     slsqp_opts = {'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'], 'callback': SLSQP_options['callback'],
                   'func': SLSQP_options['func'], 'maxiter': SLSQP_options['maxiter'], 'ftol': SLSQP_options['ftol'],
                   'iprint': SLSQP_options['iprint'], 'disp': SLSQP_options['disp'], 'eps': SLSQP_options['eps']}
 
-
+    # fit distributions
     Pareto_fit = Paretofit(x=x, b=b, x0=Pareto_x0, weights=weights, bootstraps=Pareto_bs, method=method,
-                           return_parameters=True, return_gofs=True,
-                           verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
+                           return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
+                           verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot,
                            plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
-    IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=np.array([1]), bootstraps=IB1_bs, method=method,
-                     return_parameters=True, return_gofs=True,
-                     verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
+    IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=weights, bootstraps=IB1_bs, method=method,
+                     return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
+                     verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot,
                      plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
-    GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=np.array([1]), bootstraps=GB1_bs, method=method,
-                     return_parameters=True, return_gofs=True,
-                     verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
+    GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=weights, bootstraps=GB1_bs, method=method,
+                     return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
+                     verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot,
                      plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
-    GB_fit = GBfit(x=x, b=b, x0=GB_x0, weights=np.array([1]), bootstraps=GB_bs, method=method,
-                   return_parameters=True, return_gofs=True,
-                   verbose_bootstrap=verbose_bootstrap, ci=ci, verbose=verbose, fit=fit, plot=plot,
+    GB_fit = GBfit(x=x, b=b, x0=GB_x0, weights=weights, bootstraps=GB_bs, method=method,
+                   return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
+                   verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot,
                    plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
+
     # unpack parameters
     p_fit1, p_se1 = Pareto_fit[:2]
     p_fit2, p_se2, q_fit2, q_se2 = IB1_fit[:4]
     a_fit3, a_se3, p_fit3, p_se3, q_fit3, q_se3 = GB1_fit[:6]
     a_fit4, a_se4, c_fit4, c_se4, p_fit4, p_se4, q_fit4, q_se4 = GB_fit[:8]
 
-    if rejecting_criteria == "LRtest":
+    if rejection_criteria == "LRtest":
         alpha = .05
         # 1. LRtest Pareto vs IB1
         LRtest1v2 = LRtest(Pareto(x=x, b=b, p=p_fit1).LL,
@@ -1390,7 +1392,7 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
         print("\n")
         print(tbl)
 
-    if rejecting_criteria == "AIC":
+    if rejection_criteria == "AIC":
 
         # unpack aic
         Pareto_aic = Pareto_fit[2]
@@ -1426,7 +1428,45 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
         print("\n")
         print(tbl)
 
-    if return_parameters:
+    if verbose:
+        tbl_parms = PrettyTable()
+        tbl_parms.field_names = ['parameter', 'Pareto', 'IB1', 'GB1', 'GB']
+        tbl_parms.add_row(['a', '-', '-', '{:.3f}'.format(GB1_fit[0]), '{:.3f}'.format(GB_fit[0])])
+        tbl_parms.add_row(['', '', '', '({:.3f})'.format(GB1_fit[1]), '({:.3f})'.format(GB_fit[0])])
+        tbl_parms.add_row(['c', '-', '-', '-', '{:.3f}'.format(GB_fit[2])])
+        tbl_parms.add_row(['', '', '', '', '({:.3f})'.format(GB_fit[3])])
+        tbl_parms.add_row(['p', '{:.3f}'.format(Pareto_fit[0]), '{:.3f}'.format(IB1_fit[0]), '{:.3f}'.format(GB1_fit[3]), '{:.3f}'.format(GB_fit[4])])
+        tbl_parms.add_row(['', '({:.3f})'.format(Pareto_fit[1]), '({:.3f})'.format(IB1_fit[1]), '({:.3f})'.format(GB1_fit[4]), '({:.3f})'.format(GB_fit[5])])
+        tbl_parms.add_row(['q', '-', '{:.3f}'.format(IB1_fit[2]), '{:.3f}'.format(GB1_fit[4]), '{:.3f}'.format(GB_fit[6])])
+        tbl_parms.add_row(['', '', '({:.3f})'.format(IB1_fit[3]), '({:.3f})'.format(GB1_fit[5]), '({:.3f})'.format(GB_fit[7])])
+
+        tbl_gof = PrettyTable()
+        tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'df', 'n', 'N']
+        tbl_gof.add_row(['Pareto', np.around(Pareto_fit[2], 3), np.around(Pareto_fit[3], 3), np.around(Pareto_fit[4], 3),
+                         np.around(Pareto_fit[5], 3), np.around(Pareto_fit[6], 3), np.around(Pareto_fit[7], 3),
+                         np.around(Pareto_fit[8], 3), np.around(Pareto_fit[9], 3), np.around(Pareto_fit[10], 3),
+                         np.around(Pareto_fit[11], 3), np.around(Pareto_fit[12], 3), np.around(Pareto_fit[13], 3),
+                         1, Pareto_fit[14], Pareto_fit[15]])
+        tbl_gof.add_row(['IB1', np.around(IB1_fit[4], 3), np.around(IB1_fit[5], 3), np.around(IB1_fit[6], 3),
+                         np.around(IB1_fit[7], 3), np.around(IB1_fit[8], 3), np.around(IB1_fit[9], 3),
+                         np.around(IB1_fit[10], 3), np.around(IB1_fit[11], 3), np.around(IB1_fit[12], 3),
+                         np.around(IB1_fit[13], 3), np.around(IB1_fit[14], 3), np.around(IB1_fit[15], 3),
+                         2, IB1_fit[16], IB1_fit[17]])
+        tbl_gof.add_row(['GB1', np.around(GB1_fit[6], 3), np.around(GB1_fit[7], 3), np.around(GB1_fit[8], 3),
+                         np.around(GB1_fit[9], 3), np.around(GB1_fit[10], 3), np.around(GB1_fit[11], 3),
+                         np.around(GB1_fit[12], 3), np.around(GB1_fit[13], 3), np.around(GB1_fit[14], 3),
+                         np.around(GB1_fit[15], 3), np.around(GB1_fit[16], 3), np.around(GB1_fit[17], 3),
+                         3, GB1_fit[18], GB1_fit[19]])
+        tbl_gof.add_row(['GB', np.around(GB_fit[8], 3), np.around(GB_fit[9], 3), np.around(GB_fit[10], 3),
+                         np.around(GB_fit[11], 3), np.around(GB_fit[12], 3), np.around(GB_fit[13], 3),
+                         np.around(GB_fit[14], 3), np.around(GB_fit[15], 3), np.around(GB_fit[16], 3),
+                         np.around(GB_fit[17], 3), np.around(GB_fit[18], 3), np.around(GB_fit[19], 3),
+                         4, GB_fit[20], GB_fit[21]])
+
+        print('\n{}'.format(tbl_parms))
+        print('\n{}'.format(tbl_gof))
+
+    if return_bestmodel:
             if bestmodel == 'Pareto':
                 return Pareto_fit
             if bestmodel == 'IB1':
@@ -1436,6 +1476,8 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
             if bestmodel == 'GB':
                 return GB_fit
 
+    if return_all:
+        return Pareto_fit, IB1_fit, GB1_fit, GB
 
 """ 
 ---------------------------------------------------
