@@ -175,7 +175,7 @@ def GB1_cdf_ne(x, a, b, p, q):
     """
     x = np.array(x)
     F = []
-    widgets = ['GB_cdf_ne  ', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
+    widgets = ['GB1_cdf_ne  ', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=len(x)).start()
     i = 0
     if a<0:

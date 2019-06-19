@@ -69,8 +69,6 @@ print("netwealth\n", describe(netwealth))
 w = np.ones(len(netwealth)) * 5
 Paretofit(x=netwealth, b=100000, x0=1, bootstraps=1000, method='SLSQP', fit=True, plot=True, plot_cosmetics={'bins': 500})
 IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=1000, method='SLSQP', fit=True, plot=True, plot_cosmetics={'bins': 500})
-IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=1000, method='L-BFGS-B', fit=True, plot=True, plot_cosmetics={'bins': 500}, basinhopping_options={'niter': 50, 'stepsize': .75})
-
 GB1fit(x=netwealth, b=100000, x0=(-.5,1,1), weights=w, bootstraps=100, method='SLSQP', plot=True)
 GBfit(x=netwealth, b=100000, x0=(-.5,.1,1,1), weights=w, bootstraps=100, method='SLSQP', plot=True)
 
@@ -113,8 +111,8 @@ LRtest3v4 = LRtest(GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
                    df=4, verbose=False)
 
 # Run Paretobranchfit on netwealth
-Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='LRtest')
-Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='AIC', verbose=False)
+Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='LRtest', method='L-BFGS-B', alpha=.025)
+Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='AIC', method='SLSQP')
 
 # Run Paretobranchfit on simulated Pareto_data
 Paretobranchfit(x=Pareto_data, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='LRtest', verbose=True)
