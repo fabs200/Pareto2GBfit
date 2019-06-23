@@ -1058,15 +1058,15 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
         # 1. LRtest Pareto vs IB1
         LRtest1v2 = LRtest(Pareto(x=x, b=b, p=p_fit1).LL,
                                 IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
-                                df=2, verbose=False)
+                                df=1, verbose=False)
         # 2. LRtest IB1 vs GB1
         LRtest2v3 = LRtest(IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
                                 GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
-                                df=3, verbose=False)
+                                df=1, verbose=False)
         # 3. LRtest GB1 vs GB
         LRtest3v4 = LRtest(GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
                                 GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
-                                df=4, verbose=False)
+                                df=1, verbose=False)
 
         # 1v2, 2v3, 3v4
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
@@ -1151,23 +1151,23 @@ def Paretobranchfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLS
         tbl_gof.add_row(['Pareto', np.around(Pareto_fit[2], 3), np.around(Pareto_fit[3], 3), np.around(Pareto_fit[4], 3),
                          np.around(Pareto_fit[5], 3), np.around(Pareto_fit[6], 3), np.around(Pareto_fit[7], 3),
                          np.around(Pareto_fit[8], 3), np.around(Pareto_fit[9], 3), np.around(Pareto_fit[10], 3),
-                         np.around(Pareto_fit[11], 3), np.around(Pareto_fit[12], 3), np.around(Pareto_fit[13], 3),
-                         1, Pareto_fit[14], Pareto_fit[15]])
+                         np.around(Pareto_fit[11], 3), np.around(Pareto_fit[12], 3), np.around(Pareto_fit[13], 3), 1,
+                         Pareto_fit[14], Pareto_fit[15]])
         tbl_gof.add_row(['IB1', np.around(IB1_fit[4], 3), np.around(IB1_fit[5], 3), np.around(IB1_fit[6], 3),
                          np.around(IB1_fit[7], 3), np.around(IB1_fit[8], 3), np.around(IB1_fit[9], 3),
                          np.around(IB1_fit[10], 3), np.around(IB1_fit[11], 3), np.around(IB1_fit[12], 3),
-                         np.around(IB1_fit[13], 3), np.around(IB1_fit[14], 3), np.around(IB1_fit[15], 3),
-                         2, IB1_fit[16], IB1_fit[17]])
+                         np.around(IB1_fit[13], 3), np.around(IB1_fit[14], 3), np.around(IB1_fit[15], 3), 1,
+                         IB1_fit[16], IB1_fit[17]])
         tbl_gof.add_row(['GB1', np.around(GB1_fit[6], 3), np.around(GB1_fit[7], 3), np.around(GB1_fit[8], 3),
                          np.around(GB1_fit[9], 3), np.around(GB1_fit[10], 3), np.around(GB1_fit[11], 3),
                          np.around(GB1_fit[12], 3), np.around(GB1_fit[13], 3), np.around(GB1_fit[14], 3),
-                         np.around(GB1_fit[15], 3), np.around(GB1_fit[16], 3), np.around(GB1_fit[17], 3),
-                         3, GB1_fit[18], GB1_fit[19]])
+                         np.around(GB1_fit[15], 3), np.around(GB1_fit[16], 3), np.around(GB1_fit[17], 3), 1,
+                         GB1_fit[18], GB1_fit[19]])
         tbl_gof.add_row(['GB', np.around(GB_fit[8], 3), np.around(GB_fit[9], 3), np.around(GB_fit[10], 3),
                          np.around(GB_fit[11], 3), np.around(GB_fit[12], 3), np.around(GB_fit[13], 3),
                          np.around(GB_fit[14], 3), np.around(GB_fit[15], 3), np.around(GB_fit[16], 3),
-                         np.around(GB_fit[17], 3), np.around(GB_fit[18], 3), np.around(GB_fit[19], 3),
-                         4, GB_fit[20], GB_fit[21]])
+                         np.around(GB_fit[17], 3), np.around(GB_fit[18], 3), np.around(GB_fit[19], 3), 1,
+                         GB_fit[20], GB_fit[21]])
 
         print('\n{}'.format(tbl_parms))
         print('\n{}'.format(tbl_gof))
