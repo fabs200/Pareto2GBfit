@@ -316,3 +316,16 @@ def GB_icdf_ne(x, a, b, c, p, q):
         return icdf_F
     return icdf(u), u
 
+"""
+---------------------
+other 
+---------------------
+"""
+def namestr(obj, namespace):
+    """
+    retrieve variable name of a list
+    :param obj: e.g. Pareto_data which is an numpy.array
+    :param namespace: globals()
+    :return: ['Pareto_data']
+    """
+    return [name for name in namespace if namespace[name] is obj]

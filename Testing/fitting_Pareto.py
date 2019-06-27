@@ -114,7 +114,8 @@ if run_optimize is True:
     # save results
     p_fit = result.x
     p_fit_se = Pareto_extract_se(x=Pareto_data, b=b, p_fitted=p_fit)
-    p_fit_bs, p_fit_se_bs = ParetoFit(x=x, b=250, x0=x0, bootstraps=1000, verbose=False, method='L-BFGS-B')
+    p_fit_bs, p_fit_se_bs = Paretofit(x=x, b=250, x0=x0, bootstraps=500, verbose=False, method='L-BFGS-B',
+                                      return_parameters=True, save_plot=True, plot=True)
 
     ### minimize -ll with Pareto_data_noise
     x = Pareto_data_noise
@@ -126,7 +127,8 @@ if run_optimize is True:
 
     # save results
     p_fit_noise = result.x
-    p_fit_noise_bs, p_fit_noise_se_bs = ParetoFit(x=x, b=250, x0=x0, bootstraps=1000, verbose=False)
+    p_fit_noise_bs, p_fit_noise_se_bs = Paretofit(x=x, b=250, x0=x0, bootstraps=1000, verbose=False,
+                                                  return_parameters=True, save_plot=True, plot=True)
 
 
 """ 5. Plot simulated data + fit """
