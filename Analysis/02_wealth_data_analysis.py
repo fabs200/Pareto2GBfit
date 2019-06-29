@@ -69,7 +69,7 @@ PSID data preparation
 dfPSID = pd.read_csv(data_PSID + 'J261520.csv', delimiter=";", skiprows=False, decimal=',')
 
 # renaming
-columns = {"ER17001": "release_01", "ER17002": "famid_01", "ER20394": "weight1_01", "ER20459": "weight2_01",
+columns={"ER17001": "release_01", "ER17002": "famid_01", "ER20394": "weight1_01", "ER20459": "weight2_01",
            "S500": "wrelease_01", "S516": "wealth1_01", "S517": "wealth2_01", "S516A": "wealthA1_01", "S517A": "wealthA2_01",
 
            "ER21001": "release_03", "ER21002": "famid_03", "ER24179": "weight1_03", "ER24180": "weight2_03",
@@ -96,7 +96,7 @@ columns = {"ER17001": "release_01", "ER17002": "famid_01", "ER20394": "weight1_0
            "ER66001": "release_17", "ER66002": "famid_17", "ER71570": "weight1_17",
            "ER71483": "wealth1_17", "ER71485": "wealth2_17", "ER71484": "wealthA1_17", "ER71486": "wealthA2_17"}
 
-dfPSID = dfPSID.rename(index=str, columns=columns)
+dfPSID = dfPSID.rename(index = str, columns=columns)
 
 # multiply longitudinal weights by 1000 as described in the documentation of PSID
 psid_longi_weights = ['weight1_01', 'weight1_03', 'weight1_05', 'weight1_07', 'weight1_09', 'weight1_11', 'weight1_13', 'weight1_15', 'weight1_17']
@@ -156,7 +156,7 @@ df_unweighted_descriptives_w1 = pd.DataFrame(np.array([['N', dfPSID['wealth1_01'
                                                        ['p99.9', int(dfPSID['wealth1_01'].quantile(.999)), int(dfPSID['wealth1_03'].quantile(.999)), int(dfPSID['wealth1_05'].quantile(.999)), int(dfPSID['wealth1_07'].quantile(.999)), int(dfPSID['wealth1_09'].quantile(.999)), int(dfPSID['wealth1_11'].quantile(.999)), int(dfPSID['wealth1_13'].quantile(.999)), int(dfPSID['wealth1_15'].quantile(.999)), int(dfPSID['wealth1_17'].quantile(.999)), int(dfSOEP['wealth_02'].quantile(.999)), int(dfSOEP['wealth_07'].quantile(.999)), int(dfSOEP['wealth_12'].quantile(.999))],
                                                        ['max', int(dfPSID['wealth1_01'].max()), int(dfPSID['wealth1_03'].max()), int(dfPSID['wealth1_05'].max()), int(dfPSID['wealth1_07'].max()), int(dfPSID['wealth1_09'].max()), int(dfPSID['wealth1_11'].max()), int(dfPSID['wealth1_13'].max()), int(dfPSID['wealth1_15'].max()), int(dfPSID['wealth1_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max())],
                                                        ]),
-                                             columns=['2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP', '2017SOEP'])
+                                             columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP'])
 
 
 # unweighted, psid: wealth2, soep: wealth
@@ -171,7 +171,7 @@ df_unweighted_descriptives_w2 = pd.DataFrame(np.array([['N', dfPSID['wealth2_01'
                                                        ['p99.9', int(dfPSID['wealth2_01'].quantile(.999)), int(dfPSID['wealth2_03'].quantile(.999)), int(dfPSID['wealth2_05'].quantile(.999)), int(dfPSID['wealth2_07'].quantile(.999)), int(dfPSID['wealth2_09'].quantile(.999)), int(dfPSID['wealth2_11'].quantile(.999)), int(dfPSID['wealth2_13'].quantile(.999)), int(dfPSID['wealth2_15'].quantile(.999)), int(dfPSID['wealth2_17'].quantile(.999)), int(dfSOEP['wealth_02'].quantile(.999)), int(dfSOEP['wealth_07'].quantile(.999)), int(dfSOEP['wealth_12'].quantile(.999))],
                                                        ['max', int(dfPSID['wealth2_01'].max()), int(dfPSID['wealth2_03'].max()), int(dfPSID['wealth2_05'].max()), int(dfPSID['wealth2_07'].max()), int(dfPSID['wealth2_09'].max()), int(dfPSID['wealth2_11'].max()), int(dfPSID['wealth2_13'].max()), int(dfPSID['wealth2_15'].max()), int(dfPSID['wealth2_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max())],
                                                        ]),
-                                             columns=['2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP', '2017SOEP'])
+                                             columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP'])
 
 
 
@@ -234,7 +234,7 @@ df_weighted_descriptives_w1 = pd.DataFrame(np.array([['N', int(dfPSID['weight1_0
                                                        ['p99.9', int(w1_wgt_pcts_psid_01[4]), int(w1_wgt_pcts_psid_03[4]), int(w1_wgt_pcts_psid_05[4]), int(w1_wgt_pcts_psid_07[4]), int(w1_wgt_pcts_psid_09[4]), int(w1_wgt_pcts_psid_11[4]), int(w1_wgt_pcts_psid_13[4]), int(w1_wgt_pcts_psid_15[4]), int(w1_wgt_pcts_psid_17[4]), int(w_wgt_pcts_soep_02[4]), int(w_wgt_pcts_soep_07[4]), int(w_wgt_pcts_soep_12[4])],
                                                        ['max', int(dfPSID['wealth1_01'].max()), int(dfPSID['wealth1_03'].max()), int(dfPSID['wealth1_05'].max()), int(dfPSID['wealth1_07'].max()), int(dfPSID['wealth1_09'].max()), int(dfPSID['wealth1_11'].max()), int(dfPSID['wealth1_13'].max()), int(dfPSID['wealth1_15'].max()), int(dfPSID['wealth1_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max())],
                                                        ]),
-                                             columns=['2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP', '2017SOEP'])
+                                             columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP'])
 
 
 
@@ -284,7 +284,7 @@ df_weighted_descriptives_w2 = pd.DataFrame(np.array([['N', int(dfPSID['weight1_0
                                                        ['p99.9', int(w2_wgt_pcts_psid_01[4]), int(w2_wgt_pcts_psid_03[4]), int(w2_wgt_pcts_psid_05[4]), int(w2_wgt_pcts_psid_07[4]), int(w2_wgt_pcts_psid_09[4]), int(w2_wgt_pcts_psid_11[4]), int(w2_wgt_pcts_psid_13[4]), int(w2_wgt_pcts_psid_15[4]), int(w2_wgt_pcts_psid_17[4]), int(w_wgt_pcts_soep_02[4]), int(w_wgt_pcts_soep_07[4]), int(w_wgt_pcts_soep_12[4])],
                                                        ['max', int(dfPSID['wealth2_01'].max()), int(dfPSID['wealth2_03'].max()), int(dfPSID['wealth2_05'].max()), int(dfPSID['wealth2_07'].max()), int(dfPSID['wealth2_09'].max()), int(dfPSID['wealth2_11'].max()), int(dfPSID['wealth2_13'].max()), int(dfPSID['wealth2_15'].max()), int(dfPSID['wealth2_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max())],
                                                        ]),
-                                             columns=['2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP', '2017SOEP'])
+                                             columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP'])
 
 # save dataframes to excel sheet
 with ExcelWriter(descriptivespath + 'wealth_descriptives.xlsx', mode='w') as writer:

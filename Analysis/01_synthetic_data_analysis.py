@@ -1,6 +1,12 @@
 from Pareto2GBfit import *
 import matplotlib
 import os
+from Pareto2GBfit.fitting import *
+import numpy as np
+import pandas as pd
+from pandas import ExcelWriter
+import xlsxwriter
+
 
 random.seed(104891)
 
@@ -9,8 +15,12 @@ run_optimize = True
 
 if os.name == 'nt':
     graphspath = 'D:/OneDrive/Studium/Masterarbeit/Python/graphs/'
+    descriptivespath = 'D:/OneDrive/Studium/Masterarbeit//Python/descriptives/'
+
 if os.name == 'mac':
     graphspath = '/Users/Fabian/OneDrive/Studium/Masterarbeit/Python/graphs/'
+    descriptivespath = 'D:/OneDrive/Studium/Masterarbeit//Python/descriptives/'
+
 
 """ 
 --------------------------------
@@ -100,7 +110,31 @@ if plot_data:
 2. Descriptive Stats
 --------------------------------
 """
-# TODO
+
+# sort
+Pareto_data = np.sort(Pareto_data)
+Pareto_data_gauss_noise_1 = np.sort(Pareto_data_gauss_noise_1)
+Pareto_data_gauss_noise_2 = np.sort(Pareto_data_gauss_noise_2)
+Pareto_data_het_noise_1 = np.sort(Pareto_data_het_noise_1)
+Pareto_data_het_noise_2 = np.sort(Pareto_data_het_noise_2)
+
+# write descriptives to dataframe
+df_synthetic_data_descriptives = pd.DataFrame(np.array([['N', np.size(Pareto_data), np.size(Pareto_data_gauss_noise_1), np.size(Pareto_data_gauss_noise_2), np.size(Pareto_data_het_noise_1), np.size(Pareto_data_het_noise_2)],
+                                                        ['mean', np.mean(Pareto_data), np.mean(Pareto_data_gauss_noise_1), np.mean(Pareto_data_gauss_noise_2), np.mean(Pareto_data_het_noise_1), np.mean(Pareto_data_het_noise_2)],
+                                                        ['sd', np.std(Pareto_data), np.std(Pareto_data_gauss_noise_1), np.std(Pareto_data_gauss_noise_2), np.std(Pareto_data_het_noise_1), np.std(Pareto_data_het_noise_2)],
+                                                        ['min', np.min(Pareto_data), np.min(Pareto_data_gauss_noise_1), np.min(Pareto_data_gauss_noise_2), np.min(Pareto_data_het_noise_1), np.min(Pareto_data_het_noise_2)],
+                                                        ['p50', np.percentile(Pareto_data, q=.5), np.percentile(Pareto_data_gauss_noise_1, q=.5), np.percentile(Pareto_data_gauss_noise_2, q=.5), np.percentile(Pareto_data_het_noise_1, q=.5), np.percentile(Pareto_data_het_noise_2, q=.5)],
+                                                        ['p75', np.percentile(Pareto_data, q=.75), np.percentile(Pareto_data_gauss_noise_1, q=.75), np.percentile(Pareto_data_gauss_noise_2, q=.75), np.percentile(Pareto_data_het_noise_1, q=.75), np.percentile(Pareto_data_het_noise_2, q=.75)],
+                                                        ['p90', np.percentile(Pareto_data, q=.9), np.percentile(Pareto_data_gauss_noise_1, q=.9), np.percentile(Pareto_data_gauss_noise_2, q=.9), np.percentile(Pareto_data_het_noise_1, q=.9), np.percentile(Pareto_data_het_noise_2, q=.9)],
+                                                        ['p99', np.percentile(Pareto_data, q=.99), np.percentile(Pareto_data_gauss_noise_1, q=.99), np.percentile(Pareto_data_gauss_noise_2, q=.99), np.percentile(Pareto_data_het_noise_1, q=.99), np.percentile(Pareto_data_het_noise_2, q=.99)],
+                                                        ['p99.9', np.percentile(Pareto_data, q=.999), np.percentile(Pareto_data_gauss_noise_1, q=.999), np.percentile(Pareto_data_gauss_noise_2, q=.999), np.percentile(Pareto_data_het_noise_1, q=.999), np.percentile(Pareto_data_het_noise_2, q=.999)],
+                                                        ['max', np.max(Pareto_data), np.max(Pareto_data_gauss_noise_1), np.max(Pareto_data_gauss_noise_2), np.max(Pareto_data_het_noise_1), np.max(Pareto_data_het_noise_2)],
+                                                        ]),
+                                             columns=['', 'Pareto_data', 'Pareto_data_gauss_noise_1', 'Pareto_data_gauss_noise_2', 'Pareto_data_het_noise_1', 'Pareto_data_het_noise_2'])
+
+# save dataframes to excel sheet
+with ExcelWriter(descriptivespath + 'synthetic_data_descriptives.xlsx', mode='w') as writer:
+    df_synthetic_data_descriptives.to_excel(writer, sheet_name='synthetic_data_descriptives', index=False)
 
 """ 
 --------------------------------
