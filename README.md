@@ -62,7 +62,7 @@ with following options:
 |         `plot`         |                                                                                 `False`                                                                                 | If `True`, a graph of the fit will be plottet, graphical cosmetics can be adjusted with the dictionary `plot_cosmetics`                                                                                                                                                                                                                                             |
 |   `return_parameters`  |                                                                                 `False`                                                                                 | If `True`, fitted parameters with standard errors are returned. E.g. `Paretofit(...)` would return the 1x2-array: `=[p_fit, p_se]`, `IB1fit(...)` 1x4-array: `=[p_fit, p_se, q_fit, p_se]`, etc.                                                                                                                                                                    |
 |      `return_gof`      |                                                                                 `False`                                                                                 | If `True`, goodness of fit measures are returned. 1x8-array: `=[aic, bic, mae, mse, rmse, rrmse, ll, n]`                                                                                                                                                                                                                                                            |
-|    `plot_cosmetics`    | `{'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}`                                                                                                                | Specify bins by adding the dictionary `plot_cosmetics={'bins': 250}`                                                                                                                                                                                                                                                                                                |
+|    `plot_cosmetics`    | `{'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'}`                                                                                                                | Specify bins by adding the dictionary `plot_cosmetics={'bins': 250}`                                                                                                                                                                                                                                                                                                |
 | `basinhopping_options` | `{'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None, 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}` | if `method='basinhopping'`, the user can specify arguments to the optimizer which are then passed to `scipy.optimize.basinhopping`. For further information, refer to [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.basinhopping.html#scipy.optimize.basinhopping).                                                   |
 |     `SLSQP_options`    | `{'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14, 'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}`                  | if `method='SLSQP'`, the user can specify arguments to the optimizer which are then passed to `scipy.optimize.minimize(method='SLSQP', ...)`. For further information, refer to [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html).                                                                                   |
 
@@ -92,7 +92,7 @@ Options:
 | `return_bestmodel`     | `False`                                                                                                                                                                 | if `True` best model's parameters and gofs are returned             |
 | `return_all`           | `False`                                                                                                                                                                 | if `True` all model's parameters and gofs are returned              |
 | `return_gof`           | `False`                                                                                                                                                                 | not used                                                            |
-| `plot_cosmetics`       | `{'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'}`                                                                                                                | see above                                                           |
+| `plot_cosmetics`       | `{'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'}`                                                                                                                | see above                                                           |
 | `basinhopping_options` | `{'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None, 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}` | see above                                                           |
 | `SLSQP_options`        | {'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14, 'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}                    | see above                                                           |
 
@@ -203,7 +203,7 @@ Bootstrapping 100%|##############################################|Time: 0:00:03
 +-----+-------------+-------------+------------+--------------------+---------------+--------+-------------+------+
 
 ```
-<img src="Figure_1.png" width="400">
+<img src="Examples/Figure_1.png" width="400">
 Note: In the plot window, you have the option to zoom in.
 
 5. Lets go one parameter level upwards in the GB-tree and fit the IB1 distribution
@@ -226,7 +226,7 @@ Bootstrapping 100%|##############################################|Time: 0:00:14
 +-----+-------------+-------------+-------------+--------------------+--------------+--------+------------+------+
 
 ```
-<img src="Figure_2.png" width="400">
+<img src="Examples/Figure_2.png" width="400">
 
 6. Lets run the global optimization of the `IB1fit()` and compare this result to the local optimization in step 5.
 ```
@@ -250,7 +250,7 @@ Bootstrapping 100%|##############################################|Time: 0:05:09
 Note that the global optimization process took about 5 mins compared to the local optimization with 14 seconds.
 Indeed, both optimizations result in the same parameters.
 
-<img src="Figure_3.png" width="400">
+<img src="Examples/Figure_3.png" width="400">
 
 7. Save the fitted parameters, e.g. for Pareto, IB1, GB1
 ```

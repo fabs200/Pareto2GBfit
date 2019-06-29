@@ -262,7 +262,7 @@ def GB_cdf_ne(x, a, b, c, p, q):
     # distributions with x>b:
     # Pareto, IB1: c==0, a==1
     ## if (c==0) and (a==-1): ## Note: too rigorous restriction, ending up in empty F, thus relax restriction
-    if (0<c<.2) and (-2<a<-.1):
+    if (0<c<.2) and (-np.inf<a<-10e-6):
         x = x[x>b]
         widgets = ['GB_cdf_ne  ', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
         bar = progressbar.ProgressBar(widgets=widgets, maxval=len(x)).start()

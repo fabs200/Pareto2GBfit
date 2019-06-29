@@ -4,9 +4,8 @@ import os
 
 random.seed(104891)
 
-plot_pdf_cdf = False
+plot_data = False
 run_optimize = True
-plot_fit = False # needs run_optimize=True
 
 if os.name == 'nt':
     graphspath = 'D:/OneDrive/Studium/Masterarbeit/Python/graphs/'
@@ -68,29 +67,44 @@ Pareto_data_het_noise_1 = het(x=Pareto_data, sigma=sigma1, s=s)
 # 4. Large heteroscedastic Gaussian noise
 Pareto_data_het_noise_2 = het(x=Pareto_data, sigma=sigma2, s=s)
 
-# check gaussian noise data
-plt.scatter(u, Pareto_data_gauss_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,200^2)$')
-plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
-plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
-plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x');
-for type in ['png', 'pdf']:
-    plt.savefig(fname=graphspath + 'icdf_gauss_noise.' + type, dpi=300, format=type)
-plt.show()
-plt.close()
 
-# check heteroscedastic noise data
-plt.scatter(u, Pareto_data_het_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=x\cdot s\cdot N(0,100^2)$')
-plt.scatter(u, Pareto_data_het_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=x\cdot s\cdot N(0,200^2)$')
-plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
-plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x')
-for type in ['png', 'pdf']:
-    plt.savefig(fname=graphspath + 'icdf_het_noise.' + type, dpi=300, format=type)
-plt.show()
-plt.close()
+"""
+--------------------------------
+2. Plot data
+--------------------------------
+"""
+
+if plot_data:
+    # check gaussian noise data
+    plt.scatter(u, Pareto_data_gauss_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,200^2)$')
+    plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
+    plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x');
+    for type in ['png', 'pdf']:
+        plt.savefig(fname=graphspath + 'icdf_gauss_noise.' + type, dpi=300, format=type)
+    plt.show()
+    plt.close()
+
+    # check heteroscedastic noise data
+    plt.scatter(u, Pareto_data_het_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=x\cdot s\cdot N(0,100^2)$')
+    plt.scatter(u, Pareto_data_het_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=x\cdot s\cdot N(0,200^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
+    plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x')
+    for type in ['png', 'pdf']:
+        plt.savefig(fname=graphspath + 'icdf_het_noise.' + type, dpi=300, format=type)
+    plt.show()
+    plt.close()
+
+"""
+--------------------------------
+2. Descriptive Stats
+--------------------------------
+"""
+# TODO
 
 """ 
 --------------------------------
-2. Fitting
+3. Fitting
 --------------------------------
 """
 
@@ -98,29 +112,35 @@ plt.close()
 # TODO: 1x set parameters of fit no_noise: Pareto_data
 # TODO: 4x set parameters of fit noised_data: Pareto_data_gauss_noise_1, Pareto_data_gauss_noise_2, Pareto_data_het_noise_1, Pareto_data_het_noise_2
 
-Pareto_data_parms = Paretobranchfit(x=Pareto_data, x0=(-1, .5, 1, 1), b=250, bootstraps=(250, 250, 100, 50),
-                                    return_bestmodel=True, rejection_criteria='AIC', plot=True, save_all_plots=True)
+Pareto_data_parms = Paretobranchfit(x=Pareto_data, x0=(-1, .5, 1, 1), b=250,
+                                    bootstraps=(250, 250, 250, 250),
+                                    return_bestmodel=True, rejection_criteria='AIC', plot=True,
+                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
-Pareto_data_gauss_noise_1_parms = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1),
-                                                  bootstraps=(250, 250, 100, 50), b=250,
-                                                  return_bestmodel=True, rejection_criteria='AIC', plot=True)
+Pareto_data_gauss_noise_1_parms = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1), b=250,
+                                                  bootstraps=(250, 250, 250, 250),
+                                                  return_bestmodel=True, rejection_criteria='AIC', plot=True,
+                                                  plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
-Pareto_data_gauss_noise_2_parms = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=(-1, .5, 1, 1),
-                                                  bootstraps=(250, 250, 100, 50), b=250,
-                                                  return_bestmodel=True, rejection_criteria='AIC', plot=True)
+Pareto_data_gauss_noise_2_parms = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=(-1, .5, 1, 1), b=250,
+                                                  bootstraps=(250, 250, 250, 250),
+                                                  return_bestmodel=True, rejection_criteria='AIC', plot=True,
+                                                  plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
-Pareto_data_het_noise_1_parms = Paretobranchfit(x=Pareto_data_het_noise_1, x0=(-1, .5, 1, 1),
-                                                bootstraps=(250, 250, 100, 50), b=250,
-                                                return_bestmodel=True, rejection_criteria='AIC', plot=True)
+Pareto_data_het_noise_1_parms = Paretobranchfit(x=Pareto_data_het_noise_1, x0=(-1, .5, 1, 1), b=250,
+                                                bootstraps=(250, 250, 250, 250),
+                                                return_bestmodel=True, rejection_criteria='AIC', plot=True,
+                                                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
-Pareto_data_het_noise_2_parms = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-1, .5, 1, 1),
-                                                bootstraps=(250, 250, 100, 50), b=250,
-                                                return_bestmodel=True, rejection_criteria='AIC', plot=True)
+Pareto_data_het_noise_2_parms = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-1, .5, 1, 1), b=250,
+                                                bootstraps=(250, 250, 250, 250),
+                                                return_bestmodel=True, rejection_criteria='AIC', plot=True,
+                                                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
 
 """ 
 --------------------------------
-3. Plot Fit vs data
+4. Plot Fit vs data
 --------------------------------
 """
 
@@ -173,41 +193,5 @@ for type in ['png', 'pdf']:
     plt.savefig(fname=graphspath + 'fit_gauss_noise2.' + type, dpi=300, format=type)
 plt.show()
 plt.close()
-
-
-
-
-""" 
-----------------------------------------------
-4. Save results of true and fitted parameters
-----------------------------------------------
-"""
-
-# TODO
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

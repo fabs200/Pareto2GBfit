@@ -9,6 +9,17 @@ import progressbar
 from prettytable import PrettyTable
 from .distributions import Pareto_pdf, IB1_pdf, GB1_pdf, GB_pdf, Pareto_icdf, IB1_icdf_ne, GB1_icdf_ne, GB_icdf_ne
 from .testing import *
+import warnings
+
+def namestr(obj, namespace):
+    """
+    retrieve variable name of a list
+    :param obj: e.g. Pareto_data which is an numpy.array
+    :param namespace: globals()
+    :return: ['Pareto_data']
+    """
+    return [name for name in namespace if namespace[name] is obj]
+
 
 """ 
 ---------------------------------------------------
@@ -143,9 +154,9 @@ Fitting Functions
 ---------------------------------------------------
 """
 def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
-              verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-              return_parameters=False, return_gofs=False, save_plot=False,
-              plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
+              verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
+              return_parameters=False, return_gofs=False, #save_plot=False,
+              plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
               basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                    'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
               SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -170,6 +181,18 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
     :return: fitted parameters, gof, plot
     """
 
+    #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
+    if suppress_warnings:
+        warnings.filterwarnings("ignore", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("ignore", message="divide by zero encountered in divide")
+        warnings.filterwarnings("ignore", message="divide by zero encountered")
+        warnings.filterwarnings("ignore", message="invalid value encountered")
+    else:
+        warnings.filterwarnings("default", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("default", message="divide by zero encountered in divide")
+        warnings.filterwarnings("default", message="divide by zero encountered")
+        warnings.filterwarnings("default", message="invalid value encountered")
+
     x = np.array(x)
     n_sample = len(x[x>b])
 
@@ -182,7 +205,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
     if len(weights) == len(x):
         pass
     else:
-        raise Exception("error - the length of W does not match the length of x {}".format(len(weights), len(x)))
+        raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
     # if weights not roundes (like Stata), raise error
     try:
@@ -328,6 +351,9 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
                      np.around(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96, 4), k])
         print(tbl)
 
+    if verbose:
+        print(locals())
+
     if plot:
         fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
@@ -335,14 +361,14 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
             num_bins = 50
         else:
             num_bins = plot_cosmetics['bins']
-        if 'col_fit' not in plot_cosmetics.keys():
+        if 'col_data' not in plot_cosmetics.keys():
             col_fit = 'blue'
         else:
-            col_fit = plot_cosmetics['col_fit']
-        if 'col_model' not in plot_cosmetics.keys():
+            col_fit = plot_cosmetics['col_data']
+        if 'col_fit' not in plot_cosmetics.keys():
             col_model = 'orange'
         else:
-            col_model = plot_cosmetics['col_model']
+            col_model = plot_cosmetics['col_fit']
 
         fig, ax = plt.subplots()
         # histogram of x (actual data)
@@ -352,12 +378,13 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         ax.plot(np.linspace(np.min(x), np.max(x), np.size(x)), x2, '--', label='model', color=col_model)
         ax.set_xlabel('x')
         ax.set_ylabel('Probability density')
-        ax.set_title('fit vs. model')
-        ax.legend(['Pareto model', 'fit'])
+        ax.set_title('fit vs. data')
+        ax.legend(['Pareto fit', 'data'])
         # fig.tight_layout()
-        if save_plot:
-            filename = 'figure_Pareto_fit_1.png'
-            fig.savefig(filename, dpi=300, format='png')
+        # if save_plot:
+        #     figurename = 'figure_Pareto_fit_' + str(filename) + '.png'
+        #     # figurename = 'figure_Pareto_fit_1.png'
+        #     fig.savefig(figurename, dpi=300, format='png')
         plt.show()
 
     if return_gofs:
@@ -398,9 +425,9 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
 
 
 def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
-           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-           return_parameters=False, return_gofs=False, save_plot=False,
-           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
+           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
+           return_parameters=False, return_gofs=False, #save_plot=False,
+           plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
            basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
            SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -412,7 +439,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
     :param x0: initial guess, np.array [p,q] or simply (p,q)
     :param weights: weight, default: numpy.ones array of same shape as x
     :param bootstraps: amount of bootstraps
-    :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
+    :param method: default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
     :param verbose_bootstrap: display each bootstrap
     :param ci: default ci displayed
     :param verbose: default true
@@ -424,6 +451,19 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
     :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
+
+    #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
+    if suppress_warnings:
+        warnings.filterwarnings("ignore", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("ignore", message="divide by zero encountered in divide")
+        warnings.filterwarnings("ignore", message="divide by zero encountered")
+        warnings.filterwarnings("ignore", message="invalid value encountered")
+    else:
+        warnings.filterwarnings("default", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("default", message="divide by zero encountered in divide")
+        warnings.filterwarnings("default", message="divide by zero encountered")
+        warnings.filterwarnings("default", message="invalid value encountered")
+
     x = np.array(x)
     n_sample = len(x[x>b])
 
@@ -436,7 +476,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
     if len(weights) == len(x):
         pass
     else:
-        raise Exception("error - the length of W does not match the length of x {}".format(len(weights), len(x)))
+        raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
     # if weights not roundes (like Stata), raise error
     try:
@@ -595,6 +635,9 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
                           np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
         print(tbl)
 
+    if verbose:
+        print(locals())
+
     if plot:
         fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
@@ -602,14 +645,14 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
             num_bins = 50
         else:
             num_bins = plot_cosmetics['bins']
-        if 'col_fit' not in plot_cosmetics.keys():
+        if 'col_data' not in plot_cosmetics.keys():
             col_fit = 'blue'
         else:
-            col_fit = plot_cosmetics['col_fit']
-        if 'col_model' not in plot_cosmetics.keys():
+            col_fit = plot_cosmetics['col_data']
+        if 'col_fit' not in plot_cosmetics.keys():
             col_model = 'orange'
         else:
-            col_model = plot_cosmetics['col_model']
+            col_model = plot_cosmetics['col_fit']
 
         fig, ax = plt.subplots()
         # histogram of x (actual data)
@@ -619,12 +662,13 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         ax.plot(np.linspace(np.min(x), np.max(x), np.size(x)), x2, '--', label='model', color=col_model)
         ax.set_xlabel('x')
         ax.set_ylabel('Probability density')
-        ax.set_title('fit vs. model')
-        ax.legend(['IB1 model', 'fit'])
+        ax.set_title('fit vs. data')
+        ax.legend(['IB1 fit', 'data'])
         # fig.tight_layout()
-        if save_plot:
-            filename = 'figure_IB1_fit_1.png'
-            fig.savefig(filename, dpi=300, format='png')
+        # if save_plot:
+        #     figurename = 'figure_IB1_fit_' + str(filename) + '.png'
+        #     # figurename = 'figure_IB1_fit_2.png'
+        #     fig.savefig(figurename, dpi=300, format='png')
         plt.show()
 
     if return_gofs:
@@ -670,9 +714,9 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
 
 
 def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
-           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-           return_parameters=False, return_gofs=False, save_plot=False,
-           plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
+           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
+           return_parameters=False, return_gofs=False, #save_plot=False,
+           plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
            basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
            SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -696,6 +740,19 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
     :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
+
+    #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
+    if suppress_warnings:
+        warnings.filterwarnings("ignore", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("ignore", message="divide by zero encountered in divide")
+        warnings.filterwarnings("ignore", message="divide by zero encountered")
+        warnings.filterwarnings("ignore", message="invalid value encountered")
+    else:
+        warnings.filterwarnings("default", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("default", message="divide by zero encountered in divide")
+        warnings.filterwarnings("default", message="divide by zero encountered")
+        warnings.filterwarnings("default", message="invalid value encountered")
+
     x = np.array(x)
     n_sample = len(x[x>b])
 
@@ -708,7 +765,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
     if len(weights) == len(x):
         pass
     else:
-        raise Exception("error - the length of W does not match the length of x {}".format(len(weights), len(x)))
+        raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
     # if weights not roundes (like Stata), raise error
     try:
@@ -878,6 +935,9 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
                      np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
         print(tbl)
 
+    if verbose:
+        print(locals())
+
     if plot:
         fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
@@ -885,14 +945,14 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
             num_bins = 50
         else:
             num_bins = plot_cosmetics['bins']
-        if 'col_fit' not in plot_cosmetics.keys():
+        if 'col_data' not in plot_cosmetics.keys():
             col_fit = 'blue'
         else:
-            col_fit = plot_cosmetics['col_fit']
-        if 'col_model' not in plot_cosmetics.keys():
+            col_fit = plot_cosmetics['col_data']
+        if 'col_fit' not in plot_cosmetics.keys():
             col_model = 'orange'
         else:
-            col_model = plot_cosmetics['col_model']
+            col_model = plot_cosmetics['col_fit']
 
         fig, ax = plt.subplots()
         # histogram of x (actual data)
@@ -902,12 +962,13 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         ax.plot(np.linspace(np.min(x), np.max(x), np.size(x)), x2, '--', label='model', color=col_model)
         ax.set_xlabel('x')
         ax.set_ylabel('Probability density')
-        ax.set_title('fit vs. model')
-        ax.legend(['GB1 model', 'fit'])
+        ax.set_title('fit vs. data')
+        ax.legend(['GB1 fit', 'data'])
         # fig.tight_layout()
-        if save_plot:
-            filename = 'figure_GB1_fit_1.png'
-            fig.savefig(filename, dpi=300, format='png')
+        # if save_plot:
+        #     figurename = 'figure_GB1_fit_' + str(filename) + '.png'
+        #     # figurename = 'figure_GB1_fit_3.png'
+        #     fig.savefig(figurename, dpi=300, format='png')
         plt.show()
 
     if return_gofs:
@@ -954,9 +1015,9 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
 
 
 def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
-          verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False,
-          return_parameters=False, return_gofs=False, save_plot=False,
-          plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
+          verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
+          return_parameters=False, return_gofs=False, #save_plot=False,
+          plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
           SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -980,6 +1041,19 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
     :param SLSQP_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
+
+    #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
+    if suppress_warnings:
+        warnings.filterwarnings("ignore", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("ignore", message="divide by zero encountered in divide")
+        warnings.filterwarnings("ignore", message="divide by zero encountered")
+        warnings.filterwarnings("ignore", message="invalid value encountered")
+    else:
+        warnings.filterwarnings("default", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("default", message="divide by zero encountered in divide")
+        warnings.filterwarnings("default", message="divide by zero encountered")
+        warnings.filterwarnings("default", message="invalid value encountered")
+
     x = np.array(x)
     n_sample = len(x[x>b])
 
@@ -992,7 +1066,7 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
     if len(weights) == len(x):
         pass
     else:
-        raise Exception("error - the length of W does not match the length of x {}".format(len(weights), len(x)))
+        raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
     # if weights not roundes (like Stata), raise error
     try:
@@ -1180,6 +1254,9 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
                      np.around(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96, 4), k])
         print(tbl)
 
+    if verbose:
+        print(locals())
+
     if plot:
         fit = True # if plot is True, also display tbl_gof so set fit=True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
@@ -1187,14 +1264,14 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
             num_bins = 50
         else:
             num_bins = plot_cosmetics['bins']
-        if 'col_fit' not in plot_cosmetics.keys():
+        if 'col_data' not in plot_cosmetics.keys():
             col_fit = 'blue'
         else:
-            col_fit = plot_cosmetics['col_fit']
-        if 'col_model' not in plot_cosmetics.keys():
+            col_fit = plot_cosmetics['col_data']
+        if 'col_fit' not in plot_cosmetics.keys():
             col_model = 'orange'
         else:
-            col_model = plot_cosmetics['col_model']
+            col_model = plot_cosmetics['col_fit']
 
         fig, ax = plt.subplots()
         # histogram of x (actual data)
@@ -1206,12 +1283,13 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         ax.plot(np.linspace(np.min(x), np.max(x), np.size(x)), x2, '--', label='model', color=col_model)
         ax.set_xlabel('x')
         ax.set_ylabel('Probability density')
-        ax.set_title('fit vs. model')
-        ax.legend(['GB model', 'fit'])
+        ax.set_title('fit vs. data')
+        ax.legend(['GB fit', 'data'])
         # fig.tight_layout()
-        if save_plot:
-            filename = 'figure_GB_fit_1.png'
-            fig.savefig(filename, dpi=300, format='png')
+        # if save_plot:
+        #     figurename = 'figure_GB_fit_' + str(filename) + '.png'
+        #     # figurename = 'figure_GB_fit_4.png'
+        #     fig.savefig(figurename, dpi=300, format='png')
         plt.show()
 
     if return_gofs:
@@ -1267,8 +1345,9 @@ Pareto branch fitting
 
 def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bootstraps=250, method='SLSQP', rejection_criteria="LRtest",
                     verbose_bootstrap=False, verbose_single=False, verbose=True, alpha=.05,
-                    fit=False, plot=False, return_bestmodel=False, return_all=False, save_all_plots=False,
-          plot_cosmetics={'bins': 50, 'col_fit': 'blue', 'col_model': 'orange'},
+                    fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
+                    suppress_warnings=True,
+          plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
           SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -1299,6 +1378,18 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     :return:
     """
 
+    #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
+    if suppress_warnings:
+        warnings.filterwarnings("ignore", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("ignore", message="divide by zero encountered in divide")
+        warnings.filterwarnings("ignore", message="divide by zero encountered")
+        warnings.filterwarnings("ignore", message="invalid value encountered")
+    else:
+        warnings.filterwarnings("default", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("default", message="divide by zero encountered in divide")
+        warnings.filterwarnings("default", message="divide by zero encountered")
+        warnings.filterwarnings("default", message="invalid value encountered")
+
     ### Prepare args for passing to below fitting functions
     # x0
     try:
@@ -1327,7 +1418,8 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
             raise Exception("error - bootstrap not correctly specified")
 
     # plot_options
-    plt_cosm = {'bins': plot_cosmetics['bins'], 'col_fit': plot_cosmetics['col_fit'], 'col_model': plot_cosmetics['col_model']}
+    plt_cosm = {'bins': plot_cosmetics['bins'], 'col_data': plot_cosmetics['col_data'], 'col_fit': plot_cosmetics['col_fit']}
+
     # basinhopping options
     bh_opts = {'niter': basinhopping_options['niter'], 'T': basinhopping_options['T'], 'stepsize': basinhopping_options['stepsize'],
              'take_step': basinhopping_options['take_step'], 'accept_test': basinhopping_options['accept_test'],
@@ -1343,22 +1435,22 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     # fit distributions
     Pareto_fit = Paretofit(x=x, b=b, x0=Pareto_x0, weights=weights, bootstraps=Pareto_bs, method=method,
                            return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
-                           verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, save_plot=save_all_plots,
+                           verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                            plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
     IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=weights, bootstraps=IB1_bs, method=method,
                      return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
-                     verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, save_plot=save_all_plots,
+                     verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                      plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
     GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=weights, bootstraps=GB1_bs, method=method,
                      return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
-                     verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, save_plot=save_all_plots,
+                     verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                      plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
     GB_fit = GBfit(x=x, b=b, x0=GB_x0, weights=weights, bootstraps=GB_bs, method=method,
                    return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
-                   verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, save_plot=save_all_plots,
+                   verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                    plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
 
     # unpack parameters
@@ -1412,6 +1504,9 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         print("\n")
         print(tbl)
 
+    if verbose:
+        print('\n{}'.format(locals()))
+
     if rejection_criteria == "AIC":
 
         # unpack aic
@@ -1445,8 +1540,9 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
 
         if GB_remaining:
             tbl.add_row(['GB', '{:.3f}'.format(GB_aic), '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
-        print("\n")
-        print(tbl)
+
+        print('\n{}'.format(tbl))
+
 
     if verbose:
         tbl_parms = PrettyTable()
