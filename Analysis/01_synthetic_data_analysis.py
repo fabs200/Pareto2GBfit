@@ -1,7 +1,6 @@
 from Pareto2GBfit import *
 import matplotlib
 import os
-from Pareto2GBfit.fitting import *
 import numpy as np
 import pandas as pd
 from pandas import ExcelWriter
@@ -122,6 +121,7 @@ Pareto_data_het_noise_2 = np.sort(Pareto_data_het_noise_2)
 df_synthetic_data_descriptives = pd.DataFrame(np.array([['N', np.size(Pareto_data), np.size(Pareto_data_gauss_noise_1), np.size(Pareto_data_gauss_noise_2), np.size(Pareto_data_het_noise_1), np.size(Pareto_data_het_noise_2)],
                                                         ['mean', np.mean(Pareto_data), np.mean(Pareto_data_gauss_noise_1), np.mean(Pareto_data_gauss_noise_2), np.mean(Pareto_data_het_noise_1), np.mean(Pareto_data_het_noise_2)],
                                                         ['sd', np.std(Pareto_data), np.std(Pareto_data_gauss_noise_1), np.std(Pareto_data_gauss_noise_2), np.std(Pareto_data_het_noise_1), np.std(Pareto_data_het_noise_2)],
+                                                        ['lower bound b', 250, 250, 250, 250, 250],
                                                         ['min', np.min(Pareto_data), np.min(Pareto_data_gauss_noise_1), np.min(Pareto_data_gauss_noise_2), np.min(Pareto_data_het_noise_1), np.min(Pareto_data_het_noise_2)],
                                                         ['p50', np.percentile(Pareto_data, q=.5), np.percentile(Pareto_data_gauss_noise_1, q=.5), np.percentile(Pareto_data_gauss_noise_2, q=.5), np.percentile(Pareto_data_het_noise_1, q=.5), np.percentile(Pareto_data_het_noise_2, q=.5)],
                                                         ['p75', np.percentile(Pareto_data, q=.75), np.percentile(Pareto_data_gauss_noise_1, q=.75), np.percentile(Pareto_data_gauss_noise_2, q=.75), np.percentile(Pareto_data_het_noise_1, q=.75), np.percentile(Pareto_data_het_noise_2, q=.75)],
@@ -178,53 +178,79 @@ Pareto_data_het_noise_2_parms = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-
 --------------------------------
 """
 
-# TODO: 1x no_noise + fit
-# TODO: 4x no_noise + noised_data + fit
+### fit of Pareto_data
+print('best fit for Pareto_data:', Pareto_data_parms[0])
 
-### Pareto_data_gauss_noise_1
-print(Pareto_data_gauss_noise_1_parms[0])
+# generate new data based on fitted parms and best model
+Pareto_data_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_parms[1][0])
 
-Pareto_data_gauss_noise_1_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_gauss_noise_1_parms[1][0])
+# Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
 
-plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
-plt.scatter(u, Pareto_data_gauss_noise_1_fit, marker="o", s=2, color='red', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
-plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
-plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x');
-# for type in ['png', 'pdf']:
-#     plt.savefig(fname=graphspath + 'fit_gauss_noise1.' + type, dpi=300, format=type)
+# plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(p))
+plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_parms[1][0],3)))
+plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+for type in ['png', 'pdf']:
+    plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data.' + type, dpi=300, format=type)
+plt.show()
+plt.close()
+
+
+### fit of Pareto_data_gauss_noise_1
+print('best fit for Pareto_data_gauss_noise_1:', Pareto_data_gauss_noise_1_parms[0])
+
+# generate new data based on fitted parms and best model
+Pareto_data_gauss_noise_1_fit, u_temp = IB1_icdf_ne(x=Pareto_data, b=b, p=Pareto_data_gauss_noise_1_parms[1][0], q=Pareto_data_gauss_noise_1_parms[1][2])
+
+plt.scatter(u, Pareto_data_het_noise_1, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}}) + \epsilon\,\,with\,\,\epsilon=N(0,{{{}}}^2)$'.format(p, sigma1))
+plt.plot(u_temp, Pareto_data_gauss_noise_1_fit, color='red', alpha=.75, label=r'$icdf_{{IB1}}(b=250, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_gauss_noise_1_parms[1][0],3), np.around(Pareto_data_gauss_noise_1_parms[1][2],3)))
+plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+for type in ['png', 'pdf']:
+    plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data_gauss_noise_1.' + type, dpi=300, format=type)
 plt.show()
 plt.close()
 
 ### Pareto_data_gauss_noise_2
-print(Pareto_data_gauss_noise_2_parms[0])
+print('best fit for Pareto_data_gauss_noise_2:', Pareto_data_gauss_noise_2_parms[0])
 
-plt.scatter(u, Pareto_data_gauss_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,200^2)$')
-plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
-plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x');
+# generate new data based on fitted parms and best model
+Pareto_data_gauss_noise_2_fit, u_temp = IB1_icdf_ne(x=Pareto_data, b=b, p=Pareto_data_gauss_noise_2_parms[1][0], q=Pareto_data_gauss_noise_2_parms[1][2])
+
+plt.scatter(u, Pareto_data_het_noise_2, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}}) + \epsilon\,\,with\,\,\epsilon=N(0,200^2)$'.format(p))
+plt.plot(u_temp, Pareto_data_gauss_noise_2_fit, color='red', alpha=.75, label=r'$icdf_{{IB1}}(b=250, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_gauss_noise_2_parms[1][0],3), np.around(Pareto_data_gauss_noise_2_parms[1][2],3)))
+plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
 for type in ['png', 'pdf']:
-    plt.savefig(fname=graphspath + 'fit_gauss_noise2.' + type, dpi=300, format=type)
+    plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data_gauss_noise_2.' + type, dpi=300, format=type)
 plt.show()
 plt.close()
 
 ### Pareto_data_het_noise_1
-print(Pareto_data_het_noise_1_parms[0])
+print('best fit for Pareto_data_het_noise_1_parms:', Pareto_data_het_noise_1_parms[0])
 
-plt.scatter(u, Pareto_data_het_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
-plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
-plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x');
+# generate new data based on fitted parms and best model
+Pareto_data_het_noise_1_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_het_noise_1_parms[1][0])
+
+plt.scatter(u, Pareto_data_het_noise_1, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}}) +\epsilon\,\,with\,\,\epsilon=x\cdot s\cdot N(0,{{{}}}^2)$'.format(p,sigma1))
+plt.plot(u_temp, Pareto_data_het_noise_1_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_het_noise_1_parms[1][0],3)))
+plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
 for type in ['png', 'pdf']:
-    plt.savefig(fname=graphspath + 'fit_gauss_noise1.' + type, dpi=300, format=type)
+    plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data_het_noise_1.' + type, dpi=300, format=type)
 plt.show()
 plt.close()
 
 ### Pareto_data_het_noise_2
-print(Pareto_data_het_noise_2_parms[0])
+print('best fit for Pareto_data_het_noise_2_parms:', Pareto_data_het_noise_2_parms[0])
 
-plt.scatter(u, Pareto_data_het_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,200^2)$')
-plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
-plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x');
+# generate new data based on fitted parms and best model
+Pareto_data_het_noise_2_fit, u_temp = GB_icdf_ne(x=Pareto_data, b=b,
+                                         a=Pareto_data_het_noise_2_parms[1][0], c=Pareto_data_het_noise_2_parms[1][2],
+                                         p=Pareto_data_het_noise_2_parms[1][4], q=Pareto_data_het_noise_2_parms[1][6])
+
+plt.scatter(u, Pareto_data_het_noise_2, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}}) +\epsilon\,\,with\,\,\epsilon=x\cdot s\cdot N(0,{{{}}}^2)$'.format(p,sigma2))
+plt.plot(u_temp, Pareto_data_het_noise_2_fit, color='red', alpha=.75, label=r'$icdf_{{GB}}(b=250, \hat{{a}}={{{}}}, \hat{{c}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_het_noise_2_parms[1][0],3), np.around(Pareto_data_het_noise_2_parms[1][2],3), np.around(Pareto_data_het_noise_2_parms[1][4],3), np.around(Pareto_data_het_noise_2_parms[1][6],3)))
+plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
 for type in ['png', 'pdf']:
-    plt.savefig(fname=graphspath + 'fit_gauss_noise2.' + type, dpi=300, format=type)
+    plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data_het_noise_2.' + type, dpi=300, format=type)
 plt.show()
 plt.close()
 
