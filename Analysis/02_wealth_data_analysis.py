@@ -8,15 +8,17 @@ import os
 
 # TODO: SOEP 2017
 
-
+# windows paths
 if os.name == 'nt':
     descriptivespath = 'D:/OneDrive/Studium/Masterarbeit//Python/descriptives/'
     data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/J261520/'
     data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v33.1/SOEP-CORE_v33.1_stata_bilingual/'
-if os.name == 'mac':
+
+# mac paths
+if os.name == 'posix':
     descriptivespath = '/Users/Fabian/OneDrive/Studium/Masterarbeit/Python/descriptives/'
     data_PSID = "/Users/Fabian/OneDrive/Studium/Masterarbeit/data/J261520/"
-    data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v33.1/SOEP-CORE_v33.1_stata_bilingual/'
+    data_SOEP = '/Users/Fabian/Documents/DATA/STATA/SOEP_v33.1/SOEP_wide/'
 
 """
 -------------------------
