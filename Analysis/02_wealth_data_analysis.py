@@ -293,3 +293,38 @@ with ExcelWriter(descriptivespath + 'wealth_descriptives.xlsx', mode='w') as wri
     df_weighted_descriptives_w1.to_excel(writer, sheet_name='weighted_descriptives_w1', index=False)
     df_weighted_descriptives_w2.to_excel(writer, sheet_name='weighted_descriptives_w2', index=False)
 
+
+"""
+-----------------------------
+Fit data
+-----------------------------
+"""
+
+### PSID
+for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
+
+    # write temp variables names
+    wealth = 'wealth1_' + year
+    weight = 'weight1_' + year
+    print(dfPSID[wealth].size)
+    print(dfPSID[weight].size)
+    data = dfPSID[wealth]
+    # wgt = int(dfPSID[weight])
+    wgt = pd.to_numeric(dfPSID[weight], downcast='signed')
+    print(wgt)
+
+    globals()['fit_results_psid_%s' % year] = Paretobranchfit(x=data, weights=wgt, b=1000000, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10))
+
+
+
+### SOEP
+
+
+
+"""
+-----------------------------
+Plot fit vs data
+-----------------------------
+"""
+
+
