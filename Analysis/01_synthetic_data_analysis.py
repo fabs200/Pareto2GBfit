@@ -144,40 +144,70 @@ if run_descriptives:
 --------------------------------
 """
 
-# TODO: ParetoBranchFit() -> get parameters of best model
-# TODO: 1x set parameters of fit no_noise: Pareto_data
-# TODO: 4x set parameters of fit noised_data: Pareto_data_gauss_noise_1, Pareto_data_gauss_noise_2, Pareto_data_het_noise_1, Pareto_data_het_noise_2
-
 if run_optimize:
     Pareto_data_parms = Paretobranchfit(x=Pareto_data, x0=(-1, .5, 1, 1), b=250,
-                                        bootstraps=(250, 250, 250, 250),
+                                        bootstraps=(4, 4, 4, 4),
                                         return_bestmodel=True, rejection_criteria='AIC', plot=True,
                                         plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
     Pareto_data_gauss_noise_1_parms = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1), b=250,
-                                                      bootstraps=(250, 250, 250, 250),
+                                                      bootstraps=(4, 4, 4, 4),
                                                       return_bestmodel=True, rejection_criteria='AIC', plot=True,
                                                       plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
     Pareto_data_gauss_noise_2_parms = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=(-1, .5, 1, 1), b=250,
-                                                      bootstraps=(250, 250, 250, 250),
+                                                      bootstraps=(4, 4, 4, 4),
                                                       return_bestmodel=True, rejection_criteria='AIC', plot=True,
                                                       plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
     Pareto_data_het_noise_1_parms = Paretobranchfit(x=Pareto_data_het_noise_1, x0=(-1, .5, 1, 1), b=250,
-                                                    bootstraps=(250, 250, 250, 250),
+                                                    bootstraps=(4, 4, 4, 4),
                                                     return_bestmodel=True, rejection_criteria='AIC', plot=True,
                                                     plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
     Pareto_data_het_noise_2_parms = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-1, .5, 1, 1), b=250,
-                                                    bootstraps=(250, 250, 250, 250),
+                                                    bootstraps=(4, 4, 4, 4),
                                                     return_bestmodel=True, rejection_criteria='AIC', plot=True,
                                                     plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 
 
+"""
+--------------------------------
+4. Save fitted parms to table
+--------------------------------
+"""
+
+if run_optimize:
+    df_synthetic_fit_parms = pd.DataFrame(np.array([['a',               '--', '--', '--', '--', '{}'.format(Pareto_data_het_noise_2_parms[1][0])],
+                                                    [' ',               '--', '--', '--', '--', '({})'.format(Pareto_data_het_noise_2_parms[1][1])],
+                                                    ['c',               '--', '--', '--', '--', '{}'.format(Pareto_data_het_noise_2_parms[1][2])],
+                                                    [' ',               '--', '--', '--', '--', '({})'.format(Pareto_data_het_noise_2_parms[1][3])],
+                                                    ['p',               '{}'.format(Pareto_data_parms[1][0]), '--'.format(Pareto_data_gauss_noise_1_parms[1][0]), '--'.format(Pareto_data_gauss_noise_2_parms[1][0]), '{}'.format(Pareto_data_het_noise_1_parms[1][0]), '{}'.format(Pareto_data_het_noise_2_parms[1][4])],
+                                                    [' ',               '({})'.format(Pareto_data_parms[1][1]), '--'.format(Pareto_data_gauss_noise_1_parms[1][1]), '--'.format(Pareto_data_gauss_noise_2_parms[1][1]), '({})'.format(Pareto_data_het_noise_1_parms[1][1]), '({})'.format(Pareto_data_het_noise_2_parms[1][5])],
+                                                    ['q',               '--', '{}'.format(Pareto_data_gauss_noise_1_parms[1][2]), '--'.format(Pareto_data_gauss_noise_2_parms[1][2]), '--', '{}'.format(Pareto_data_het_noise_2_parms[1][6])],
+                                                    [' ',               '--', '({})'.format(Pareto_data_gauss_noise_1_parms[1][3]), '--'.format(Pareto_data_gauss_noise_2_parms[1][3]), '--', '({})'.format(Pareto_data_het_noise_2_parms[1][7])],
+                                                    ['lower bound b',   '{}'.format(b), '{}'.format(b),'{}'.format(b),'{}'.format(b),'{}'.format(b)],
+                                                    ['LL',              '{}'.format(Pareto_data_parms[1][8]), '{}'.format(Pareto_data_gauss_noise_1_parms[1][10]), '{}'.format(Pareto_data_gauss_noise_2_parms[1][10]), '{}'.format(Pareto_data_het_noise_1_parms[1][8]), '{}'.format(Pareto_data_het_noise_2_parms[1][14])],
+                                                    ['AIC',             '{}'.format(Pareto_data_parms[1][2]), '{}'.format(Pareto_data_gauss_noise_1_parms[1][4]), '{}'.format(Pareto_data_gauss_noise_2_parms[1][4]), '{}'.format(Pareto_data_het_noise_1_parms[1][2]), '{}'.format(Pareto_data_het_noise_2_parms[1][8])],
+                                                    ['MSE',             '{}'.format(Pareto_data_parms[1][5]), '{}'.format(Pareto_data_gauss_noise_1_parms[1][7]), '{}'.format(Pareto_data_gauss_noise_2_parms[1][7]), '{}'.format(Pareto_data_het_noise_1_parms[1][5]),'{}'.format(Pareto_data_het_noise_2_parms[1][8])],
+                                                    ['RMSE',            '{}'.format(Pareto_data_parms[1][6]), '{}'.format(Pareto_data_gauss_noise_1_parms[1][8]), '{}'.format(Pareto_data_gauss_noise_2_parms[1][8]), '{}'.format(Pareto_data_het_noise_1_parms[1][6]),'{}'.format(Pareto_data_het_noise_2_parms[1][8])],
+                                                    ['emp. mean',       '{}'.format(Pareto_data_parms[1][10]), '{}'.format(Pareto_data_gauss_noise_1_parms[1][12]), '{}'.format(Pareto_data_gauss_noise_2_parms[1][12]), '{}'.format(Pareto_data_het_noise_1_parms[1][10]), '{}'.format(Pareto_data_het_noise_2_parms[1][16])],
+                                                    ['emp. var.',       '{}'.format(Pareto_data_parms[1][11]), '{}'.format(Pareto_data_gauss_noise_1_parms[1][13]), '{}'.format(Pareto_data_gauss_noise_2_parms[1][13]), '{}'.format(Pareto_data_het_noise_1_parms[1][11]), '{}'.format(Pareto_data_het_noise_2_parms[1][17])],
+                                                    ['pred. mean',      '{}'.format(Pareto_data_parms[1][12]), '{}'.format(Pareto_data_gauss_noise_1_parms[1][14]), '{}'.format(Pareto_data_gauss_noise_2_parms[1][14]), '{}'.format(Pareto_data_het_noise_1_parms[1][12]), '{}'.format(Pareto_data_het_noise_2_parms[1][18])],
+                                                    ['pred. var.',      '{}'.format(Pareto_data_parms[1][13]), '{}'.format(Pareto_data_gauss_noise_1_parms[1][15]), '{}'.format(Pareto_data_gauss_noise_2_parms[1][15]), '{}'.format(Pareto_data_het_noise_1_parms[1][13]), '{}'.format(Pareto_data_het_noise_2_parms[1][19])],
+                                                    ['n',               '{}'.format(Pareto_data_parms[1][14]), '{}'.format(Pareto_data_gauss_noise_1_parms[1][16]), '{}'.format(Pareto_data_gauss_noise_2_parms[1][16]), '{}'.format(Pareto_data_het_noise_1_parms[1][14]), '{}'.format(Pareto_data_het_noise_2_parms[1][20])],
+                                                    ]),
+                                                 columns=['', 'Pareto_data', 'Pareto_data_gauss_noise_1', 'Pareto_data_gauss_noise_2', 'Pareto_data_het_noise_1', 'Pareto_data_het_noise_2'])
+
+    # save dataframes to excel sheet
+    with ExcelWriter(descriptivespath + 'synthetic_data_fit_results.xlsx', mode='w') as writer:
+        df_synthetic_data_descriptives.to_excel(writer, sheet_name='synthetic_data_fit_results', index=False)
+
+
+
 """ 
 --------------------------------
-4. Plot Fit vs data
+5. Plot Fit vs data
 --------------------------------
 """
 
