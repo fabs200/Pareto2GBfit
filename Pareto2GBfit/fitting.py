@@ -1484,7 +1484,8 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
                     GB_bm, bestmodel, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
                     Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
                 else:
-                    bestmodel, IB1_marker, GB1_marker = '--', 'XX', 'GB1'
+                    GB1_bm, bestmodel, GB1_marker = 'GB1', 'GB1', 'XX'
+                    IB1_marker = Pareto_marker = '--'
             else:
                 IB1_bm, bestmodel, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
         else:
@@ -1525,7 +1526,8 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
                     GB_bm, bestmodel, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
                     Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
                 else:
-                    GB1_bm, bestmodel, IB1_marker, GB1_marker = 'GB1', 'GB1', '--', 'XX'
+                    GB1_bm, bestmodel, GB1_marker = 'GB1', 'GB1', 'XX'
+                    IB1_marker = Pareto_marker = '--'
             else:
                 IB1_bm, bestmodel, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
         else:
