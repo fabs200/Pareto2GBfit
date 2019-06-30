@@ -4,7 +4,7 @@ import numpy as np
 from scipy.stats import describe
 
 # test with actual data
-netwealth = np.loadtxt("netwealth.csv", delimiter = ",")
+netwealth = np.loadtxt("Examples/netwealth.csv", delimiter = ",")
 
 # set lower bound
 b = 100000

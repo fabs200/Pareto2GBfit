@@ -1,17 +1,15 @@
 from Pareto2GBfit import *
-import matplotlib
-import os
+import os, matplotlib
 import numpy as np
 import pandas as pd
 from pandas import ExcelWriter
-import xlsxwriter
 
 
 random.seed(104891)
 
 plot_data = False
-run_descriptives = False
-run_optimize = True
+run_descriptives = True
+run_optimize = False
 
 # windows paths
 if os.name == 'nt':
@@ -122,17 +120,17 @@ if run_descriptives:
     Pareto_data_het_noise_2 = np.sort(Pareto_data_het_noise_2)
 
     # write descriptives to dataframe
-    df_synthetic_data_descriptives = pd.DataFrame(np.array([['N', int(np.size(Pareto_data)), int(np.size(Pareto_data_gauss_noise_1)), int(np.size(Pareto_data_gauss_noise_2)), int(np.size(Pareto_data_het_noise_1)), int(np.size(Pareto_data_het_noise_2))],
-                                                            ['mean', int(np.mean(Pareto_data)), int(np.mean(Pareto_data_gauss_noise_1)), int(np.mean(Pareto_data_gauss_noise_2)), int(np.mean(Pareto_data_het_noise_1)), int(np.mean(Pareto_data_het_noise_2))],
-                                                            ['sd', int(np.std(Pareto_data)), int(np.std(Pareto_data_gauss_noise_1)), int(np.std(Pareto_data_gauss_noise_2)), int(np.std(Pareto_data_het_noise_1)), int(np.std(Pareto_data_het_noise_2))],
+    df_synthetic_data_descriptives = pd.DataFrame(np.array([['N', np.around(np.size(Pareto_data), 2), np.around(np.size(Pareto_data_gauss_noise_1), 2), np.around(np.size(Pareto_data_gauss_noise_2), 2), np.around(np.size(Pareto_data_het_noise_1), 2), np.around(np.size(Pareto_data_het_noise_2), 2)],
+                                                            ['mean', np.around(np.mean(Pareto_data), 2), np.around(np.mean(Pareto_data_gauss_noise_1), 2), np.around(np.mean(Pareto_data_gauss_noise_2), 2), np.around(np.mean(Pareto_data_het_noise_1), 2), np.around(np.mean(Pareto_data_het_noise_2), 2)],
+                                                            ['sd', np.around(np.std(Pareto_data), 2), np.around(np.std(Pareto_data_gauss_noise_1), 2), np.around(np.std(Pareto_data_gauss_noise_2), 2), np.around(np.std(Pareto_data_het_noise_1), 2), np.around(np.std(Pareto_data_het_noise_2), 2)],
                                                             ['lower bound b', b, b, b, b, b],
-                                                            ['min', int(np.min(Pareto_data)), int(np.min(Pareto_data_gauss_noise_1)), int(np.min(Pareto_data_gauss_noise_2)), int(np.min(Pareto_data_het_noise_1)), int(np.min(Pareto_data_het_noise_2))],
-                                                            ['p50', int(np.percentile(Pareto_data, q=.5)), int(np.percentile(Pareto_data_gauss_noise_1, q=.5)), int(np.percentile(Pareto_data_gauss_noise_2, q=.5)), int(np.percentile(Pareto_data_het_noise_1, q=.5)), int(np.percentile(Pareto_data_het_noise_2, q=.5))],
-                                                            ['p75', int(np.percentile(Pareto_data, q=.75)), int(np.percentile(Pareto_data_gauss_noise_1, q=.75)), int(np.percentile(Pareto_data_gauss_noise_2, q=.75)), int(np.percentile(Pareto_data_het_noise_1, q=.75)), int(np.percentile(Pareto_data_het_noise_2, q=.75))],
-                                                            ['p90', int(np.percentile(Pareto_data, q=.9)), int(np.percentile(Pareto_data_gauss_noise_1, q=.9)), int(np.percentile(Pareto_data_gauss_noise_2, q=.9)), int(np.percentile(Pareto_data_het_noise_1, q=.9)), int(np.percentile(Pareto_data_het_noise_2, q=.9))],
-                                                            ['p99', int(np.percentile(Pareto_data, q=.99)), int(np.percentile(Pareto_data_gauss_noise_1, q=.99)), int(np.percentile(Pareto_data_gauss_noise_2, q=.99)), int(np.percentile(Pareto_data_het_noise_1, q=.99)), int(np.percentile(Pareto_data_het_noise_2, q=.99))],
-                                                            ['p99.9', int(np.percentile(Pareto_data, q=.999)), int(np.percentile(Pareto_data_gauss_noise_1, q=.999)), int(np.percentile(Pareto_data_gauss_noise_2, q=.999)), int(np.percentile(Pareto_data_het_noise_1, q=.999)), int(np.percentile(Pareto_data_het_noise_2, q=.999))],
-                                                            ['max', int(np.max(Pareto_data)), int(np.max(Pareto_data_gauss_noise_1)), int(np.max(Pareto_data_gauss_noise_2)), int(np.max(Pareto_data_het_noise_1)), int(np.max(Pareto_data_het_noise_2))],
+                                                            ['min', np.around(np.min(Pareto_data), 2), np.around(np.min(Pareto_data_gauss_noise_1), 2), np.around(np.min(Pareto_data_gauss_noise_2), 2), np.around(np.min(Pareto_data_het_noise_1), 2), np.around(np.min(Pareto_data_het_noise_2), 2)],
+                                                            ['p50', np.around(np.percentile(Pareto_data, q=.5), 2), np.around(np.percentile(Pareto_data_gauss_noise_1, q=.5), 2), np.around(np.percentile(Pareto_data_gauss_noise_2, q=.5), 2), np.around(np.percentile(Pareto_data_het_noise_1, q=.5), 2), np.around(np.percentile(Pareto_data_het_noise_2, q=.5), 2)],
+                                                            ['p75', np.around(np.percentile(Pareto_data, q=.75), 2), np.around(np.percentile(Pareto_data_gauss_noise_1, q=.75), 2), np.around(np.percentile(Pareto_data_gauss_noise_2, q=.75), 2), np.around(np.percentile(Pareto_data_het_noise_1, q=.75), 2), np.around(np.percentile(Pareto_data_het_noise_2, q=.75), 2)],
+                                                            ['p90', np.around(np.percentile(Pareto_data, q=.9), 2), np.around(np.percentile(Pareto_data_gauss_noise_1, q=.9), 2), np.around(np.percentile(Pareto_data_gauss_noise_2, q=.9), 2), np.around(np.percentile(Pareto_data_het_noise_1, q=.9), 2), np.around(np.percentile(Pareto_data_het_noise_2, q=.9), 2)],
+                                                            ['p99', np.around(np.percentile(Pareto_data, q=.99), 2), np.around(np.percentile(Pareto_data_gauss_noise_1, q=.99), 2), np.around(np.percentile(Pareto_data_gauss_noise_2, q=.99), 2), np.around(np.percentile(Pareto_data_het_noise_1, q=.99), 2), np.around(np.percentile(Pareto_data_het_noise_2, q=.99), 2)],
+                                                            ['p99.9', np.around(np.percentile(Pareto_data, q=.999), 2), np.around(np.percentile(Pareto_data_gauss_noise_1, q=.999), 2), np.around(np.percentile(Pareto_data_gauss_noise_2, q=.999), 2), np.around(np.percentile(Pareto_data_het_noise_1, q=.999), 2), np.around(np.percentile(Pareto_data_het_noise_2, q=.999), 2)],
+                                                            ['max', np.around(np.max(Pareto_data), 2), np.around(np.max(Pareto_data_gauss_noise_1), 2), np.around(np.max(Pareto_data_gauss_noise_2), 2), np.around(np.max(Pareto_data_het_noise_1), 2), np.around(np.max(Pareto_data_het_noise_2), 2)],
                                                             ]),
                                                  columns=['', 'Pareto_data', 'Pareto_data_gauss_noise_1', 'Pareto_data_gauss_noise_2', 'Pareto_data_het_noise_1', 'Pareto_data_het_noise_2'])
 
