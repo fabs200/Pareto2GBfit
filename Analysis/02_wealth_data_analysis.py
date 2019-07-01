@@ -8,7 +8,7 @@ import os
 if os.name == 'nt':
     descriptivespath = 'D:/OneDrive/Studium/Masterarbeit//Python/descriptives/'
     data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/J261520/'
-    data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v34/stata_de+en/'
+    data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v34/stata_de+en/' #TODO: get SOEPv34 2017 wealth + weights bhhhrf
 
 # mac paths
 if os.name == 'posix':
@@ -299,31 +299,47 @@ Fit data
 """
 
 ### PSID
-for year in ['13', '15', '17']:
+for test in ['LRtest', 'AIC']:
+    for year in ['13', '15', '17']:
 
-    # write temp variables names
-    wealth = 'wealth1_' + year
-    weight = 'weight1_' + year
-    data = dfPSID[wealth]
-    # wgt = int(dfPSID[weight])
-    wgt = pd.to_numeric(dfPSID[weight], downcast='signed')
+        print('PSID:', test, year)
 
-    globals()['fit_results_psid_{}'.format(year)] = Paretobranchfit(x=data, weights=wgt, b=1000000, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10))
+        # write temp variables names
+        wealth = 'wealth1_' + year
+        weight = 'weight1_' + year
+        data = dfPSID[wealth]
+        # wgt = int(dfPSID[weight])
+        wgt = pd.to_numeric(dfPSID[weight], downcast='signed')
+
+        result = Paretobranchfit(x=data, weights=wgt, b=1000000, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10),
+                                 return_bestmodel=True, rejection_criteria=test)
+        globals()['fit_results_psid_{}_{}'.format(test, year)] = result
 
 
 ### SOEP
-for year in ['12']:
+for test in ['LRtest', 'AIC']:
+    for year in ['12']:
 
-    # write temp variables names
-    wealth = 'wealth_' + year
-    weight = 'weight_' + year
-    data = dfSOEP[wealth]
-    # wgt = int(dfSOEP[weight])
-    wgt = pd.to_numeric(dfSOEP[weight], downcast='signed')
+        print('PSID:', test, year)
 
-    result = Paretobranchfit(x=data, weights=wgt, b=1000000, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10))
-    globals()['fit_results_soep_{}'.format(year)] = result
+        # write temp variables names
+        wealth = 'wealth_' + year
+        weight = 'weight_' + year
+        data = dfSOEP[wealth]
+        # wgt = int(dfSOEP[weight])
+        wgt = pd.to_numeric(dfSOEP[weight], downcast='signed')
 
+        result = Paretobranchfit(x=data, weights=wgt, b=1000000, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10),
+                                 return_bestmodel=True, rejection_criteria=test)
+        globals()['fit_results_soep_{}_{}'.format(test, year)] = result
+
+
+"""
+-----------------------------
+Fit results to table
+-----------------------------
+"""
+# TODO
 
 
 """
@@ -331,5 +347,5 @@ for year in ['12']:
 Plot fit vs data
 -----------------------------
 """
-
+# TODO
 
