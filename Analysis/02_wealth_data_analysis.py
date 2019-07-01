@@ -302,6 +302,11 @@ Fit data
 -----------------------------
 """
 
+#test
+Paretobranchfit(x=dfPSID['wealth1_01'], weights=dfPSID['weight1_01'],
+                b=1000000, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10))
+
+
 ### PSID
 for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 

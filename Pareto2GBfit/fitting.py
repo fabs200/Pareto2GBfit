@@ -153,13 +153,13 @@ def GB_ll(parms, x, b):
 Fitting Functions
 ---------------------------------------------------
 """
-def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
+def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit_missings=True,
               verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
               return_parameters=False, return_gofs=False, #save_plot=False,
               plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
               basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                    'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
-              SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+              slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                              'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
     Function to fit Pareto distribution to data
@@ -177,7 +177,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
     :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
     :param basinhopping_options: dictionary with optimization options
-    :param SLSQP_options: dictionary with optimization options
+    :param slsqp_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
 
@@ -194,6 +194,11 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         warnings.filterwarnings("default", message="invalid value encountered")
 
     x = np.array(x)
+
+    if omit_missings:
+        x = x[~np.isnan(x)]
+        weights = weights[~np.isnan(weights)]
+
     n_sample = len(x[x>b])
 
     """ Weights """
@@ -293,7 +298,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
     if method == 'SLSQP':
 
         # shorter variable name
-        opts = SLSQP_options
+        opts = slsqp_options
 
         if 'jac' not in opts.keys():
             opts['jac'] = None
@@ -424,13 +429,13 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         return np.mean(p_fit_bs), np.std(p_fit_bs)
 
 
-def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
+def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
            plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
            basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
-           SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+           slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                           'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
     Function to fit the IB1 distribution to data
@@ -448,7 +453,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
     :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
     :param basinhopping_options: dictionary with optimization options
-    :param SLSQP_options: dictionary with optimization options
+    :param slsqp_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
 
@@ -465,6 +470,11 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         warnings.filterwarnings("default", message="invalid value encountered")
 
     x = np.array(x)
+
+    if omit_missings:
+        x = x[~np.isnan(x)]
+        weights = weights[~np.isnan(weights)]
+
     n_sample = len(x[x>b])
 
     """ Weights """
@@ -567,7 +577,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
     if method == 'SLSQP':
 
         # shorter variable name
-        opts = SLSQP_options
+        opts = slsqp_options
 
         if 'jac' not in opts.keys():
             opts['jac'] = None
@@ -713,13 +723,13 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP',
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
+def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
            plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
            basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
-           SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+           slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                           'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
     Function to fit the GB1 distribution to data
@@ -737,7 +747,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
     :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
     :param basinhopping_options: dictionary with optimization options
-    :param SLSQP_options: dictionary with optimization options
+    :param slsqp_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
 
@@ -754,6 +764,11 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         warnings.filterwarnings("default", message="invalid value encountered")
 
     x = np.array(x)
+
+    if omit_missings:
+        x = x[~np.isnan(x)]
+        weights = weights[~np.isnan(weights)]
+
     n_sample = len(x[x>b])
 
     """ Weights """
@@ -858,7 +873,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
     if method == 'SLSQP':
 
         # shorter variable name
-        opts = SLSQP_options
+        opts = slsqp_options
 
         if 'jac' not in opts.keys():
             opts['jac'] = None
@@ -1014,13 +1029,13 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
+def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_missings=True,
           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
           return_parameters=False, return_gofs=False, #save_plot=False,
           plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
-          SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+          slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                          'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
     Function to fit the GB distribution to data
@@ -1038,7 +1053,7 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
     :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
     :param basinhopping_options: dictionary with optimization options
-    :param SLSQP_options: dictionary with optimization options
+    :param slsqp_options: dictionary with optimization options
     :return: fitted parameters, gof, plot
     """
 
@@ -1055,6 +1070,11 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
         warnings.filterwarnings("default", message="invalid value encountered")
 
     x = np.array(x)
+
+    if omit_missings:
+        x = x[~np.isnan(x)]
+        weights = weights[~np.isnan(weights)]
+
     n_sample = len(x[x>b])
 
     """ Weights """
@@ -1168,7 +1188,7 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP',
     if method == 'SLSQP':
 
         # shorter variable name
-        opts = SLSQP_options
+        opts = slsqp_options
 
         if 'jac' not in opts.keys():
             opts['jac'] = None
@@ -1346,11 +1366,11 @@ Pareto branch fitting
 def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bootstraps=250, method='SLSQP', rejection_criteria="LRtest",
                     verbose_bootstrap=False, verbose_single=False, verbose=True, alpha=.05,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
-                    suppress_warnings=True,
+                    suppress_warnings=True, omit_missings=True,
           plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
-          SLSQP_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
+          slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                          'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
     This function fits the Pareto branch upwards, starting from the Pareto distribution. This function is a wrapper that
@@ -1374,7 +1394,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     :param return_gofs: as above
     :param plot_cosmetics: as above
     :param basinhopping_options: as above
-    :param SLSQP_options: as above
+    :param slsqp_options: as above
     :return:
     """
 
@@ -1428,30 +1448,30 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
              'seed': basinhopping_options['seed']}
 
     # SLSQP options
-    slsqp_opts = {'jac': SLSQP_options['jac'], 'tol': SLSQP_options['tol'], 'callback': SLSQP_options['callback'],
-                  'func': SLSQP_options['func'], 'maxiter': SLSQP_options['maxiter'], 'ftol': SLSQP_options['ftol'],
-                  'iprint': SLSQP_options['iprint'], 'disp': SLSQP_options['disp'], 'eps': SLSQP_options['eps']}
+    slsqp_opts = {'jac': slsqp_options['jac'], 'tol': slsqp_options['tol'], 'callback': slsqp_options['callback'],
+                  'func': slsqp_options['func'], 'maxiter': slsqp_options['maxiter'], 'ftol': slsqp_options['ftol'],
+                  'iprint': slsqp_options['iprint'], 'disp': slsqp_options['disp'], 'eps': slsqp_options['eps']}
 
     # fit distributions
     Pareto_fit = Paretofit(x=x, b=b, x0=Pareto_x0, weights=weights, bootstraps=Pareto_bs, method=method,
-                           return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
+                           return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                            verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
-                           plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
+                           plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
 
     IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=weights, bootstraps=IB1_bs, method=method,
-                     return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
+                     return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                      verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
-                     plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
+                     plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
 
     GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=weights, bootstraps=GB1_bs, method=method,
-                     return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
+                     return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                      verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
-                     plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
+                     plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
 
     GB_fit = GBfit(x=x, b=b, x0=GB_x0, weights=weights, bootstraps=GB_bs, method=method,
-                   return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single,
+                   return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                    verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
-                   plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, SLSQP_options=slsqp_opts)
+                   plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
 
     # unpack parameters
     p_fit1, p_se1 = Pareto_fit[:2]
