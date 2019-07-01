@@ -1,18 +1,14 @@
 from Pareto2GBfit.fitting import *
 import numpy as np
-from scipy.stats import describe
 import pandas as pd
 from pandas import ExcelWriter
-import xlsxwriter
 import os
-
-# TODO: SOEP 2017
 
 # windows paths
 if os.name == 'nt':
     descriptivespath = 'D:/OneDrive/Studium/Masterarbeit//Python/descriptives/'
     data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/J261520/'
-    data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v33.1/SOEP-CORE_v33.1_stata_bilingual/'
+    data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v34/stata_de+en/'
 
 # mac paths
 if os.name == 'posix':
@@ -116,7 +112,7 @@ SOEP data preparation
 """
 
 data_SOEPwealth = data_SOEP + 'hwealth.dta'
-data_SOEPHHweight = data_SOEP + 'hhrf.dta'
+data_SOEPHHweight = data_SOEP + 'raw/hhrf.dta'
 
 # read in data
 dfSOEP_wealth = pd.read_stata(data_SOEPwealth, columns=["syear", "hhnrakt", "w011ha", "w011hb", "w011hc", "w011hd", "w011he"])
@@ -303,7 +299,7 @@ Fit data
 """
 
 #test
-Paretobranchfit(x=dfPSID['wealth1_01'], weights=dfPSID['weight1_01'],
+test = Paretobranchfit(x=dfPSID['wealth1_01'], weights=dfPSID['weight1_01'],
                 b=1000000, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10))
 
 

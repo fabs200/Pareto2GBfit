@@ -9,7 +9,7 @@ import progressbar
 from prettytable import PrettyTable
 from .distributions import Pareto_pdf, IB1_pdf, GB1_pdf, GB_pdf, Pareto_icdf, IB1_icdf_ne, GB1_icdf_ne, GB_icdf_ne
 from .testing import *
-import warnings
+import warnings, sys, os
 
 def namestr(obj, namespace):
     """
@@ -156,7 +156,7 @@ Fitting Functions
 def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit_missings=True,
               verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
               return_parameters=False, return_gofs=False, #save_plot=False,
-              plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
+              plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
               basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                    'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
               slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -193,42 +193,49 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
         warnings.filterwarnings("default", message="divide by zero encountered")
         warnings.filterwarnings("default", message="invalid value encountered")
 
+    # convert to numpy.array for easier data handling
     x = np.array(x)
+    weights = np.array(weights)
+    x0 = np.array(x0)
+
+    # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
+    x = x[x>b]
+    if len(weights) > 1:
+        weights = weights[x>b]
+    k = len(x[x>b])
 
     if omit_missings:
-        x = x[~np.isnan(x)]
-        weights = weights[~np.isnan(weights)]
-
-    n_sample = len(x[x>b])
+        if np.isnan(x).any():
+            if verbose: print('data contain NaNs and will be omitted')
+            x = x[~np.isnan(x)]
+        if np.isnan(weights).any():
+            if verbose: print('weights contain NaNs and will be omitted')
+            weights = weights[~np.isnan(weights)]
 
     """ Weights """
     # if default, assign weight of ones if no W specified
     if len(weights) == 1:
         weights = np.ones(len(x))
 
-    # if user specified both x and W with same shape, calculate x*W
+    # check whether user specified both x and W with same shape
     if len(weights) == len(x):
         pass
     else:
         raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
-    # if weights not roundes (like Stata), raise error
+    # round weights
+    weights = np.around(weights, 0).astype(float)
+
     try:
         x_inflated = []
         for idx, i in enumerate(x):
-            weight = np.int64(weights[idx])
-            x_extended = [i] * weight
-            x_inflated.append(x_extended)
+            x_extendby = np.repeat(x[idx], weights[idx])
+            x_inflated.extend(x_extendby)
+    except MemoryError:
+        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
     except:
-        print("error - probably, your weights are no integers, round first!")
+        print("error - something went wrong while inflating x by its weights!")
 
-    # flatten list
-    x = [item for sublist in x_inflated for item in sublist]
-    x = np.array(x)
-
-    x = x[x>b]
-    k = len(x)
-    x0 = np.array(x0)
 
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
@@ -414,16 +421,16 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
         n = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).n
         ll = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n_sample', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'k', 'n']
             tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
                              np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
-                             np.around(pred_var, 3), n_sample, n])
+                             np.around(pred_var, 3), k, n])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
-            return np.mean(p_fit_bs), np.std(p_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, n_sample, n
+            return np.mean(p_fit_bs), np.std(p_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, n
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs)
@@ -432,7 +439,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
 def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
-           plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
+           plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
            basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
            slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -469,42 +476,48 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
         warnings.filterwarnings("default", message="divide by zero encountered")
         warnings.filterwarnings("default", message="invalid value encountered")
 
+    # convert to numpy.array for easier data handling
     x = np.array(x)
+    weights = np.array(weights)
+    x0 = np.array(x0)
+
+    # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
+    if len(weights) > 1:
+        weights = weights[x>b]
+    x = x[x>b]
+    k = len(x[x>b])
 
     if omit_missings:
-        x = x[~np.isnan(x)]
-        weights = weights[~np.isnan(weights)]
-
-    n_sample = len(x[x>b])
+        if np.isnan(x).any():
+            if verbose: print('data contain NaNs and will be omitted')
+            x = x[~np.isnan(x)]
+        if np.isnan(weights).any():
+            if verbose: print('weights contain NaNs and will be omitted')
+            weights = weights[~np.isnan(weights)]
 
     """ Weights """
     # if default, assign weight of ones if no W specified
     if len(weights) == 1:
         weights = np.ones(len(x))
 
-    # if user specified both x and W with same shape, calculate x*W
+    # check whether user specified both x and W with same shape
     if len(weights) == len(x):
         pass
     else:
         raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
-    # if weights not roundes (like Stata), raise error
+    # round weights
+    weights = np.around(weights, 0).astype(float)
+
     try:
         x_inflated = []
         for idx, i in enumerate(x):
-            weight = np.int64(weights[idx])
-            x_extended = [i] * weight
-            x_inflated.append(x_extended)
+            x_extendby = np.repeat(x[idx], weights[idx])
+            x_inflated.extend(x_extendby)
+    except MemoryError:
+        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
     except:
-        print("error - probably, your weights are no integers, round first!")
-
-    # flatten list
-    x = [item for sublist in x_inflated for item in sublist]
-    x = np.array(x)
-
-    x = x[x>b]
-    k = len(x)
-    x0 = np.array(x0)
+        print("error - something went wrong while inflating x by its weights!")
 
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
@@ -708,16 +721,16 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
         n = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n_sample', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'k', 'n']
             tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
                              np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
-                             np.around(pred_var, 3), n_sample, n])
+                             np.around(pred_var, 3), k, n])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
-            return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, n_sample, n
+            return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, n
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
@@ -726,7 +739,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
 def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
-           plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
+           plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
            basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                                 'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
            slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -763,42 +776,48 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
         warnings.filterwarnings("default", message="divide by zero encountered")
         warnings.filterwarnings("default", message="invalid value encountered")
 
+    # convert to numpy.array for easier data handling
     x = np.array(x)
+    weights = np.array(weights)
+    x0 = np.array(x0)
+
+    # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
+    if len(weights) > 1:
+        weights = weights[x>b]
+    x = x[x>b]
+    k = len(x[x>b])
 
     if omit_missings:
-        x = x[~np.isnan(x)]
-        weights = weights[~np.isnan(weights)]
-
-    n_sample = len(x[x>b])
+        if np.isnan(x).any():
+            if verbose: print('data contain NaNs and will be omitted')
+            x = x[~np.isnan(x)]
+        if np.isnan(weights).any():
+            if verbose: print('weights contain NaNs and will be omitted')
+            weights = weights[~np.isnan(weights)]
 
     """ Weights """
     # if default, assign weight of ones if no W specified
     if len(weights) == 1:
         weights = np.ones(len(x))
 
-    # if user specified both x and W with same shape, calculate x*W
+    # check whether user specified both x and W with same shape
     if len(weights) == len(x):
         pass
     else:
         raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
-    # if weights not roundes (like Stata), raise error
+    # round weights
+    weights = np.around(weights, 0).astype(float)
+
     try:
         x_inflated = []
         for idx, i in enumerate(x):
-            weight = np.int64(weights[idx])
-            x_extended = [i] * weight
-            x_inflated.append(x_extended)
+            x_extendby = np.repeat(x[idx], weights[idx])
+            x_inflated.extend(x_extendby)
+    except MemoryError:
+        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
     except:
-        print("error - probably, your weights are no integers, round first!")
-
-    # flatten list
-    x = [item for sublist in x_inflated for item in sublist]
-    x = np.array(x)
-
-    x = x[x>b]
-    k = len(x)
-    x0 = np.array(x0)
+        print("error - something went wrong while inflating x by its weights!")
 
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
@@ -1014,16 +1033,16 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
         n = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n_sample', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'k', 'n']
             tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
                              np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
-                             np.around(pred_var, 3), n_sample, n])
+                             np.around(pred_var, 3), k, n])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
-            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, n_sample, n
+            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, n
 
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
@@ -1032,7 +1051,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
 def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_missings=True,
           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
           return_parameters=False, return_gofs=False, #save_plot=False,
-          plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
+          plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
           slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -1069,42 +1088,48 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
         warnings.filterwarnings("default", message="divide by zero encountered")
         warnings.filterwarnings("default", message="invalid value encountered")
 
+    # convert to numpy.array for easier data handling
     x = np.array(x)
+    weights = np.array(weights)
+    x0 = np.array(x0)
+
+    # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
+    if len(weights) > 1:
+        weights = weights[x>b]
+    x = x[x>b]
+    k = len(x[x>b])
 
     if omit_missings:
-        x = x[~np.isnan(x)]
-        weights = weights[~np.isnan(weights)]
-
-    n_sample = len(x[x>b])
+        if np.isnan(x).any():
+            if verbose: print('data contain NaNs and will be omitted')
+            x = x[~np.isnan(x)]
+        if np.isnan(weights).any():
+            if verbose: print('weights contain NaNs and will be omitted')
+            weights = weights[~np.isnan(weights)]
 
     """ Weights """
     # if default, assign weight of ones if no W specified
     if len(weights) == 1:
         weights = np.ones(len(x))
 
-    # if user specified both x and W with same shape, calculate x*W
+    # check whether user specified both x and W with same shape
     if len(weights) == len(x):
         pass
     else:
         raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
-    # if weights not roundes (like Stata), raise error
+    # round weights
+    weights = np.around(weights, 0).astype(float)
+
     try:
         x_inflated = []
         for idx, i in enumerate(x):
-            weight = np.int64(weights[idx])
-            x_extended = [i] * weight
-            x_inflated.append(x_extended)
+            x_extendby = np.repeat(x[idx], weights[idx])
+            x_inflated.extend(x_extendby)
+    except MemoryError:
+        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
     except:
-        print("error - probably, your weights are no integers, round first!")
-
-    # flatten list
-    x = [item for sublist in x_inflated for item in sublist]
-    x = np.array(x)
-
-    x = x[x>b]
-    k = len(x)
-    x0 = np.array(x0)
+        print("error - something went wrong while inflating x by its weights!")
 
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
@@ -1341,17 +1366,17 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
         n = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n_sample', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'k', 'n']
             tbl_gof.add_row(['GOF', np.around(aic, 3), np.around(bic, 3), np.around(mae, 3), np.around(mse, 3),
                              np.around(rmse, 3), np.around(rrmse, 3), np.around(ll, 3), np.around(soe, 3),
                              np.around(emp_mean, 3), np.around(emp_var, 3), np.around(pred_mean, 3),
-                             np.around(pred_var, 3), n_sample, n])
+                             np.around(pred_var, 3), k, n])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
             return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), \
-                   np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, n_sample, n
+                   np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, n
 
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
@@ -1367,7 +1392,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
                     verbose_bootstrap=False, verbose_single=False, verbose=True, alpha=.05,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
                     suppress_warnings=True, omit_missings=True,
-          plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
+          plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
           slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -1409,6 +1434,49 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         warnings.filterwarnings("default", message="divide by zero encountered in divide")
         warnings.filterwarnings("default", message="divide by zero encountered")
         warnings.filterwarnings("default", message="invalid value encountered")
+
+    # convert to numpy.array for easier data handling
+    x = np.array(x)
+    weights = np.array(weights)
+    x0 = np.array(x0)
+
+    # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
+    if len(weights) > 1:
+        weights = weights[x>b]
+    x = x[x>b]
+    k = len(x[x>b])
+
+    if omit_missings:
+        if np.isnan(x).any():
+            if verbose: print('data contain NaNs and will be omitted')
+            x = x[~np.isnan(x)]
+        if np.isnan(weights).any():
+            if verbose: print('weights contain NaNs and will be omitted')
+            weights = weights[~np.isnan(weights)]
+
+    """ Weights """
+    # if default, assign weight of ones if no W specified
+    if len(weights) == 1:
+        weights = np.ones(len(x))
+
+    # check whether user specified both x and W with same shape
+    if len(weights) == len(x):
+        pass
+    else:
+        raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
+
+    # round weights
+    weights = np.around(weights, 0).astype(float)
+
+    try:
+        x_inflated = []
+        for idx, i in enumerate(x):
+            x_extendby = np.repeat(x[idx], weights[idx])
+            x_inflated.extend(x_extendby)
+    except MemoryError:
+        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
+    except:
+        print("error - something went wrong while inflating x by its weights!")
 
     ### Prepare args for passing to below fitting functions
     # x0
