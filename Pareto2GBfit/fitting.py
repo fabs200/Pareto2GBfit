@@ -217,9 +217,9 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
     if len(weights) == 1:
         weights = np.ones(len(x))
 
-    # check whether user specified both x and W with same shape
+    # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
     if len(weights) == len(x):
-        pass
+        N = int(np.sum(weights))
     else:
         raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
@@ -236,7 +236,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
     except:
         print("error - something went wrong while inflating x by its weights!")
 
-
+    # prepare progress bar and printed tables
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
@@ -349,7 +349,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
 
     if ci is False and verbose:
         tbl.field_names = ['parameter', 'value', 'se']
-        tbl.add_row(['p', '{:.4f}'.format(np.mean(p_fit_bs)), '{:.4f}'.format(np.std(p_fit_bs))])
+        tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), '{:.3f}'.format(np.std(p_fit_bs))])
         print(tbl)
 
     if ci and verbose:
@@ -357,10 +357,10 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
         p_zscore = np.mean(p_fit_bs)/np.std(p_fit_bs)
         p_pval = 2*norm.cdf(-np.abs((np.mean(p_fit_bs)/np.std(p_fit_bs))))
         tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'cilo_95', 'cihi_95', 'n']
-        tbl.add_row(['p', '{:.4f}'.format(np.mean(p_fit_bs)), '{:.4f}'.format(np.std(p_fit_bs)),
-                     '{:.4f}'.format(p_zscore), '{:.4f}'.format(p_pval),
-                     '{:.4f}'.format(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96), k])
+        tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), '{:.3f}'.format(np.std(p_fit_bs)),
+                     '{:.3f}'.format(p_zscore), '{:.3f}'.format(p_pval),
+                     '{:.3f}'.format(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96), k])
         print(tbl)
 
     if verbose:
@@ -421,16 +421,16 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
         n = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).n
         ll = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'k', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n', 'N']
             tbl_gof.add_row(['GOF', '{:.3f}'.format(aic), '{:.3f}'.format(bic), '{:.3f}'.format(mae), '{:.3f}'.format(mse),
                              '{:.3f}'.format(rmse), '{:.3f}'.format(rrmse), '{:.3f}'.format(ll), '{:.3f}'.format(soe),
                              '{:.3f}'.format(emp_mean), '{:.3f}'.format(emp_var), '{:.3f}'.format(pred_mean),
-                             '{:.3f}'.format(pred_var), k, n])
+                             '{:.3f}'.format(pred_var), '{:d}'.format(k), '{:d}'.format(N)])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
-            return np.mean(p_fit_bs), np.std(p_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, n
+            return np.mean(p_fit_bs), np.std(p_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs)
@@ -500,9 +500,9 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
     if len(weights) == 1:
         weights = np.ones(len(x))
 
-    # check whether user specified both x and W with same shape
+    # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
     if len(weights) == len(x):
-        pass
+        N = int(np.sum(weights))
     else:
         raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
@@ -519,6 +519,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
     except:
         print("error - something went wrong while inflating x by its weights!")
 
+    # prepare progress bar and printed tables
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
@@ -638,8 +639,8 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
 
     if ci is False and verbose is True:
         tbl.field_names = ['parameter', 'value', 'se']
-        tbl.add_row(['p', '{:.4f}'.format(np.mean(p_fit_bs)), '{:.4f}'.format(np.std(p_fit_bs))])
-        tbl.add_row(['q', '{:.4f}'.format(np.mean(q_fit_bs)), '{:.4f}'.format(np.std(q_fit_bs))])
+        tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), '{:.3f}'.format(np.std(p_fit_bs))])
+        tbl.add_row(['q', '{:.3f}'.format(np.mean(q_fit_bs)), '{:.3f}'.format(np.std(q_fit_bs))])
         print(tbl)
 
     if ci and verbose:
@@ -649,14 +650,14 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
         q_pval = 2*norm.cdf(-np.abs((np.mean(q_fit_bs)/np.std(q_fit_bs))))
 
         tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'cilo_95', 'cihi_95', 'n']
-        tbl.add_row(['p', '{:.4f}'.format(np.mean(p_fit_bs)), '{:.4f}'.format(np.std(p_fit_bs)),
-                     '{:.4f}'.format(p_zscore), "{:.4f}".format(p_pval),
-                     '{:.4f}'.format(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96), k])
-        tbl.add_row(['q', '{:.4f}'.format(np.mean(q_fit_bs)), '{:.4f}'.format(np.std(q_fit_bs)),
-                     '{:.4f}'.format(q_zscore), "{:.4f}".format(q_pval),
-                     '{:.4f}'.format(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96), k])
+        tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), '{:.3f}'.format(np.std(p_fit_bs)),
+                     '{:.3f}'.format(p_zscore), "{:.3f}".format(p_pval),
+                     '{:.3f}'.format(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96), k])
+        tbl.add_row(['q', '{:.3f}'.format(np.mean(q_fit_bs)), '{:.3f}'.format(np.std(q_fit_bs)),
+                     '{:.3f}'.format(q_zscore), "{:.3f}".format(q_pval),
+                     '{:.3f}'.format(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96), k])
         print(tbl)
 
     if verbose:
@@ -722,16 +723,16 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
         n = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'k', 'n']
-            tbl_gof.add_row(['GOF', '{:.4f}'.format(aic), '{:.4f}'.format(bic), '{:.4f}'.format(mae), '{:.4f}'.format(mse),
-                             '{:.4f}'.format(rmse), '{:.4f}'.format(rrmse), '{:.4f}'.format(ll), '{:.4f}'.format(soe),
-                             '{:.4f}'.format(emp_mean), '{:.4f}'.format(emp_var), '{:.4f}'.format(pred_mean),
-                             '{:.4f}'.format(pred_var), k, n])
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n', 'N']
+            tbl_gof.add_row(['GOF', '{:.3f}'.format(aic), '{:.3f}'.format(bic), '{:.3f}'.format(mae), '{:.3f}'.format(mse),
+                             '{:.3f}'.format(rmse), '{:.3f}'.format(rrmse), '{:.3f}'.format(ll), '{:.3f}'.format(soe),
+                             '{:.3f}'.format(emp_mean), '{:.3f}'.format(emp_var), '{:.3f}'.format(pred_mean),
+                             '{:.3f}'.format(pred_var), '{:d}'.format(k), '{:d}'.format(N)])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
-            return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, n
+            return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N
 
     if return_parameters:
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
@@ -801,9 +802,9 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
     if len(weights) == 1:
         weights = np.ones(len(x))
 
-    # check whether user specified both x and W with same shape
+    # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
     if len(weights) == len(x):
-        pass
+        N = int(np.sum(weights))
     else:
         raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
@@ -820,6 +821,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
     except:
         print("error - something went wrong while inflating x by its weights!")
 
+    # prepare progress bar and printed tables
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
@@ -942,9 +944,9 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
 
     if ci is False and verbose is True:
         tbl.field_names = ['parameter', 'value', 'se']
-        tbl.add_row(['a', '{:.4f}'.format(np.mean(a_fit_bs)), '{:.4f}'.format(np.std(a_fit_bs))])
-        tbl.add_row(['p', '{:.4f}'.format(np.mean(p_fit_bs)), '{:.4f}'.format(np.std(p_fit_bs))])
-        tbl.add_row(['q', '{:.4f}'.format(np.mean(q_fit_bs)), '{:.4f}'.format(np.std(q_fit_bs))])
+        tbl.add_row(['a', '{:.3f}'.format(np.mean(a_fit_bs)), '{:.3f}'.format(np.std(a_fit_bs))])
+        tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), '{:.3f}'.format(np.std(p_fit_bs))])
+        tbl.add_row(['q', '{:.3f}'.format(np.mean(q_fit_bs)), '{:.3f}'.format(np.std(q_fit_bs))])
         print(tbl)
 
     if ci and verbose:
@@ -956,18 +958,18 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
         q_pval = 2*norm.cdf(-np.abs((np.mean(q_fit_bs)/np.std(q_fit_bs))))
 
         tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'cilo_95', 'cihi_95', 'n']
-        tbl.add_row(['a', '{:.4f}'.format(np.mean(a_fit_bs)), ('{:.4f}'.format(np.std(a_fit_bs))),
-                     '{:.4f}'.format(a_zscore), '{:.4f}'.format(a_pval),
-                     '{:.4f}'.format(np.mean(a_fit_bs)-np.std(a_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(a_fit_bs)+np.std(a_fit_bs)*1.96), k])
-        tbl.add_row(['p', '{:.4f}'.format(np.mean(p_fit_bs)), ('{:.4f}'.format(np.std(p_fit_bs))),
-                     '{:.4f}'.format(p_zscore), '{:.4f}'.format(p_pval),
-                     '{:.4f}'.format(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96), k])
-        tbl.add_row(['q', '{:.4f}'.format(np.mean(q_fit_bs)), ('{:.4f}'.format(np.std(q_fit_bs))),
-                     '{:.4f}'.format(q_zscore), '{:.4f}'.format(q_pval),
-                     '{:.4f}'.format(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96), k])
+        tbl.add_row(['a', '{:.3f}'.format(np.mean(a_fit_bs)), ('{:.3f}'.format(np.std(a_fit_bs))),
+                     '{:.3f}'.format(a_zscore), '{:.3f}'.format(a_pval),
+                     '{:.3f}'.format(np.mean(a_fit_bs)-np.std(a_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(a_fit_bs)+np.std(a_fit_bs)*1.96), k])
+        tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), ('{:.3f}'.format(np.std(p_fit_bs))),
+                     '{:.3f}'.format(p_zscore), '{:.3f}'.format(p_pval),
+                     '{:.3f}'.format(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96), k])
+        tbl.add_row(['q', '{:.3f}'.format(np.mean(q_fit_bs)), ('{:.3f}'.format(np.std(q_fit_bs))),
+                     '{:.3f}'.format(q_zscore), '{:.3f}'.format(q_pval),
+                     '{:.3f}'.format(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96), k])
         print(tbl)
 
     if verbose:
@@ -1034,16 +1036,16 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
         n = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'k', 'n']
-            tbl_gof.add_row(['GOF', '{:.4f}'.format(aic), '{:.4f}'.format(bic), '{:.4f}'.format(mae), '{:.4f}'.format(mse),
-                             '{:.4f}'.format(rmse), '{:.4f}'.format(rrmse), '{:.4f}'.format(ll), '{:.4f}'.format(soe),
-                             '{:.4f}'.format(emp_mean), '{:.4f}'.format(emp_var), '{:.4f}'.format(pred_mean),
-                             '{:.4f}'.format(pred_var), k, n])
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n', 'N']
+            tbl_gof.add_row(['GOF', '{:.3f}'.format(aic), '{:.3f}'.format(bic), '{:.3f}'.format(mae), '{:.3f}'.format(mse),
+                             '{:.3f}'.format(rmse), '{:.3f}'.format(rrmse), '{:.3f}'.format(ll), '{:.3f}'.format(soe),
+                             '{:.3f}'.format(emp_mean), '{:.3f}'.format(emp_var), '{:.3f}'.format(pred_mean),
+                             '{:.3f}'.format(pred_var), '{:d}'.format(k), '{:d}'.format(N)])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
-            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, n
+            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N
 
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
@@ -1113,9 +1115,9 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
     if len(weights) == 1:
         weights = np.ones(len(x))
 
-    # check whether user specified both x and W with same shape
+    # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
     if len(weights) == len(x):
-        pass
+        N = int(np.sum(weights))
     else:
         raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
@@ -1132,6 +1134,7 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
     except:
         print("error - something went wrong while inflating x by its weights!")
 
+    # prepare progress bar and printed tables
     widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
@@ -1265,10 +1268,10 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
     if ci is False and verbose is True:
 
         tbl.field_names = ['parameter', 'value', 'se']
-        tbl.add_row(['a', '{:.4f}'.format(np.mean(a_fit_bs)), '{:.4f}'.format(np.std(a_fit_bs))])
-        tbl.add_row(['c', '{:.4f}'.format(np.mean(c_fit_bs)), '{:.4f}'.format(np.std(c_fit_bs))])
-        tbl.add_row(['p', '{:.4f}'.format(np.mean(p_fit_bs)), '{:.4f}'.format(np.std(p_fit_bs))])
-        tbl.add_row(['q', '{:.4f}'.format(np.mean(q_fit_bs)), '{:.4f}'.format(np.std(q_fit_bs))])
+        tbl.add_row(['a', '{:.3f}'.format(np.mean(a_fit_bs)), '{:.3f}'.format(np.std(a_fit_bs))])
+        tbl.add_row(['c', '{:.3f}'.format(np.mean(c_fit_bs)), '{:.3f}'.format(np.std(c_fit_bs))])
+        tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), '{:.3f}'.format(np.std(p_fit_bs))])
+        tbl.add_row(['q', '{:.3f}'.format(np.mean(q_fit_bs)), '{:.3f}'.format(np.std(q_fit_bs))])
         print(tbl)
 
     if ci and verbose:
@@ -1282,22 +1285,22 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
         q_pval = 2*norm.cdf(-np.abs((np.mean(q_fit_bs)/np.std(q_fit_bs))))
 
         tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'cilo_95', 'cihi_95', 'n']
-        tbl.add_row(['a', '{:.4f}'.format(np.mean(a_fit_bs)), '{:.4f}'.format(np.std(a_fit_bs)),
-                     '{:.4f}'.format(a_zscore), '{:.4f}'.format(a_pval),
-                     '{:.4f}'.format(np.mean(a_fit_bs)-np.std(a_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(a_fit_bs)+np.std(a_fit_bs)*1.96), k])
-        tbl.add_row(['c', '{:.4f}'.format(np.mean(c_fit_bs)), '{:.4f}'.format(np.std(c_fit_bs)),
-                     '{:.4f}'.format(c_zscore), '{:.4f}'.format(c_pval),
-                     '{:.4f}'.format(np.mean(c_fit_bs)-np.std(c_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(c_fit_bs)+np.std(c_fit_bs)*1.96), k])
-        tbl.add_row(['p', '{:.4f}'.format(np.mean(p_fit_bs)), '{:.4f}'.format(np.std(p_fit_bs)),
-                     '{:.4f}'.format(p_zscore), '{:.4f}'.format(p_pval),
-                     '{:.4f}'.format(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96), k])
-        tbl.add_row(['q', '{:.4f}'.format(np.mean(q_fit_bs)), '{:.4f}'.format(np.std(q_fit_bs)),
-                     '{:.4f}'.format(q_zscore), '{:.4f}'.format(q_pval),
-                     '{:.4f}'.format(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96),
-                     '{:.4f}'.format(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96), k])
+        tbl.add_row(['a', '{:.3f}'.format(np.mean(a_fit_bs)), '{:.3f}'.format(np.std(a_fit_bs)),
+                     '{:.3f}'.format(a_zscore), '{:.3f}'.format(a_pval),
+                     '{:.3f}'.format(np.mean(a_fit_bs)-np.std(a_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(a_fit_bs)+np.std(a_fit_bs)*1.96), k])
+        tbl.add_row(['c', '{:.3f}'.format(np.mean(c_fit_bs)), '{:.3f}'.format(np.std(c_fit_bs)),
+                     '{:.3f}'.format(c_zscore), '{:.3f}'.format(c_pval),
+                     '{:.3f}'.format(np.mean(c_fit_bs)-np.std(c_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(c_fit_bs)+np.std(c_fit_bs)*1.96), k])
+        tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), '{:.3f}'.format(np.std(p_fit_bs)),
+                     '{:.3f}'.format(p_zscore), '{:.3f}'.format(p_pval),
+                     '{:.3f}'.format(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96), k])
+        tbl.add_row(['q', '{:.3f}'.format(np.mean(q_fit_bs)), '{:.3f}'.format(np.std(q_fit_bs)),
+                     '{:.3f}'.format(q_zscore), '{:.3f}'.format(q_pval),
+                     '{:.3f}'.format(np.mean(q_fit_bs)-np.std(q_fit_bs)*1.96),
+                     '{:.3f}'.format(np.mean(q_fit_bs)+np.std(q_fit_bs)*1.96), k])
         print(tbl)
 
     if verbose:
@@ -1367,17 +1370,17 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
         n = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
         ll = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
-            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'k', 'n']
+            tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n', 'N']
             tbl_gof.add_row(['GOF', '{:.3f}'.format(aic), '{:.3f}'.format(bic), '{:.3f}'.format(mae), '{:.3f}'.format(mse),
                              '{:.3f}'.format(rmse), '{:.3f}'.format(rrmse), '{:.3f}'.format(ll), '{:.3f}'.format(soe),
                              '{:.3f}'.format(emp_mean), '{:.3f}'.format(emp_var), '{:.3f}'.format(pred_mean),
-                             '{:.3f}'.format(pred_var), k, n])
+                             '{:.3f}'.format(pred_var), '{:d}'.format(k), '{:d}'.format(N)])
             print("\n{}\n".format(tbl_gof))
 
         if return_gofs:
             return_parameters = False
             return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), \
-                   np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, n
+                   np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N
 
     if return_parameters:
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
@@ -1460,9 +1463,9 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     if len(weights) == 1:
         weights = np.ones(len(x))
 
-    # check whether user specified both x and W with same shape
+    # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
     if len(weights) == len(x):
-        pass
+        N = int(np.sum(weights))
     else:
         raise Exception("error - the length of W does not match the length of x: {}".format(len(weights), len(x)))
 
@@ -1548,6 +1551,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     a_fit3, a_se3, p_fit3, p_se3, q_fit3, q_se3 = GB1_fit[:6]
     a_fit4, a_se4, c_fit4, c_se4, p_fit4, p_se4, q_fit4, q_se4 = GB_fit[:8]
 
+    # run rejection based on LRtest
     if rejection_criteria == "LRtest":
         # alpha = .05
         # 1. LRtest Pareto vs IB1
@@ -1583,20 +1587,18 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         # save LRtest results to tbl
         tbl = PrettyTable()
         tbl.field_names = ['comparison', 'H0', 'LR test', '', 'stop', 'best model']
-        tbl.add_row(['Pareto vs IB1', 'q=1', 'chi2({}) = '.format(2), '{:.4f}'.format(LRtest1v2.w), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
-        tbl.add_row(['', '', 'Prob > chi2', '{:.4f}'.format(LRtest1v2.pval), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
-        tbl.add_row(['IB1 vs GB1', 'a=-1', 'chi2({}) = '.format(3), '{:.4f}'.format(LRtest2v3.w), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
-        tbl.add_row(['', '', 'Prob > chi2', '{:.4f}'.format(LRtest2v3.pval), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
-        tbl.add_row(['GB1 vs GB', 'c=0', 'chi2({}) = '.format(4), '{:.4f}'.format(LRtest3v4.w), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
-        tbl.add_row(['', '', 'Prob > chi2', '{:.4f}'.format(LRtest3v4.pval), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+        tbl.add_row(['Pareto vs IB1', 'q=1', 'chi2({}) = '.format(2), '{:.3f}'.format(LRtest1v2.w), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtest1v2.pval), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.add_row(['IB1 vs GB1', 'a=-1', 'chi2({}) = '.format(3), '{:.3f}'.format(LRtest2v3.w), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtest2v3.pval), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['GB1 vs GB', 'c=0', 'chi2({}) = '.format(4), '{:.3f}'.format(LRtest3v4.w), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+        tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtest3v4.pval), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
         if GB_remaining:
             tbl.add_row(['GB', '', '', '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
         print("\n")
         print(tbl)
 
-    if verbose:
-        print('\n{}'.format(locals()))
-
+    # run rejection based on AIC
     if rejection_criteria == "AIC":
 
         # unpack aic
@@ -1649,26 +1651,26 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
 
         tbl_gof = PrettyTable()
         tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'df', 'n', 'N']
-        tbl_gof.add_row(['Pareto', '{:.4f}'.format(Pareto_fit[2]), '{:.4f}'.format(Pareto_fit[3]), '{:.4f}'.format(Pareto_fit[4]),
+        tbl_gof.add_row(['Pareto', '{:.3f}'.format(Pareto_fit[2]), '{:.3f}'.format(Pareto_fit[3]), '{:.3f}'.format(Pareto_fit[4]),
                          '{:.3f}'.format(Pareto_fit[5]), '{:.3f}'.format(Pareto_fit[6]), '{:.3f}'.format(Pareto_fit[7]),
                          '{:.3f}'.format(Pareto_fit[8]), '{:.3f}'.format(Pareto_fit[9]), '{:.3f}'.format(Pareto_fit[10]),
                          '{:.3f}'.format(Pareto_fit[11]), '{:.3f}'.format(Pareto_fit[12]), '{:.3f}'.format(Pareto_fit[13]), 1,
-                         Pareto_fit[14], Pareto_fit[15]])
+                         '{}'.format(Pareto_fit[14]), '{}'.format(Pareto_fit[15])])
         tbl_gof.add_row(['IB1', '{:.3f}'.format(IB1_fit[4]), '{:.3f}'.format(IB1_fit[5]), '{:.3f}'.format(IB1_fit[6]),
                          '{:.3f}'.format(IB1_fit[7]), '{:.3f}'.format(IB1_fit[8]), '{:.3f}'.format(IB1_fit[9]),
                          '{:.3f}'.format(IB1_fit[10]), '{:.3f}'.format(IB1_fit[11]), '{:.3f}'.format(IB1_fit[12]),
                          '{:.3f}'.format(IB1_fit[13]), '{:.3f}'.format(IB1_fit[14]), '{:.3f}'.format(IB1_fit[15]), 1,
-                         IB1_fit[16], IB1_fit[17]])
+                         '{}'.format(IB1_fit[16]), '{}'.format(IB1_fit[17])])
         tbl_gof.add_row(['GB1', '{:.3f}'.format(GB1_fit[6]), '{:.3f}'.format(GB1_fit[7]), '{:.3f}'.format(GB1_fit[8]),
                          '{:.3f}'.format(GB1_fit[9]), '{:.3f}'.format(GB1_fit[10]), '{:.3f}'.format(GB1_fit[11]),
                          '{:.3f}'.format(GB1_fit[12]), '{:.3f}'.format(GB1_fit[13]), '{:.3f}'.format(GB1_fit[14]),
                          '{:.3f}'.format(GB1_fit[15]), '{:.3f}'.format(GB1_fit[16]), '{:.3f}'.format(GB1_fit[17]), 1,
-                         GB1_fit[18], GB1_fit[19]])
+                         '{}'.format(GB1_fit[18]), '{}'.format(GB1_fit[19])])
         tbl_gof.add_row(['GB', '{:.3f}'.format(GB_fit[8]), '{:.3f}'.format(GB_fit[9]), '{:.3f}'.format(GB_fit[10]),
                          '{:.3f}'.format(GB_fit[11]), '{:.3f}'.format(GB_fit[12]), '{:.3f}'.format(GB_fit[13]),
                          '{:.3f}'.format(GB_fit[14]), '{:.3f}'.format(GB_fit[15]), '{:.3f}'.format(GB_fit[16]),
                          '{:.3f}'.format(GB_fit[17]), '{:.3f}'.format(GB_fit[18]), '{:.3f}'.format(GB_fit[19]), 1,
-                         GB_fit[20], GB_fit[21]])
+                         '{}'.format(GB_fit[20]), '{}'.format(GB_fit[21])])
 
         print('\n{}'.format(tbl_parms))
         print('\n{}'.format(tbl_gof))
@@ -1722,7 +1724,7 @@ def Pareto_extract_se(x, b, p_fitted, method=1, verbose=True, hess=False):
     info_matrix = np.dot(-1/n, hess)
     # covvar = linalg.inv(info_matrix)
     p_se = np.sqrt(info_matrix[0][0])
-    if verbose: print("p: {:.4f}, se: {:.4f}".format(p, p_se))
+    if verbose: print("p: {:.3f}, se: {:.3f}".format(p, p_se))
     # if hess: print("Hessian Matrix:", hess)
     return p_se
 
@@ -1766,7 +1768,7 @@ def IB1_extract_se(x, fitted_parms, method, dx, display, display_hessian):
     p_se = np.sqrt(covvar[1][1])
     q_se = np.sqrt(covvar[2][2])
     if display == True:
-        print("b: {:.4f}, se: {:.4f}\np: {:.4f}, se: {:.4f}\nq: {:.4f}, se: {:.4f}".format(b, b_se, p, p_se, q, q_se))
+        print("b: {:.3f}, se: {:.3f}\np: {:.3f}, se: {:.3f}\nq: {:.3f}, se: {:.3f}".format(b, b_se, p, p_se, q, q_se))
     if display_hessian == True:
         print("Hessian Matrix:", hess)
     return b_se, p_se, q_se
