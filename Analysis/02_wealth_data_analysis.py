@@ -308,7 +308,7 @@ Paretobranchfit(x=dfPSID['wealth1_01'], weights=dfPSID['weight1_01'],
 
 
 ### PSID
-for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
+for year in ['13', '15', '17']:
 
     # write temp variables names
     wealth = 'wealth1_' + year
@@ -325,6 +325,19 @@ for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 
 
 ### SOEP
+for year in ['12', '17']:
+
+    # write temp variables names
+    wealth = 'wealth_' + year
+    weight = 'weight_' + year
+    print(dfSOEP[wealth].size)
+    print(dfSOEP[weight].size)
+    data = dfSOEP[wealth]
+    # wgt = int(dfSOEP[weight])
+    wgt = pd.to_numeric(dfSOEP[weight], downcast='signed')
+    print(wgt)
+
+    globals()['fit_results_psid_%s' % year] = Paretobranchfit(x=data, weights=wgt, b=1000000, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10))
 
 
 
