@@ -6,18 +6,18 @@ import os
 
 # diw path
 if os.getlogin() == "fnemeczek":
-	descriptivespath = 'H:/Meine Dateien/Masterarbeit/Python/descriptives'
-	data_PSID = 'H:/Meine Dateien/Masterarbeit/J261520/J261520.csv'
-	data_SOEP = 'H:/Meine Dateien/Masterarbeit/DATA/SOEP/'
+    descriptivespath = 'H:/Meine Dateien/Masterarbeit/Python/descriptives'
+    data_PSID = 'H:/Meine Dateien/Masterarbeit/J261520/J261520.csv'
+    data_SOEP = 'H:/Meine Dateien/Masterarbeit/DATA/SOEP/'
 
 # windows paths
-if os.getlogin() == 'fabia': #TODO: check PC name
+if os.getlogin() == 'Fabian' and os.name == 'nt':
     descriptivespath = 'D:/OneDrive/Studium/Masterarbeit/Python/descriptives/'
     data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/J261520/'
     data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v34/stata_de+en/'
 
 # mac paths
-if os.getlogin() == 'Fabian':
+if os.getlogin() == 'Fabian' and os.name == 'POSIX':
     descriptivespath = '/Users/Fabian/OneDrive/Studium/Masterarbeit/Python/descriptives/'
     data_PSID = "/Users/Fabian/OneDrive/Studium/Masterarbeit/data/J261520/"
     data_SOEP = '/Users/Fabian/Documents/DATA/STATA/SOEP_v34/stata_de+en/'
@@ -70,11 +70,11 @@ def prep_fit_results_for_table(fit_result):
     :param fit_result: result of Paretobranchfit, needs return_bestmodel=True
     :return: returns vector with same shape, doesn't matter which model is best
     """
-
     bestfit, fit_result, placeholder, list = fit_result[0], np.array(fit_result[1]).tolist(), ['--', '--'], []
-    for el in fit_result:
-        list.append(np.around(el, 3))
-
+    for el in fit_result[:-2]:
+        list.append('{:.3f}'.format(el))
+    for el in fit_result[-2:]:
+        list.append('{:.3f}'.format(int(el)))
     if bestfit == "Pareto_best" or len(list) == 16:
         out = placeholder * 2 #a,c
         out = out + list[0:2] + placeholder #p,q
@@ -87,7 +87,7 @@ def prep_fit_results_for_table(fit_result):
         out = out + list[2:] #rest
     if bestfit == "GB_best" or len(list) == 22:
         out = list
-    del out[14] # remove soe
+    del out[15] # remove soe
     del out[13] # remove rrmse
     del out[10] # remove mae
     del out[9] # remove bic
@@ -139,7 +139,7 @@ for weight in psid_longi_weights:
     # print(weight[-2:], dfPSID[weight].sum()) #TODO: correct family N?
 
 # check
-dfPSID.head()
+# dfPSID.head()
 
 """
 -----------------------
@@ -168,9 +168,9 @@ dfSOEP = dfSOEP.rename(index=str, columns={2002: 'wealth_02', 2007: 'wealth_07',
                                            'shhrf': 'weight_02', 'xhhrf': 'weight_07', 'bchhrf': 'weight_12', 'bhhhrf': 'weight_17'})
 
 # check
-dfSOEP_wealth.head()
-dfSOEP_hhweights.head()
-dfSOEP.head()
+# dfSOEP_wealth.head()
+# dfSOEP_hhweights.head()
+# dfSOEP.head()
 
 """
 -----------------------
@@ -281,13 +281,15 @@ Fit data
 -----------------------------
 """
 
-b = 1000000
+b = 500000
+x0 = (-1, .5, 1, 1)
+bootstraps = (100, 100, 100, 100)
 
 ### PSID
 for test in ['LRtest', 'AIC']:
     for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 
-        print('PSID:', test, year)
+        print('PSID:', year, test)
 
         # write temp variables names
         wealth = 'wealth1_' + year
@@ -296,7 +298,7 @@ for test in ['LRtest', 'AIC']:
         # wgt = int(dfPSID[weight])
         wgt = pd.to_numeric(dfPSID[weight], downcast='signed')
 
-        result = Paretobranchfit(x=data, weights=wgt, b=b, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10),
+        result = Paretobranchfit(x=data, weights=wgt, b=b, x0=x0, bootstraps=bootstraps,
                                  return_bestmodel=True, rejection_criteria=test)
         globals()['fit_result_psid_{}_{}'.format(year, test)] = result
         globals()['fit_psid_{}_{}'.format(year, test)] = prep_fit_results_for_table(result)
@@ -306,7 +308,7 @@ for test in ['LRtest', 'AIC']:
 for test in ['LRtest', 'AIC']:
     for year in ['02', '07', '12', '17']:
 
-        print('SOEP:', test, year)
+        print('SOEP:', year, test)
 
         # write temp variables names
         wealth = 'wealth_' + year
@@ -315,7 +317,7 @@ for test in ['LRtest', 'AIC']:
         # wgt = int(dfSOEP[weight])
         wgt = pd.to_numeric(dfSOEP[weight], downcast='signed')
 
-        result = Paretobranchfit(x=data, weights=wgt, b=1000000, x0=(-1, .5, 1, 1), bootstraps=(10, 10, 10, 10),
+        result = Paretobranchfit(x=data, weights=wgt, b=b, x0=x0, bootstraps=bootstraps,
                                  return_bestmodel=True, rejection_criteria=test)
         globals()['fit_result_soep_{}_{}'.format(year, test)] = result
         globals()['fit_soep_{}_{}'.format(year, test)] = prep_fit_results_for_table(result)
@@ -327,27 +329,56 @@ Fit results to table
 -----------------------------
 """
 
-df_wealth_results = pd.DataFrame(np.array([['best fitted model', '{}'.format(fit_result_psid_01_LRtest[0]), '{}'.format(fit_result_psid_03_LRtest[0]), '{}'.format(fit_result_psid_05_LRtest[0]), '{}'.format(fit_result_psid_07_LRtest[0]), '{}'.format(fit_result_psid_09_LRtest[0]), '{}'.format(fit_result_psid_11_LRtest[0]), '{}'.format(fit_result_psid_13_LRtest[0]), '{}'.format(fit_result_psid_15_LRtest[0]), '{}'.format(fit_result_psid_17_LRtest[0])],
-                                           ['a',               '{}'.format(fit_psid_01_LRtest[0]),  '{}'.format(fit_psid_03_LRtest[0]),  '{}'.format(fit_psid_05_LRtest[0]),  '{}'.format(fit_psid_07_LRtest[0]),  '{}'.format(fit_psid_09_LRtest[0]),  '{}'.format(fit_psid_11_LRtest[0]),  '{}'.format(fit_psid_13_LRtest[0]),  '{}'.format(fit_psid_15_LRtest[0]),  '{}'.format(fit_psid_17_LRtest[0]),  '{}'.format(fit_soep_02_LRtest[0]),  '{}'.format(fit_soep_07_LRtest[0]),  '{}'.format(fit_soep_12_LRtest[0]),  '{}'.format(fit_soep_17_LRtest[0]), ],
-                                           [' ',               '{}'.format(fit_psid_01_LRtest[1]),  '{}'.format(fit_psid_03_LRtest[1]),  '{}'.format(fit_psid_05_LRtest[1]),  '{}'.format(fit_psid_07_LRtest[1]),  '{}'.format(fit_psid_09_LRtest[1]),  '{}'.format(fit_psid_11_LRtest[1]),  '{}'.format(fit_psid_13_LRtest[1]),  '{}'.format(fit_psid_15_LRtest[1]),  '{}'.format(fit_psid_17_LRtest[1]),  '{}'.format(fit_soep_02_LRtest[1]),  '{}'.format(fit_soep_07_LRtest[1]),  '{}'.format(fit_soep_12_LRtest[1]),  '{}'.format(fit_soep_17_LRtest[1]), ],
-                                           ['c',               '{}'.format(fit_psid_01_LRtest[2]),  '{}'.format(fit_psid_03_LRtest[2]),  '{}'.format(fit_psid_05_LRtest[2]),  '{}'.format(fit_psid_07_LRtest[2]),  '{}'.format(fit_psid_09_LRtest[2]),  '{}'.format(fit_psid_11_LRtest[2]),  '{}'.format(fit_psid_13_LRtest[2]),  '{}'.format(fit_psid_15_LRtest[2]),  '{}'.format(fit_psid_17_LRtest[2]),  '{}'.format(fit_soep_02_LRtest[2]),  '{}'.format(fit_soep_07_LRtest[2]),  '{}'.format(fit_soep_12_LRtest[2]),  '{}'.format(fit_soep_17_LRtest[2]), ],
-                                           [' ',               '{}'.format(fit_psid_01_LRtest[3]),  '{}'.format(fit_psid_03_LRtest[3]),  '{}'.format(fit_psid_05_LRtest[3]),  '{}'.format(fit_psid_07_LRtest[3]),  '{}'.format(fit_psid_09_LRtest[3]),  '{}'.format(fit_psid_11_LRtest[3]),  '{}'.format(fit_psid_13_LRtest[3]),  '{}'.format(fit_psid_15_LRtest[3]),  '{}'.format(fit_psid_17_LRtest[3]),  '{}'.format(fit_soep_02_LRtest[3]),  '{}'.format(fit_soep_07_LRtest[3]),  '{}'.format(fit_soep_12_LRtest[3]),  '{}'.format(fit_soep_17_LRtest[3]), ],
-                                           ['p',               '{}'.format(fit_psid_01_LRtest[4]),  '{}'.format(fit_psid_03_LRtest[4]),  '{}'.format(fit_psid_05_LRtest[4]),  '{}'.format(fit_psid_07_LRtest[4]),  '{}'.format(fit_psid_09_LRtest[4]),  '{}'.format(fit_psid_11_LRtest[4]),  '{}'.format(fit_psid_13_LRtest[4]),  '{}'.format(fit_psid_15_LRtest[4]),  '{}'.format(fit_psid_17_LRtest[4]),  '{}'.format(fit_soep_02_LRtest[4]),  '{}'.format(fit_soep_07_LRtest[4]),  '{}'.format(fit_soep_12_LRtest[4]),  '{}'.format(fit_soep_17_LRtest[4]), ],
-                                           [' ',               '{}'.format(fit_psid_01_LRtest[5]),  '{}'.format(fit_psid_03_LRtest[5]),  '{}'.format(fit_psid_05_LRtest[5]),  '{}'.format(fit_psid_07_LRtest[5]),  '{}'.format(fit_psid_09_LRtest[5]),  '{}'.format(fit_psid_11_LRtest[5]),  '{}'.format(fit_psid_13_LRtest[5]),  '{}'.format(fit_psid_15_LRtest[5]),  '{}'.format(fit_psid_17_LRtest[5]),  '{}'.format(fit_soep_02_LRtest[5]),  '{}'.format(fit_soep_07_LRtest[5]),  '{}'.format(fit_soep_12_LRtest[5]),  '{}'.format(fit_soep_17_LRtest[5]), ],
-                                           ['q',               '{}'.format(fit_psid_01_LRtest[6]),  '{}'.format(fit_psid_03_LRtest[6]),  '{}'.format(fit_psid_05_LRtest[6]),  '{}'.format(fit_psid_07_LRtest[6]),  '{}'.format(fit_psid_09_LRtest[6]),  '{}'.format(fit_psid_11_LRtest[6]),  '{}'.format(fit_psid_13_LRtest[6]),  '{}'.format(fit_psid_15_LRtest[6]),  '{}'.format(fit_psid_17_LRtest[6]),  '{}'.format(fit_soep_02_LRtest[6]),  '{}'.format(fit_soep_07_LRtest[6]),  '{}'.format(fit_soep_12_LRtest[6]),  '{}'.format(fit_soep_17_LRtest[6]), ],
-                                           [' ',               '{}'.format(fit_psid_01_LRtest[7]),  '{}'.format(fit_psid_03_LRtest[7]),  '{}'.format(fit_psid_05_LRtest[7]),  '{}'.format(fit_psid_07_LRtest[7]),  '{}'.format(fit_psid_09_LRtest[7]),  '{}'.format(fit_psid_11_LRtest[7]),  '{}'.format(fit_psid_13_LRtest[7]),  '{}'.format(fit_psid_15_LRtest[7]),  '{}'.format(fit_psid_17_LRtest[7]),  '{}'.format(fit_soep_02_LRtest[7]),  '{}'.format(fit_soep_07_LRtest[7]),  '{}'.format(fit_soep_12_LRtest[7]),  '{}'.format(fit_soep_17_LRtest[7]), ],
-                                           ['lower bound b',   '{}'.format(b),                      '{}'.format(b),                     '{}'.format(b),                       '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b)                      ],
-                                           ['LL',              '{}'.format(fit_psid_01_LRtest[8]) , '{}'.format(fit_psid_03_LRtest[8]) , '{}'.format(fit_psid_05_LRtest[8]) , '{}'.format(fit_psid_07_LRtest[8]) , '{}'.format(fit_psid_09_LRtest[8]) , '{}'.format(fit_psid_11_LRtest[8]) , '{}'.format(fit_psid_13_LRtest[8]) , '{}'.format(fit_psid_15_LRtest[8]) , '{}'.format(fit_psid_17_LRtest[8]) , '{}'.format(fit_soep_02_LRtest[8]) , '{}'.format(fit_soep_07_LRtest[8]) , '{}'.format(fit_soep_12_LRtest[8]) , '{}'.format(fit_soep_17_LRtest[8]) ,],
-                                           ['AIC',             '{}'.format(fit_psid_01_LRtest[0]) , '{}'.format(fit_psid_03_LRtest[0]) , '{}'.format(fit_psid_05_LRtest[0]) , '{}'.format(fit_psid_07_LRtest[0]) , '{}'.format(fit_psid_09_LRtest[0]) , '{}'.format(fit_psid_11_LRtest[0]) , '{}'.format(fit_psid_13_LRtest[0]) , '{}'.format(fit_psid_15_LRtest[0]) , '{}'.format(fit_psid_17_LRtest[0]) , '{}'.format(fit_soep_02_LRtest[0]) , '{}'.format(fit_soep_07_LRtest[0]) , '{}'.format(fit_soep_12_LRtest[0]) , '{}'.format(fit_soep_17_LRtest[0]) ,],
-                                           ['MSE',             '{}'.format(fit_psid_01_LRtest[10]), '{}'.format(fit_psid_03_LRtest[10]), '{}'.format(fit_psid_05_LRtest[10]), '{}'.format(fit_psid_07_LRtest[10]), '{}'.format(fit_psid_09_LRtest[10]), '{}'.format(fit_psid_11_LRtest[10]), '{}'.format(fit_psid_13_LRtest[10]), '{}'.format(fit_psid_15_LRtest[10]), '{}'.format(fit_psid_17_LRtest[10]), '{}'.format(fit_soep_02_LRtest[10]), '{}'.format(fit_soep_07_LRtest[10]), '{}'.format(fit_soep_12_LRtest[10]), '{}'.format(fit_soep_17_LRtest[10]),],
-                                           ['RMSE',            '{}'.format(fit_psid_01_LRtest[11]), '{}'.format(fit_psid_03_LRtest[11]), '{}'.format(fit_psid_05_LRtest[11]), '{}'.format(fit_psid_07_LRtest[11]), '{}'.format(fit_psid_09_LRtest[11]), '{}'.format(fit_psid_11_LRtest[11]), '{}'.format(fit_psid_13_LRtest[11]), '{}'.format(fit_psid_15_LRtest[11]), '{}'.format(fit_psid_17_LRtest[11]), '{}'.format(fit_soep_02_LRtest[11]), '{}'.format(fit_soep_07_LRtest[11]), '{}'.format(fit_soep_12_LRtest[11]), '{}'.format(fit_soep_17_LRtest[11]),],
-                                           ['emp. mean',       '{}'.format(fit_psid_01_LRtest[12]), '{}'.format(fit_psid_03_LRtest[12]), '{}'.format(fit_psid_05_LRtest[12]), '{}'.format(fit_psid_07_LRtest[12]), '{}'.format(fit_psid_09_LRtest[12]), '{}'.format(fit_psid_11_LRtest[12]), '{}'.format(fit_psid_13_LRtest[12]), '{}'.format(fit_psid_15_LRtest[12]), '{}'.format(fit_psid_17_LRtest[12]), '{}'.format(fit_soep_02_LRtest[12]), '{}'.format(fit_soep_07_LRtest[12]), '{}'.format(fit_soep_12_LRtest[12]), '{}'.format(fit_soep_17_LRtest[12]),],
-                                           ['emp. var.',       '{}'.format(fit_psid_01_LRtest[13]), '{}'.format(fit_psid_03_LRtest[13]), '{}'.format(fit_psid_05_LRtest[13]), '{}'.format(fit_psid_07_LRtest[13]), '{}'.format(fit_psid_09_LRtest[13]), '{}'.format(fit_psid_11_LRtest[13]), '{}'.format(fit_psid_13_LRtest[13]), '{}'.format(fit_psid_15_LRtest[13]), '{}'.format(fit_psid_17_LRtest[13]), '{}'.format(fit_soep_02_LRtest[13]), '{}'.format(fit_soep_07_LRtest[13]), '{}'.format(fit_soep_12_LRtest[13]), '{}'.format(fit_soep_17_LRtest[13]),],
-                                           ['pred. mean',      '{}'.format(fit_psid_01_LRtest[14]), '{}'.format(fit_psid_03_LRtest[14]), '{}'.format(fit_psid_05_LRtest[14]), '{}'.format(fit_psid_07_LRtest[14]), '{}'.format(fit_psid_09_LRtest[14]), '{}'.format(fit_psid_11_LRtest[14]), '{}'.format(fit_psid_13_LRtest[14]), '{}'.format(fit_psid_15_LRtest[14]), '{}'.format(fit_psid_17_LRtest[14]), '{}'.format(fit_soep_02_LRtest[14]), '{}'.format(fit_soep_07_LRtest[14]), '{}'.format(fit_soep_12_LRtest[14]), '{}'.format(fit_soep_17_LRtest[14]),],
-                                           ['pred. var.',      '{}'.format(fit_psid_01_LRtest[15]), '{}'.format(fit_psid_03_LRtest[15]), '{}'.format(fit_psid_05_LRtest[15]), '{}'.format(fit_psid_07_LRtest[15]), '{}'.format(fit_psid_09_LRtest[15]), '{}'.format(fit_psid_11_LRtest[15]), '{}'.format(fit_psid_13_LRtest[15]), '{}'.format(fit_psid_15_LRtest[15]), '{}'.format(fit_psid_17_LRtest[15]), '{}'.format(fit_soep_02_LRtest[15]), '{}'.format(fit_soep_07_LRtest[15]), '{}'.format(fit_soep_12_LRtest[15]), '{}'.format(fit_soep_17_LRtest[15]),],
-                                           ['n',               '{}'.format(fit_psid_01_LRtest[16]), '{}'.format(fit_psid_03_LRtest[16]), '{}'.format(fit_psid_05_LRtest[16]), '{}'.format(fit_psid_07_LRtest[16]), '{}'.format(fit_psid_09_LRtest[16]), '{}'.format(fit_psid_11_LRtest[16]), '{}'.format(fit_psid_13_LRtest[16]), '{}'.format(fit_psid_15_LRtest[16]), '{}'.format(fit_psid_17_LRtest[16]), '{}'.format(fit_soep_02_LRtest[16]), '{}'.format(fit_soep_07_LRtest[16]), '{}'.format(fit_soep_12_LRtest[16]), '{}'.format(fit_soep_17_LRtest[16]),],
+df_wealth_results_LR = pd.DataFrame(np.array([['best fitted model', '{}'.format(fit_result_psid_01_LRtest[0]), '{}'.format(fit_result_psid_03_LRtest[0]), '{}'.format(fit_result_psid_05_LRtest[0]), '{}'.format(fit_result_psid_07_LRtest[0]), '{}'.format(fit_result_psid_09_LRtest[0]), '{}'.format(fit_result_psid_11_LRtest[0]), '{}'.format(fit_result_psid_13_LRtest[0]), '{}'.format(fit_result_psid_15_LRtest[0]), '{}'.format(fit_result_psid_17_LRtest[0]), '{}'.format(fit_result_soep_02_LRtest[0]), '{}'.format(fit_result_soep_07_LRtest[0]), '{}'.format(fit_result_soep_12_LRtest[0]), '{}'.format(fit_result_soep_17_LRtest[0])],
+                                           ['a',               '{}'.format(fit_psid_01_LRtest[0]),  '{}'.format(fit_psid_03_LRtest[0]),  '{}'.format(fit_psid_05_LRtest[0]),  '{}'.format(fit_psid_07_LRtest[0]),  '{}'.format(fit_psid_09_LRtest[0]),  '{}'.format(fit_psid_11_LRtest[0]),  '{}'.format(fit_psid_13_LRtest[0]),  '{}'.format(fit_psid_15_LRtest[0]),  '{}'.format(fit_psid_17_LRtest[0]),  '{}'.format(fit_soep_02_LRtest[0]),  '{}'.format(fit_soep_07_LRtest[0]),  '{}'.format(fit_soep_12_LRtest[0]),  '{}'.format(fit_soep_17_LRtest[0])],
+                                           [' ',               '{}'.format(fit_psid_01_LRtest[1]),  '{}'.format(fit_psid_03_LRtest[1]),  '{}'.format(fit_psid_05_LRtest[1]),  '{}'.format(fit_psid_07_LRtest[1]),  '{}'.format(fit_psid_09_LRtest[1]),  '{}'.format(fit_psid_11_LRtest[1]),  '{}'.format(fit_psid_13_LRtest[1]),  '{}'.format(fit_psid_15_LRtest[1]),  '{}'.format(fit_psid_17_LRtest[1]),  '{}'.format(fit_soep_02_LRtest[1]),  '{}'.format(fit_soep_07_LRtest[1]),  '{}'.format(fit_soep_12_LRtest[1]),  '{}'.format(fit_soep_17_LRtest[1])],
+                                           ['c',               '{}'.format(fit_psid_01_LRtest[2]),  '{}'.format(fit_psid_03_LRtest[2]),  '{}'.format(fit_psid_05_LRtest[2]),  '{}'.format(fit_psid_07_LRtest[2]),  '{}'.format(fit_psid_09_LRtest[2]),  '{}'.format(fit_psid_11_LRtest[2]),  '{}'.format(fit_psid_13_LRtest[2]),  '{}'.format(fit_psid_15_LRtest[2]),  '{}'.format(fit_psid_17_LRtest[2]),  '{}'.format(fit_soep_02_LRtest[2]),  '{}'.format(fit_soep_07_LRtest[2]),  '{}'.format(fit_soep_12_LRtest[2]),  '{}'.format(fit_soep_17_LRtest[2])],
+                                           [' ',               '{}'.format(fit_psid_01_LRtest[3]),  '{}'.format(fit_psid_03_LRtest[3]),  '{}'.format(fit_psid_05_LRtest[3]),  '{}'.format(fit_psid_07_LRtest[3]),  '{}'.format(fit_psid_09_LRtest[3]),  '{}'.format(fit_psid_11_LRtest[3]),  '{}'.format(fit_psid_13_LRtest[3]),  '{}'.format(fit_psid_15_LRtest[3]),  '{}'.format(fit_psid_17_LRtest[3]),  '{}'.format(fit_soep_02_LRtest[3]),  '{}'.format(fit_soep_07_LRtest[3]),  '{}'.format(fit_soep_12_LRtest[3]),  '{}'.format(fit_soep_17_LRtest[3])],
+                                           ['p',               '{}'.format(fit_psid_01_LRtest[4]),  '{}'.format(fit_psid_03_LRtest[4]),  '{}'.format(fit_psid_05_LRtest[4]),  '{}'.format(fit_psid_07_LRtest[4]),  '{}'.format(fit_psid_09_LRtest[4]),  '{}'.format(fit_psid_11_LRtest[4]),  '{}'.format(fit_psid_13_LRtest[4]),  '{}'.format(fit_psid_15_LRtest[4]),  '{}'.format(fit_psid_17_LRtest[4]),  '{}'.format(fit_soep_02_LRtest[4]),  '{}'.format(fit_soep_07_LRtest[4]),  '{}'.format(fit_soep_12_LRtest[4]),  '{}'.format(fit_soep_17_LRtest[4])],
+                                           [' ',               '{}'.format(fit_psid_01_LRtest[5]),  '{}'.format(fit_psid_03_LRtest[5]),  '{}'.format(fit_psid_05_LRtest[5]),  '{}'.format(fit_psid_07_LRtest[5]),  '{}'.format(fit_psid_09_LRtest[5]),  '{}'.format(fit_psid_11_LRtest[5]),  '{}'.format(fit_psid_13_LRtest[5]),  '{}'.format(fit_psid_15_LRtest[5]),  '{}'.format(fit_psid_17_LRtest[5]),  '{}'.format(fit_soep_02_LRtest[5]),  '{}'.format(fit_soep_07_LRtest[5]),  '{}'.format(fit_soep_12_LRtest[5]),  '{}'.format(fit_soep_17_LRtest[5])],
+                                           ['q',               '{}'.format(fit_psid_01_LRtest[6]),  '{}'.format(fit_psid_03_LRtest[6]),  '{}'.format(fit_psid_05_LRtest[6]),  '{}'.format(fit_psid_07_LRtest[6]),  '{}'.format(fit_psid_09_LRtest[6]),  '{}'.format(fit_psid_11_LRtest[6]),  '{}'.format(fit_psid_13_LRtest[6]),  '{}'.format(fit_psid_15_LRtest[6]),  '{}'.format(fit_psid_17_LRtest[6]),  '{}'.format(fit_soep_02_LRtest[6]),  '{}'.format(fit_soep_07_LRtest[6]),  '{}'.format(fit_soep_12_LRtest[6]),  '{}'.format(fit_soep_17_LRtest[6])],
+                                           [' ',               '{}'.format(fit_psid_01_LRtest[7]),  '{}'.format(fit_psid_03_LRtest[7]),  '{}'.format(fit_psid_05_LRtest[7]),  '{}'.format(fit_psid_07_LRtest[7]),  '{}'.format(fit_psid_09_LRtest[7]),  '{}'.format(fit_psid_11_LRtest[7]),  '{}'.format(fit_psid_13_LRtest[7]),  '{}'.format(fit_psid_15_LRtest[7]),  '{}'.format(fit_psid_17_LRtest[7]),  '{}'.format(fit_soep_02_LRtest[7]),  '{}'.format(fit_soep_07_LRtest[7]),  '{}'.format(fit_soep_12_LRtest[7]),  '{}'.format(fit_soep_17_LRtest[7])],
+                                           ['lower bound b',   '{}'.format(b),                      '{}'.format(b),                     '{}'.format(b),                       '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b)],
+                                           ['LL',              '{}'.format(fit_psid_01_LRtest[11]) , '{}'.format(fit_psid_03_LRtest[11]) , '{}'.format(fit_psid_05_LRtest[11]) , '{}'.format(fit_psid_07_LRtest[11]) , '{}'.format(fit_psid_09_LRtest[11]) , '{}'.format(fit_psid_11_LRtest[11]) , '{}'.format(fit_psid_13_LRtest[11]) , '{}'.format(fit_psid_15_LRtest[11]) , '{}'.format(fit_psid_17_LRtest[11]) , '{}'.format(fit_soep_02_LRtest[11]) , '{}'.format(fit_soep_07_LRtest[11]) , '{}'.format(fit_soep_12_LRtest[11]) , '{}'.format(fit_soep_17_LRtest[11])],
+                                           ['AIC',             '{}'.format(fit_psid_01_LRtest[8]) , '{}'.format(fit_psid_03_LRtest[8]) , '{}'.format(fit_psid_05_LRtest[8]) , '{}'.format(fit_psid_07_LRtest[8]) , '{}'.format(fit_psid_09_LRtest[8]) , '{}'.format(fit_psid_11_LRtest[8]) , '{}'.format(fit_psid_13_LRtest[8]) , '{}'.format(fit_psid_15_LRtest[8]) , '{}'.format(fit_psid_17_LRtest[8]) , '{}'.format(fit_soep_02_LRtest[8]) , '{}'.format(fit_soep_07_LRtest[8]) , '{}'.format(fit_soep_12_LRtest[8]) , '{}'.format(fit_soep_17_LRtest[8])],
+                                           ['MSE',             '{}'.format(fit_psid_01_LRtest[9]), '{}'.format(fit_psid_03_LRtest[9]), '{}'.format(fit_psid_05_LRtest[9]), '{}'.format(fit_psid_07_LRtest[9]), '{}'.format(fit_psid_09_LRtest[9]), '{}'.format(fit_psid_11_LRtest[9]), '{}'.format(fit_psid_13_LRtest[9]), '{}'.format(fit_psid_15_LRtest[9]), '{}'.format(fit_psid_17_LRtest[9]), '{}'.format(fit_soep_02_LRtest[9]), '{}'.format(fit_soep_07_LRtest[9]), '{}'.format(fit_soep_12_LRtest[9]), '{}'.format(fit_soep_17_LRtest[9])],
+                                           ['RMSE',            '{}'.format(fit_psid_01_LRtest[10]), '{}'.format(fit_psid_03_LRtest[10]), '{}'.format(fit_psid_05_LRtest[10]), '{}'.format(fit_psid_07_LRtest[10]), '{}'.format(fit_psid_09_LRtest[10]), '{}'.format(fit_psid_11_LRtest[10]), '{}'.format(fit_psid_13_LRtest[10]), '{}'.format(fit_psid_15_LRtest[10]), '{}'.format(fit_psid_17_LRtest[10]), '{}'.format(fit_soep_02_LRtest[10]), '{}'.format(fit_soep_07_LRtest[10]), '{}'.format(fit_soep_12_LRtest[10]), '{}'.format(fit_soep_17_LRtest[10])],
+                                           ['emp. mean',       '{}'.format(fit_psid_01_LRtest[12]), '{}'.format(fit_psid_03_LRtest[12]), '{}'.format(fit_psid_05_LRtest[12]), '{}'.format(fit_psid_07_LRtest[12]), '{}'.format(fit_psid_09_LRtest[12]), '{}'.format(fit_psid_11_LRtest[12]), '{}'.format(fit_psid_13_LRtest[12]), '{}'.format(fit_psid_15_LRtest[12]), '{}'.format(fit_psid_17_LRtest[12]), '{}'.format(fit_soep_02_LRtest[12]), '{}'.format(fit_soep_07_LRtest[12]), '{}'.format(fit_soep_12_LRtest[12]), '{}'.format(fit_soep_17_LRtest[12])],
+                                           ['emp. var.',       '{}'.format(fit_psid_01_LRtest[13]), '{}'.format(fit_psid_03_LRtest[13]), '{}'.format(fit_psid_05_LRtest[13]), '{}'.format(fit_psid_07_LRtest[13]), '{}'.format(fit_psid_09_LRtest[13]), '{}'.format(fit_psid_11_LRtest[13]), '{}'.format(fit_psid_13_LRtest[13]), '{}'.format(fit_psid_15_LRtest[13]), '{}'.format(fit_psid_17_LRtest[13]), '{}'.format(fit_soep_02_LRtest[13]), '{}'.format(fit_soep_07_LRtest[13]), '{}'.format(fit_soep_12_LRtest[13]), '{}'.format(fit_soep_17_LRtest[13])],
+                                           ['pred. mean',      '{}'.format(fit_psid_01_LRtest[14]), '{}'.format(fit_psid_03_LRtest[14]), '{}'.format(fit_psid_05_LRtest[14]), '{}'.format(fit_psid_07_LRtest[14]), '{}'.format(fit_psid_09_LRtest[14]), '{}'.format(fit_psid_11_LRtest[14]), '{}'.format(fit_psid_13_LRtest[14]), '{}'.format(fit_psid_15_LRtest[14]), '{}'.format(fit_psid_17_LRtest[14]), '{}'.format(fit_soep_02_LRtest[14]), '{}'.format(fit_soep_07_LRtest[14]), '{}'.format(fit_soep_12_LRtest[14]), '{}'.format(fit_soep_17_LRtest[14])],
+                                           ['pred. var.',      '{}'.format(fit_psid_01_LRtest[15]), '{}'.format(fit_psid_03_LRtest[15]), '{}'.format(fit_psid_05_LRtest[15]), '{}'.format(fit_psid_07_LRtest[15]), '{}'.format(fit_psid_09_LRtest[15]), '{}'.format(fit_psid_11_LRtest[15]), '{}'.format(fit_psid_13_LRtest[15]), '{}'.format(fit_psid_15_LRtest[15]), '{}'.format(fit_psid_17_LRtest[15]), '{}'.format(fit_soep_02_LRtest[15]), '{}'.format(fit_soep_07_LRtest[15]), '{}'.format(fit_soep_12_LRtest[15]), '{}'.format(fit_soep_17_LRtest[15])],
+                                           ['n',               '{}'.format(fit_psid_01_LRtest[16]), '{}'.format(fit_psid_03_LRtest[16]), '{}'.format(fit_psid_05_LRtest[16]), '{}'.format(fit_psid_07_LRtest[16]), '{}'.format(fit_psid_09_LRtest[16]), '{}'.format(fit_psid_11_LRtest[16]), '{}'.format(fit_psid_13_LRtest[16]), '{}'.format(fit_psid_15_LRtest[16]), '{}'.format(fit_psid_17_LRtest[16]), '{}'.format(fit_soep_02_LRtest[16]), '{}'.format(fit_soep_07_LRtest[16]), '{}'.format(fit_soep_12_LRtest[16]), '{}'.format(fit_soep_17_LRtest[16])],
+                                           ['N',               '{}'.format(fit_psid_01_LRtest[17]), '{}'.format(fit_psid_03_LRtest[17]), '{}'.format(fit_psid_05_LRtest[17]), '{}'.format(fit_psid_07_LRtest[17]), '{}'.format(fit_psid_09_LRtest[17]), '{}'.format(fit_psid_11_LRtest[17]), '{}'.format(fit_psid_13_LRtest[17]), '{}'.format(fit_psid_15_LRtest[17]), '{}'.format(fit_psid_17_LRtest[17]), '{}'.format(fit_soep_02_LRtest[17]), '{}'.format(fit_soep_07_LRtest[17]), '{}'.format(fit_soep_12_LRtest[17]), '{}'.format(fit_soep_17_LRtest[17])]
                                            ]),
                                  columns=['', '01', '03', '05', '07', '09', '11', '13', '15', '17', 'SOEP02', 'SOEP07', 'SOEP12', 'SOEP17'])
+
+df_wealth_results_AIC = pd.DataFrame(np.array([['best fitted model', '{}'.format(fit_result_psid_01_AIC[0]), '{}'.format(fit_result_psid_03_AIC[0]), '{}'.format(fit_result_psid_05_AIC[0]), '{}'.format(fit_result_psid_07_AIC[0]), '{}'.format(fit_result_psid_09_AIC[0]), '{}'.format(fit_result_psid_11_AIC[0]), '{}'.format(fit_result_psid_13_AIC[0]), '{}'.format(fit_result_psid_15_AIC[0]), '{}'.format(fit_result_psid_17_AIC[0]), '{}'.format(fit_result_soep_02_AIC[0]), '{}'.format(fit_result_soep_07_AIC[0]), '{}'.format(fit_result_soep_12_AIC[0]), '{}'.format(fit_result_soep_17_AIC[0])],
+                                           ['a',               '{}'.format(fit_psid_01_AIC[0]),  '{}'.format(fit_psid_03_AIC[0]),  '{}'.format(fit_psid_05_AIC[0]),  '{}'.format(fit_psid_07_AIC[0]),  '{}'.format(fit_psid_09_AIC[0]),  '{}'.format(fit_psid_11_AIC[0]),  '{}'.format(fit_psid_13_AIC[0]),  '{}'.format(fit_psid_15_AIC[0]),  '{}'.format(fit_psid_17_AIC[0]),  '{}'.format(fit_soep_02_AIC[0]),  '{}'.format(fit_soep_07_AIC[0]),  '{}'.format(fit_soep_12_AIC[0]),  '{}'.format(fit_soep_17_AIC[0])],
+                                           [' ',               '{}'.format(fit_psid_01_AIC[1]),  '{}'.format(fit_psid_03_AIC[1]),  '{}'.format(fit_psid_05_AIC[1]),  '{}'.format(fit_psid_07_AIC[1]),  '{}'.format(fit_psid_09_AIC[1]),  '{}'.format(fit_psid_11_AIC[1]),  '{}'.format(fit_psid_13_AIC[1]),  '{}'.format(fit_psid_15_AIC[1]),  '{}'.format(fit_psid_17_AIC[1]),  '{}'.format(fit_soep_02_AIC[1]),  '{}'.format(fit_soep_07_AIC[1]),  '{}'.format(fit_soep_12_AIC[1]),  '{}'.format(fit_soep_17_AIC[1])],
+                                           ['c',               '{}'.format(fit_psid_01_AIC[2]),  '{}'.format(fit_psid_03_AIC[2]),  '{}'.format(fit_psid_05_AIC[2]),  '{}'.format(fit_psid_07_AIC[2]),  '{}'.format(fit_psid_09_AIC[2]),  '{}'.format(fit_psid_11_AIC[2]),  '{}'.format(fit_psid_13_AIC[2]),  '{}'.format(fit_psid_15_AIC[2]),  '{}'.format(fit_psid_17_AIC[2]),  '{}'.format(fit_soep_02_AIC[2]),  '{}'.format(fit_soep_07_AIC[2]),  '{}'.format(fit_soep_12_AIC[2]),  '{}'.format(fit_soep_17_AIC[2])],
+                                           [' ',               '{}'.format(fit_psid_01_AIC[3]),  '{}'.format(fit_psid_03_AIC[3]),  '{}'.format(fit_psid_05_AIC[3]),  '{}'.format(fit_psid_07_AIC[3]),  '{}'.format(fit_psid_09_AIC[3]),  '{}'.format(fit_psid_11_AIC[3]),  '{}'.format(fit_psid_13_AIC[3]),  '{}'.format(fit_psid_15_AIC[3]),  '{}'.format(fit_psid_17_AIC[3]),  '{}'.format(fit_soep_02_AIC[3]),  '{}'.format(fit_soep_07_AIC[3]),  '{}'.format(fit_soep_12_AIC[3]),  '{}'.format(fit_soep_17_AIC[3])],
+                                           ['p',               '{}'.format(fit_psid_01_AIC[4]),  '{}'.format(fit_psid_03_AIC[4]),  '{}'.format(fit_psid_05_AIC[4]),  '{}'.format(fit_psid_07_AIC[4]),  '{}'.format(fit_psid_09_AIC[4]),  '{}'.format(fit_psid_11_AIC[4]),  '{}'.format(fit_psid_13_AIC[4]),  '{}'.format(fit_psid_15_AIC[4]),  '{}'.format(fit_psid_17_AIC[4]),  '{}'.format(fit_soep_02_AIC[4]),  '{}'.format(fit_soep_07_AIC[4]),  '{}'.format(fit_soep_12_AIC[4]),  '{}'.format(fit_soep_17_AIC[4])],
+                                           [' ',               '{}'.format(fit_psid_01_AIC[5]),  '{}'.format(fit_psid_03_AIC[5]),  '{}'.format(fit_psid_05_AIC[5]),  '{}'.format(fit_psid_07_AIC[5]),  '{}'.format(fit_psid_09_AIC[5]),  '{}'.format(fit_psid_11_AIC[5]),  '{}'.format(fit_psid_13_AIC[5]),  '{}'.format(fit_psid_15_AIC[5]),  '{}'.format(fit_psid_17_AIC[5]),  '{}'.format(fit_soep_02_AIC[5]),  '{}'.format(fit_soep_07_AIC[5]),  '{}'.format(fit_soep_12_AIC[5]),  '{}'.format(fit_soep_17_AIC[5])],
+                                           ['q',               '{}'.format(fit_psid_01_AIC[6]),  '{}'.format(fit_psid_03_AIC[6]),  '{}'.format(fit_psid_05_AIC[6]),  '{}'.format(fit_psid_07_AIC[6]),  '{}'.format(fit_psid_09_AIC[6]),  '{}'.format(fit_psid_11_AIC[6]),  '{}'.format(fit_psid_13_AIC[6]),  '{}'.format(fit_psid_15_AIC[6]),  '{}'.format(fit_psid_17_AIC[6]),  '{}'.format(fit_soep_02_AIC[6]),  '{}'.format(fit_soep_07_AIC[6]),  '{}'.format(fit_soep_12_AIC[6]),  '{}'.format(fit_soep_17_AIC[6])],
+                                           [' ',               '{}'.format(fit_psid_01_AIC[7]),  '{}'.format(fit_psid_03_AIC[7]),  '{}'.format(fit_psid_05_AIC[7]),  '{}'.format(fit_psid_07_AIC[7]),  '{}'.format(fit_psid_09_AIC[7]),  '{}'.format(fit_psid_11_AIC[7]),  '{}'.format(fit_psid_13_AIC[7]),  '{}'.format(fit_psid_15_AIC[7]),  '{}'.format(fit_psid_17_AIC[7]),  '{}'.format(fit_soep_02_AIC[7]),  '{}'.format(fit_soep_07_AIC[7]),  '{}'.format(fit_soep_12_AIC[7]),  '{}'.format(fit_soep_17_AIC[7])],
+                                           ['lower bound b',   '{}'.format(b),                      '{}'.format(b),                     '{}'.format(b),                       '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b)],
+                                           ['LL',              '{}'.format(fit_psid_01_AIC[11]) , '{}'.format(fit_psid_03_AIC[11]) , '{}'.format(fit_psid_05_AIC[11]) , '{}'.format(fit_psid_07_AIC[11]) , '{}'.format(fit_psid_09_AIC[11]) , '{}'.format(fit_psid_11_AIC[11]) , '{}'.format(fit_psid_13_AIC[11]) , '{}'.format(fit_psid_15_AIC[11]) , '{}'.format(fit_psid_17_AIC[11]) , '{}'.format(fit_soep_02_AIC[11]) , '{}'.format(fit_soep_07_AIC[11]) , '{}'.format(fit_soep_12_AIC[11]) , '{}'.format(fit_soep_17_AIC[11])],
+                                           ['AIC',             '{}'.format(fit_psid_01_AIC[8]) , '{}'.format(fit_psid_03_AIC[8]) , '{}'.format(fit_psid_05_AIC[8]) , '{}'.format(fit_psid_07_AIC[8]) , '{}'.format(fit_psid_09_AIC[8]) , '{}'.format(fit_psid_11_AIC[8]) , '{}'.format(fit_psid_13_AIC[8]) , '{}'.format(fit_psid_15_AIC[8]) , '{}'.format(fit_psid_17_AIC[8]) , '{}'.format(fit_soep_02_AIC[8]) , '{}'.format(fit_soep_07_AIC[8]) , '{}'.format(fit_soep_12_AIC[8]) , '{}'.format(fit_soep_17_AIC[8])],
+                                           ['MSE',             '{}'.format(fit_psid_01_AIC[9]), '{}'.format(fit_psid_03_AIC[9]), '{}'.format(fit_psid_05_AIC[9]), '{}'.format(fit_psid_07_AIC[9]), '{}'.format(fit_psid_09_AIC[9]), '{}'.format(fit_psid_11_AIC[9]), '{}'.format(fit_psid_13_AIC[9]), '{}'.format(fit_psid_15_AIC[9]), '{}'.format(fit_psid_17_AIC[9]), '{}'.format(fit_soep_02_AIC[9]), '{}'.format(fit_soep_07_AIC[9]), '{}'.format(fit_soep_12_AIC[9]), '{}'.format(fit_soep_17_AIC[9])],
+                                           ['RMSE',            '{}'.format(fit_psid_01_AIC[10]), '{}'.format(fit_psid_03_AIC[10]), '{}'.format(fit_psid_05_AIC[10]), '{}'.format(fit_psid_07_AIC[10]), '{}'.format(fit_psid_09_AIC[10]), '{}'.format(fit_psid_11_AIC[10]), '{}'.format(fit_psid_13_AIC[10]), '{}'.format(fit_psid_15_AIC[10]), '{}'.format(fit_psid_17_AIC[10]), '{}'.format(fit_soep_02_AIC[10]), '{}'.format(fit_soep_07_AIC[10]), '{}'.format(fit_soep_12_AIC[10]), '{}'.format(fit_soep_17_AIC[10])],
+                                           ['emp. mean',       '{}'.format(fit_psid_01_AIC[12]), '{}'.format(fit_psid_03_AIC[12]), '{}'.format(fit_psid_05_AIC[12]), '{}'.format(fit_psid_07_AIC[12]), '{}'.format(fit_psid_09_AIC[12]), '{}'.format(fit_psid_11_AIC[12]), '{}'.format(fit_psid_13_AIC[12]), '{}'.format(fit_psid_15_AIC[12]), '{}'.format(fit_psid_17_AIC[12]), '{}'.format(fit_soep_02_AIC[12]), '{}'.format(fit_soep_07_AIC[12]), '{}'.format(fit_soep_12_AIC[12]), '{}'.format(fit_soep_17_AIC[12])],
+                                           ['emp. var.',       '{}'.format(fit_psid_01_AIC[13]), '{}'.format(fit_psid_03_AIC[13]), '{}'.format(fit_psid_05_AIC[13]), '{}'.format(fit_psid_07_AIC[13]), '{}'.format(fit_psid_09_AIC[13]), '{}'.format(fit_psid_11_AIC[13]), '{}'.format(fit_psid_13_AIC[13]), '{}'.format(fit_psid_15_AIC[13]), '{}'.format(fit_psid_17_AIC[13]), '{}'.format(fit_soep_02_AIC[13]), '{}'.format(fit_soep_07_AIC[13]), '{}'.format(fit_soep_12_AIC[13]), '{}'.format(fit_soep_17_AIC[13])],
+                                           ['pred. mean',      '{}'.format(fit_psid_01_AIC[14]), '{}'.format(fit_psid_03_AIC[14]), '{}'.format(fit_psid_05_AIC[14]), '{}'.format(fit_psid_07_AIC[14]), '{}'.format(fit_psid_09_AIC[14]), '{}'.format(fit_psid_11_AIC[14]), '{}'.format(fit_psid_13_AIC[14]), '{}'.format(fit_psid_15_AIC[14]), '{}'.format(fit_psid_17_AIC[14]), '{}'.format(fit_soep_02_AIC[14]), '{}'.format(fit_soep_07_AIC[14]), '{}'.format(fit_soep_12_AIC[14]), '{}'.format(fit_soep_17_AIC[14])],
+                                           ['pred. var.',      '{}'.format(fit_psid_01_AIC[15]), '{}'.format(fit_psid_03_AIC[15]), '{}'.format(fit_psid_05_AIC[15]), '{}'.format(fit_psid_07_AIC[15]), '{}'.format(fit_psid_09_AIC[15]), '{}'.format(fit_psid_11_AIC[15]), '{}'.format(fit_psid_13_AIC[15]), '{}'.format(fit_psid_15_AIC[15]), '{}'.format(fit_psid_17_AIC[15]), '{}'.format(fit_soep_02_AIC[15]), '{}'.format(fit_soep_07_AIC[15]), '{}'.format(fit_soep_12_AIC[15]), '{}'.format(fit_soep_17_AIC[15])],
+                                           ['n',               '{}'.format(fit_psid_01_AIC[16]), '{}'.format(fit_psid_03_AIC[16]), '{}'.format(fit_psid_05_AIC[16]), '{}'.format(fit_psid_07_AIC[16]), '{}'.format(fit_psid_09_AIC[16]), '{}'.format(fit_psid_11_AIC[16]), '{}'.format(fit_psid_13_AIC[16]), '{}'.format(fit_psid_15_AIC[16]), '{}'.format(fit_psid_17_AIC[16]), '{}'.format(fit_soep_02_AIC[16]), '{}'.format(fit_soep_07_AIC[16]), '{}'.format(fit_soep_12_AIC[16]), '{}'.format(fit_soep_17_AIC[16])],
+                                           ['N',               '{}'.format(fit_psid_01_AIC[17]), '{}'.format(fit_psid_03_AIC[17]), '{}'.format(fit_psid_05_AIC[17]), '{}'.format(fit_psid_07_AIC[17]), '{}'.format(fit_psid_09_AIC[17]), '{}'.format(fit_psid_11_AIC[17]), '{}'.format(fit_psid_13_AIC[17]), '{}'.format(fit_psid_15_AIC[17]), '{}'.format(fit_psid_17_AIC[17]), '{}'.format(fit_soep_02_AIC[17]), '{}'.format(fit_soep_07_AIC[17]), '{}'.format(fit_soep_12_AIC[17]), '{}'.format(fit_soep_17_AIC[17])]
+                                           ]),
+                                 columns=['', '01', '03', '05', '07', '09', '11', '13', '15', '17', 'SOEP02', 'SOEP07', 'SOEP12', 'SOEP17'])
+
+# save dataframes to excel sheet
+with ExcelWriter(descriptivespath + 'wealth_data_fit_results_b{}.xlsx'.format(b), engine='openpyxl', mode='w') as writer:
+    df_wealth_results_LR.to_excel(writer, sheet_name='wealth_fit_results_LR_{}'.format(b), index=False)
+    df_wealth_results_AIC.to_excel(writer, sheet_name='wealth_fit_results_AIC_{}'.format(b), index=False)
 
 
 """
@@ -355,5 +386,34 @@ df_wealth_results = pd.DataFrame(np.array([['best fitted model', '{}'.format(fit
 Plot fit vs data
 -----------------------------
 """
-# TODO
+## PSID 2017
 
+# set figsize
+import matplotlib.pyplot as plt
+print(plt.rcParams.get('figure.figsize'))
+plt.rcParams['figure.figsize'] = 10, 8
+
+# LRtest
+Paretobranchfit(x=dfPSID['wealth1_17'], weights=dfPSID['weight1_17'], b=b, x0=x0,
+                bootstraps=bootstraps, return_bestmodel=False, plot=True,
+                rejection_criteria='LRtest',
+                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+# AIC
+Paretobranchfit(x=dfPSID['wealth1_17'], weights=dfPSID['weight1_17'], b=b, x0=x0,
+                bootstraps=bootstraps, return_bestmodel=True, plot=True,
+                rejection_criteria='LRtest',
+                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+
+## SOEP 2017
+
+# LRtest
+Paretobranchfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=b, x0=x0,
+                bootstraps=bootstraps, return_bestmodel=True, plot=True,
+                rejection_criteria='LRtest',
+                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+
+# AIC
+Paretobranchfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=b, x0=x0,
+                bootstraps=bootstraps, return_bestmodel=True, plot=True,
+                rejection_criteria='LRtest',
+                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
