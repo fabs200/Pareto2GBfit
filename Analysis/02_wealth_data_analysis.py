@@ -7,19 +7,19 @@ import os
 # diw path
 if os.getlogin() == "fnemeczek":
     descriptivespath = 'H:/Meine Dateien/Masterarbeit/Python/descriptives'
-    data_PSID = 'H:/Meine Dateien/Masterarbeit/J261520/J261520.csv'
+    data_PSID = 'H:/Meine Dateien/Masterarbeit/J262198/'
     data_SOEP = 'H:/Meine Dateien/Masterarbeit/DATA/SOEP/'
 
 # windows paths
 if os.getlogin() == 'Fabian' and os.name == 'nt':
     descriptivespath = 'D:/OneDrive/Studium/Masterarbeit/Python/descriptives/'
-    data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/J261520/'
+    data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/J262198/'
     data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v34/stata_de+en/'
 
 # mac paths
 if os.getlogin() == 'Fabian' and os.name == 'POSIX':
     descriptivespath = '/Users/Fabian/OneDrive/Studium/Masterarbeit/Python/descriptives/'
-    data_PSID = "/Users/Fabian/OneDrive/Studium/Masterarbeit/data/J261520/"
+    data_PSID = "/Users/Fabian/OneDrive/Studium/Masterarbeit/data/J262198/"
     data_SOEP = '/Users/Fabian/Documents/DATA/STATA/SOEP_v34/stata_de+en/'
 
 """
@@ -63,7 +63,6 @@ def weighted_quantile(values, quantiles, sample_weight=None,
         weighted_quantiles /= np.sum(sample_weight)
     return np.interp(quantiles, weighted_quantiles, values)
 
-
 def prep_fit_results_for_table(fit_result):
     """
     prepares the returned vector of the optimization for a simplified exporting to dataframe/Excel
@@ -91,7 +90,7 @@ def prep_fit_results_for_table(fit_result):
     del out[13] # remove rrmse
     del out[10] # remove mae
     del out[9] # remove bic
-    return out # returns: parameters, aic, mse, rrmse, ll, ...
+    return out # returns: parameters, aic, mse, rrmse, ll, ... (always same structure)
 
 """
 ------------------------
@@ -100,46 +99,97 @@ PSID data preparation
 """
 
 # load dataset PSID
-dfPSID = pd.read_csv(data_PSID + 'J261520.csv', delimiter=";", skiprows=False, decimal=',')
+dfPSID = pd.read_csv(data_PSID + 'J262199.csv', delimiter=";", skiprows=False, decimal=',')
 
 # renaming
-columns={"ER17001": "release_01", "ER17002": "famid_01", "ER20394": "weight1_01", "ER20459": "weight2_01",
-           "S500": "wrelease_01", "S516": "wealth1_01", "S517": "wealth2_01", "S516A": "wealthA1_01", "S517A": "wealthA2_01",
+columns={"ER17001": "release_01", "ER17002": "famid_01", "ER20394": "weight_01",
+         "S500": "wrelease_01", "S516": "wealth_01", "S517": "wealth2_01", "S516A": "wealthA1_01", "S517A": "wealthA2_01",
+         "ER33601": "interview_01", "ER33602": "seqnr_01", "ER33603": "head_01",
 
-           "ER21001": "release_03", "ER21002": "famid_03", "ER24179": "weight1_03", "ER24180": "weight2_03",
-           "S600": "wrelease_03", "S616": "wealth1_03", "S617": "wealth2_03", "S616A": "wealthA1_03", "S617A": "wealthA2_03",
+         "ER21001": "release_03", "ER21002": "famid_03", "ER24179": "weight_03",
+         "S600": "wrelease_03", "S616": "wealth_03", "S617": "wealth2_03", "S616A": "wealthA1_03", "S617A": "wealthA2_03",
+         "ER33701": "interview_03", "ER33702": "seqnr_03", "ER33703": "head_03",
 
-           "ER25001": "release_05", "ER25002": "famid_05", "ER28078": "weight1_05",
-           "S700": "wrelease_05", "S716": "wealth1_05", "S717": "wealth2_05", "S716A": "wealthA1_05", "S717A": "wealthA2_05",
+         "ER25001": "release_05", "ER25002": "famid_05", "ER28078": "weight_05",
+         "S700": "wrelease_05", "S716": "wealth_05", "S717": "wealth2_05", "S716A": "wealthA1_05", "S717A": "wealthA2_05",
+         "ER33801": "interview_05", "ER33802": "seqnr_05", "ER33803": "head_05",
 
-           "ER36001": "release_07", "ER36002": "famid_07", "ER41069": "weight1_07",
-           "S800": "wrelease_07", "S816": "wealth1_07", "S817": "wealth2_07", "S816A": "wealthA1_07", "S817A": "wealthA2_07",
+         "ER36001": "release_07", "ER36002": "famid_07", "ER41069": "weight_07",
+         "S800": "wrelease_07", "S816": "wealth_07", "S817": "wealth2_07", "S816A": "wealthA1_07", "S817A": "wealthA2_07",
+         "ER33901": "interview_07", "ER33902": "seqnr_07", "ER33903": "head_07",
 
-           "ER42001": "release_09", "ER42002": "famid_09", "ER47012": "weight1_09",
-           "ER46968": "wealth1_09", "ER46970": "wealth2_09", "ER46969": "wealthA1_09", "ER46971": "wealthA2_09",
+         "ER42001": "release_09", "ER42002": "famid_09", "ER47012": "weight_09",
+         "ER46968": "wealth_09", "ER46970": "wealth2_09", "ER46969": "wealthA1_09", "ER46971": "wealthA2_09",
+         "ER34001": "interview_09", "ER34002": "seqnr_09", "ER34003": "head_09",
 
-           "ER47301": "release_11", "ER47302": "famid_11", "ER52436": "weight1_11",
-           "ER52392": "wealth1_11", "ER52394": "wealth2_11", "ER52393": "wealthA1_11", "ER52395": "wealthA2_11",
+         "ER47301": "release_11", "ER47302": "famid_11", "ER52436": "weight_11",
+         "ER52392": "wealth_11", "ER52394": "wealth2_11", "ER52393": "wealthA1_11", "ER52395": "wealthA2_11",
+         "ER34101": "interview_11", "ER34102": "seqnr_11", "ER34103": "head_11",
 
-           "ER53001": "release_13", "ER53002": "famid_13", "ER58257": "weight1_13",
-           "ER58209": "wealth1_13", "ER58211": "wealth2_13", "ER58210": "wealthA1_13", "ER58212": "wealthA2_13",
+         "ER53001": "release_13", "ER53002": "famid_13", "ER58257": "weight_13",
+         "ER58209": "wealth_13", "ER58211": "wealth2_13", "ER58210": "wealthA1_13", "ER58212": "wealthA2_13",
+         "ER34201": "interview_13", "ER34202": "seqnr_13", "ER34203": "head_13",
 
-           "ER60001": "release_15", "ER60002": "famid_15", "ER65492": "weight1_15",
-           "ER65406": "wealth1_15", "ER65408": "wealth2_15", "ER65407": "wealthA1_15", "ER65409": "wealthA2_15",
+         "ER60001": "release_15", "ER60002": "famid_15", "ER65492": "weight_15",
+         "ER65406": "wealth_15", "ER65408": "wealth2_15", "ER65407": "wealthA1_15", "ER65409": "wealthA2_15",
+         "ER34301": "interview_15", "ER34302": "seqnr_15", "ER34303": "head_15",
 
-           "ER66001": "release_17", "ER66002": "famid_17", "ER71570": "weight1_17",
-           "ER71483": "wealth1_17", "ER71485": "wealth2_17", "ER71484": "wealthA1_17", "ER71486": "wealthA2_17"}
+         "ER66001": "release_17", "ER66002": "famid_17", "ER71570": "weight_17",
+         "ER71483": "wealth_17", "ER71485": "wealth2_17", "ER71484": "wealthA1_17", "ER71486": "wealthA2_17",
+         "ER34501": "interview_17", "ER34502": "seqnr_17", "ER34503": "head_17"}
 
-dfPSID = dfPSID.rename(index = str, columns=columns)
+# columns={"ER17001": "release_01", "ER17002": "famid_01", "ER20394": "weight1_01", "ER20459": "weight2_01",
+#            "S500": "wrelease_01", "S516": "wealth1_01", "S517": "wealth2_01", "S516A": "wealthA1_01", "S517A": "wealthA2_01",
+#
+#            "ER21001": "release_03", "ER21002": "famid_03", "ER24179": "weight1_03", "ER24180": "weight2_03",
+#            "S600": "wrelease_03", "S616": "wealth1_03", "S617": "wealth2_03", "S616A": "wealthA1_03", "S617A": "wealthA2_03",
+#
+#            "ER25001": "release_05", "ER25002": "famid_05", "ER28078": "weight1_05",
+#            "S700": "wrelease_05", "S716": "wealth1_05", "S717": "wealth2_05", "S716A": "wealthA1_05", "S717A": "wealthA2_05",
+#
+#            "ER36001": "release_07", "ER36002": "famid_07", "ER41069": "weight1_07",
+#            "S800": "wrelease_07", "S816": "wealth1_07", "S817": "wealth2_07", "S816A": "wealthA1_07", "S817A": "wealthA2_07",
+#
+#            "ER42001": "release_09", "ER42002": "famid_09", "ER47012": "weight1_09",
+#            "ER46968": "wealth1_09", "ER46970": "wealth2_09", "ER46969": "wealthA1_09", "ER46971": "wealthA2_09",
+#
+#            "ER47301": "release_11", "ER47302": "famid_11", "ER52436": "weight1_11",
+#            "ER52392": "wealth1_11", "ER52394": "wealth2_11", "ER52393": "wealthA1_11", "ER52395": "wealthA2_11",
+#
+#            "ER53001": "release_13", "ER53002": "famid_13", "ER58257": "weight1_13",
+#            "ER58209": "wealth1_13", "ER58211": "wealth2_13", "ER58210": "wealthA1_13", "ER58212": "wealthA2_13",
+#
+#            "ER60001": "release_15", "ER60002": "famid_15", "ER65492": "weight1_15",
+#            "ER65406": "wealth1_15", "ER65408": "wealth2_15", "ER65407": "wealthA1_15", "ER65409": "wealthA2_15",
+#
+#            "ER66001": "release_17", "ER66002": "famid_17", "ER71570": "weight1_17",
+#            "ER71483": "wealth1_17", "ER71485": "wealth2_17", "ER71484": "wealthA1_17", "ER71486": "wealthA2_17"}
+#
 
-# multiply longitudinal weights by 1000 as described in the documentation of PSID
-psid_longi_weights = ['weight1_01', 'weight1_03', 'weight1_05', 'weight1_07', 'weight1_09', 'weight1_11', 'weight1_13', 'weight1_15', 'weight1_17']
-for weight in psid_longi_weights:
-    dfPSID[weight] = dfPSID[weight].apply(lambda x: x*1000) # compare https://psidonline.isr.umich.edu/data/weights/cross_sec_weights_13.pdf
-    # print(weight[-2:], dfPSID[weight].sum()) #TODO: correct family N?
+dfPSID = dfPSID.rename(index=str, columns=columns)
+
+# if not head, set to missing (NaN) in each year
+for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
+
+    dfPSID['weight_{}'.format(year)] = pd.to_numeric(dfPSID['weight_{}'.format(year)], errors='coerce')
+    dfPSID['wealth_{}'.format(year)] = np.where(dfPSID['head_{}'.format(year)] == 10, dfPSID['wealth_{}'.format(year)], np.nan)
+    dfPSID['wealth_{}'.format(year)] = np.where(dfPSID['seqnr_{}'.format(year)] == 1, dfPSID['wealth_{}'.format(year)], np.nan)
+    dfPSID['weight_{}'.format(year)] = np.where(dfPSID['head_{}'.format(year)] == 10, dfPSID['weight_{}'.format(year)], np.nan)
+    dfPSID['weight_{}'.format(year)] = np.where(dfPSID['seqnr_{}'.format(year)] == 1, dfPSID['weight_{}'.format(year)], np.nan)
+# compare https://psidonline.isr.umich.edu/Guide/FAQ.aspx?Type=1 keep head==10 and seqnr==1
+# check seqnr and head:
+pd.crosstab(dfPSID['seqnr_01'], dfPSID['head_01'])
+
+# for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
+#     # multiply longitudinal weights by 1000 as described in the documentation of PSID
+#     # compare for example https://psidonline.isr.umich.edu/data/weights/cross_sec_weights_13.pdf
+#     dfPSID['weight_{}'.format(year)] = dfPSID['weight_{}'.format(year)].apply(lambda x: x*1000)
+# unfortunately, does not work properly, bug in pandas, solved in excel
 
 # check
 # dfPSID.head()
+# dfPSID.dtypes
+dfPSID['weight_17'].sum()
 
 """
 -----------------------
@@ -180,34 +230,33 @@ Descriptive Statistics
 
 ## unweighted
 
-# unweighted, psid: wealth1, soep: wealth
-df_unweighted_descriptives_w1 = pd.DataFrame(np.array([['N', dfPSID['wealth1_01'].count(), dfPSID['wealth1_03'].count(), dfPSID['wealth1_05'].count(), dfPSID['wealth1_07'].count(), dfPSID['wealth1_09'].count(), dfPSID['wealth1_11'].count(), dfPSID['wealth1_13'].count(), dfPSID['wealth1_15'].count(), dfPSID['wealth1_17'].count(), dfSOEP['wealth_02'].count(), dfSOEP['wealth_07'].count(), dfSOEP['wealth_12'].count(), dfSOEP['wealth_17'].count()],
-                                                       ['mean', int(dfPSID['wealth1_01'].mean()), int(dfPSID['wealth1_03'].mean()), int(dfPSID['wealth1_05'].mean()), int(dfPSID['wealth1_07'].mean()), int(dfPSID['wealth1_09'].mean()), int(dfPSID['wealth1_11'].mean()), int(dfPSID['wealth1_13'].mean()), int(dfPSID['wealth1_15'].mean()), int(dfPSID['wealth1_17'].mean()), int(dfSOEP['wealth_02'].mean()), int(dfSOEP['wealth_07'].mean()), int(dfSOEP['wealth_12'].mean()), int(dfSOEP['wealth_17'].mean())],
-                                                       ['sd', int(dfPSID['wealth1_01'].std()), int(dfPSID['wealth1_03'].std()), int(dfPSID['wealth1_05'].std()), int(dfPSID['wealth1_07'].std()), int(dfPSID['wealth1_09'].std()), int(dfPSID['wealth1_11'].std()), int(dfPSID['wealth1_13'].std()), int(dfPSID['wealth1_15'].std()), int(dfPSID['wealth1_17'].std()), int(dfSOEP['wealth_02'].std()), int(dfSOEP['wealth_07'].std()), int(dfSOEP['wealth_12'].std()), int(dfSOEP['wealth_17'].std())],
-                                                       ['min', int(dfPSID['wealth1_01'].min()), int(dfPSID['wealth1_03'].min()), int(dfPSID['wealth1_05'].min()), int(dfPSID['wealth1_07'].min()), int(dfPSID['wealth1_09'].min()), int(dfPSID['wealth1_11'].min()), int(dfPSID['wealth1_13'].min()), int(dfPSID['wealth1_15'].min()), int(dfPSID['wealth1_17'].min()), int(dfSOEP['wealth_02'].min()), int(dfSOEP['wealth_07'].min()), int(dfSOEP['wealth_12'].min()), int(dfSOEP['wealth_17'].min())],
-                                                       ['p50', int(dfPSID['wealth1_01'].quantile()), int(dfPSID['wealth1_03'].quantile()), int(dfPSID['wealth1_05'].quantile()), int(dfPSID['wealth1_07'].quantile()), int(dfPSID['wealth1_09'].quantile()), int(dfPSID['wealth1_11'].quantile()), int(dfPSID['wealth1_13'].quantile()), int(dfPSID['wealth1_15'].quantile()), int(dfPSID['wealth1_17'].quantile()), int(dfSOEP['wealth_02'].quantile()), int(dfSOEP['wealth_07'].quantile()), int(dfSOEP['wealth_12'].quantile()), int(dfSOEP['wealth_17'].quantile())],
-                                                       ['p75', int(dfPSID['wealth1_01'].quantile(.75)), int(dfPSID['wealth1_03'].quantile(.75)), int(dfPSID['wealth1_05'].quantile(.75)), int(dfPSID['wealth1_07'].quantile(.75)), int(dfPSID['wealth1_09'].quantile(.75)), int(dfPSID['wealth1_11'].quantile(.75)), int(dfPSID['wealth1_13'].quantile(.75)), int(dfPSID['wealth1_15'].quantile(.75)), int(dfPSID['wealth1_17'].quantile(.75)), int(dfSOEP['wealth_02'].quantile(.75)), int(dfSOEP['wealth_07'].quantile(.75)), int(dfSOEP['wealth_12'].quantile(.75)), int(dfSOEP['wealth_17'].quantile(.75))],
-                                                       ['p90', int(dfPSID['wealth1_01'].quantile(.9)), int(dfPSID['wealth1_03'].quantile(.9)), int(dfPSID['wealth1_05'].quantile(.9)), int(dfPSID['wealth1_07'].quantile(.9)), int(dfPSID['wealth1_09'].quantile(.9)), int(dfPSID['wealth1_11'].quantile(.9)), int(dfPSID['wealth1_13'].quantile(.9)), int(dfPSID['wealth1_15'].quantile(.9)), int(dfPSID['wealth1_17'].quantile(.9)), int(dfSOEP['wealth_02'].quantile(.9)), int(dfSOEP['wealth_07'].quantile(.9)), int(dfSOEP['wealth_12'].quantile(.9)), int(dfSOEP['wealth_17'].quantile(.9))],
-                                                       ['p99', int(dfPSID['wealth1_01'].quantile(.99)), int(dfPSID['wealth1_03'].quantile(.99)), int(dfPSID['wealth1_05'].quantile(.99)), int(dfPSID['wealth1_07'].quantile(.99)), int(dfPSID['wealth1_09'].quantile(.99)), int(dfPSID['wealth1_11'].quantile(.99)), int(dfPSID['wealth1_13'].quantile(.99)), int(dfPSID['wealth1_15'].quantile(.99)), int(dfPSID['wealth1_17'].quantile(.99)), int(dfSOEP['wealth_02'].quantile(.99)), int(dfSOEP['wealth_07'].quantile(.99)), int(dfSOEP['wealth_12'].quantile(.99)), int(dfSOEP['wealth_17'].quantile(.99))],
-                                                       ['p99.9', int(dfPSID['wealth1_01'].quantile(.999)), int(dfPSID['wealth1_03'].quantile(.999)), int(dfPSID['wealth1_05'].quantile(.999)), int(dfPSID['wealth1_07'].quantile(.999)), int(dfPSID['wealth1_09'].quantile(.999)), int(dfPSID['wealth1_11'].quantile(.999)), int(dfPSID['wealth1_13'].quantile(.999)), int(dfPSID['wealth1_15'].quantile(.999)), int(dfPSID['wealth1_17'].quantile(.999)), int(dfSOEP['wealth_02'].quantile(.999)), int(dfSOEP['wealth_07'].quantile(.999)), int(dfSOEP['wealth_12'].quantile(.999)), int(dfSOEP['wealth_17'].quantile(.999))],
-                                                       ['max', int(dfPSID['wealth1_01'].max()), int(dfPSID['wealth1_03'].max()), int(dfPSID['wealth1_05'].max()), int(dfPSID['wealth1_07'].max()), int(dfPSID['wealth1_09'].max()), int(dfPSID['wealth1_11'].max()), int(dfPSID['wealth1_13'].max()), int(dfPSID['wealth1_15'].max()), int(dfPSID['wealth1_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max()), int(dfSOEP['wealth_17'].max())],
+# unweighted, psid: wealth, soep: wealth
+df_unweighted_descriptives_w = pd.DataFrame(np.array([['N', dfPSID['wealth_01'].count(), dfPSID['wealth_03'].count(), dfPSID['wealth_05'].count(), dfPSID['wealth_07'].count(), dfPSID['wealth_09'].count(), dfPSID['wealth_11'].count(), dfPSID['wealth_13'].count(), dfPSID['wealth_15'].count(), dfPSID['wealth_17'].count(), dfSOEP['wealth_02'].count(), dfSOEP['wealth_07'].count(), dfSOEP['wealth_12'].count(), dfSOEP['wealth_17'].count()],
+                                                       ['mean', int(dfPSID['wealth_01'].mean()), int(dfPSID['wealth_03'].mean()), int(dfPSID['wealth_05'].mean()), int(dfPSID['wealth_07'].mean()), int(dfPSID['wealth_09'].mean()), int(dfPSID['wealth_11'].mean()), int(dfPSID['wealth_13'].mean()), int(dfPSID['wealth_15'].mean()), int(dfPSID['wealth_17'].mean()), int(dfSOEP['wealth_02'].mean()), int(dfSOEP['wealth_07'].mean()), int(dfSOEP['wealth_12'].mean()), int(dfSOEP['wealth_17'].mean())],
+                                                       ['sd', int(dfPSID['wealth_01'].std()), int(dfPSID['wealth_03'].std()), int(dfPSID['wealth_05'].std()), int(dfPSID['wealth_07'].std()), int(dfPSID['wealth_09'].std()), int(dfPSID['wealth_11'].std()), int(dfPSID['wealth_13'].std()), int(dfPSID['wealth_15'].std()), int(dfPSID['wealth_17'].std()), int(dfSOEP['wealth_02'].std()), int(dfSOEP['wealth_07'].std()), int(dfSOEP['wealth_12'].std()), int(dfSOEP['wealth_17'].std())],
+                                                       ['min', int(dfPSID['wealth_01'].min()), int(dfPSID['wealth_03'].min()), int(dfPSID['wealth_05'].min()), int(dfPSID['wealth_07'].min()), int(dfPSID['wealth_09'].min()), int(dfPSID['wealth_11'].min()), int(dfPSID['wealth_13'].min()), int(dfPSID['wealth_15'].min()), int(dfPSID['wealth_17'].min()), int(dfSOEP['wealth_02'].min()), int(dfSOEP['wealth_07'].min()), int(dfSOEP['wealth_12'].min()), int(dfSOEP['wealth_17'].min())],
+                                                       ['p50', int(dfPSID['wealth_01'].quantile()), int(dfPSID['wealth_03'].quantile()), int(dfPSID['wealth_05'].quantile()), int(dfPSID['wealth_07'].quantile()), int(dfPSID['wealth_09'].quantile()), int(dfPSID['wealth_11'].quantile()), int(dfPSID['wealth_13'].quantile()), int(dfPSID['wealth_15'].quantile()), int(dfPSID['wealth_17'].quantile()), int(dfSOEP['wealth_02'].quantile()), int(dfSOEP['wealth_07'].quantile()), int(dfSOEP['wealth_12'].quantile()), int(dfSOEP['wealth_17'].quantile())],
+                                                       ['p75', int(dfPSID['wealth_01'].quantile(.75)), int(dfPSID['wealth_03'].quantile(.75)), int(dfPSID['wealth_05'].quantile(.75)), int(dfPSID['wealth_07'].quantile(.75)), int(dfPSID['wealth_09'].quantile(.75)), int(dfPSID['wealth_11'].quantile(.75)), int(dfPSID['wealth_13'].quantile(.75)), int(dfPSID['wealth_15'].quantile(.75)), int(dfPSID['wealth_17'].quantile(.75)), int(dfSOEP['wealth_02'].quantile(.75)), int(dfSOEP['wealth_07'].quantile(.75)), int(dfSOEP['wealth_12'].quantile(.75)), int(dfSOEP['wealth_17'].quantile(.75))],
+                                                       ['p90', int(dfPSID['wealth_01'].quantile(.9)), int(dfPSID['wealth_03'].quantile(.9)), int(dfPSID['wealth_05'].quantile(.9)), int(dfPSID['wealth_07'].quantile(.9)), int(dfPSID['wealth_09'].quantile(.9)), int(dfPSID['wealth_11'].quantile(.9)), int(dfPSID['wealth_13'].quantile(.9)), int(dfPSID['wealth_15'].quantile(.9)), int(dfPSID['wealth_17'].quantile(.9)), int(dfSOEP['wealth_02'].quantile(.9)), int(dfSOEP['wealth_07'].quantile(.9)), int(dfSOEP['wealth_12'].quantile(.9)), int(dfSOEP['wealth_17'].quantile(.9))],
+                                                       ['p99', int(dfPSID['wealth_01'].quantile(.99)), int(dfPSID['wealth_03'].quantile(.99)), int(dfPSID['wealth_05'].quantile(.99)), int(dfPSID['wealth_07'].quantile(.99)), int(dfPSID['wealth_09'].quantile(.99)), int(dfPSID['wealth_11'].quantile(.99)), int(dfPSID['wealth_13'].quantile(.99)), int(dfPSID['wealth_15'].quantile(.99)), int(dfPSID['wealth_17'].quantile(.99)), int(dfSOEP['wealth_02'].quantile(.99)), int(dfSOEP['wealth_07'].quantile(.99)), int(dfSOEP['wealth_12'].quantile(.99)), int(dfSOEP['wealth_17'].quantile(.99))],
+                                                       ['p99.9', int(dfPSID['wealth_01'].quantile(.999)), int(dfPSID['wealth_03'].quantile(.999)), int(dfPSID['wealth_05'].quantile(.999)), int(dfPSID['wealth_07'].quantile(.999)), int(dfPSID['wealth_09'].quantile(.999)), int(dfPSID['wealth_11'].quantile(.999)), int(dfPSID['wealth_13'].quantile(.999)), int(dfPSID['wealth_15'].quantile(.999)), int(dfPSID['wealth_17'].quantile(.999)), int(dfSOEP['wealth_02'].quantile(.999)), int(dfSOEP['wealth_07'].quantile(.999)), int(dfSOEP['wealth_12'].quantile(.999)), int(dfSOEP['wealth_17'].quantile(.999))],
+                                                       ['max', int(dfPSID['wealth_01'].max()), int(dfPSID['wealth_03'].max()), int(dfPSID['wealth_05'].max()), int(dfPSID['wealth_07'].max()), int(dfPSID['wealth_09'].max()), int(dfPSID['wealth_11'].max()), int(dfPSID['wealth_13'].max()), int(dfPSID['wealth_15'].max()), int(dfPSID['wealth_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max()), int(dfSOEP['wealth_17'].max())],
                                                        ]),
                                              columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP', '2017SOEP'])
 
-
-# unweighted, psid: wealth2, soep: wealth
-df_unweighted_descriptives_w2 = pd.DataFrame(np.array([['N', dfPSID['wealth2_01'].count(), dfPSID['wealth2_03'].count(), dfPSID['wealth2_05'].count(), dfPSID['wealth2_07'].count(), dfPSID['wealth2_09'].count(), dfPSID['wealth2_11'].count(), dfPSID['wealth2_13'].count(), dfPSID['wealth2_15'].count(), dfPSID['wealth2_17'].count(), dfSOEP['wealth_02'].count(), dfSOEP['wealth_07'].count(), dfSOEP['wealth_12'].count(), dfSOEP['wealth_17'].count()],
-                                                       ['mean', int(dfPSID['wealth2_01'].mean()), int(dfPSID['wealth2_03'].mean()), int(dfPSID['wealth2_05'].mean()), int(dfPSID['wealth2_07'].mean()), int(dfPSID['wealth2_09'].mean()), int(dfPSID['wealth2_11'].mean()), int(dfPSID['wealth2_13'].mean()), int(dfPSID['wealth2_15'].mean()), int(dfPSID['wealth2_17'].mean()), int(dfSOEP['wealth_02'].mean()), int(dfSOEP['wealth_07'].mean()), int(dfSOEP['wealth_12'].mean()), int(dfSOEP['wealth_17'].mean())],
-                                                       ['sd', int(dfPSID['wealth2_01'].std()), int(dfPSID['wealth2_03'].std()), int(dfPSID['wealth2_05'].std()), int(dfPSID['wealth2_07'].std()), int(dfPSID['wealth2_09'].std()), int(dfPSID['wealth2_11'].std()), int(dfPSID['wealth2_13'].std()), int(dfPSID['wealth2_15'].std()), int(dfPSID['wealth2_17'].std()), int(dfSOEP['wealth_02'].std()), int(dfSOEP['wealth_07'].std()), int(dfSOEP['wealth_12'].std()), int(dfSOEP['wealth_17'].std())],
-                                                       ['min', int(dfPSID['wealth2_01'].min()), int(dfPSID['wealth2_03'].min()), int(dfPSID['wealth2_05'].min()), int(dfPSID['wealth2_07'].min()), int(dfPSID['wealth2_09'].min()), int(dfPSID['wealth2_11'].min()), int(dfPSID['wealth2_13'].min()), int(dfPSID['wealth2_15'].min()), int(dfPSID['wealth2_17'].min()), int(dfSOEP['wealth_02'].min()), int(dfSOEP['wealth_07'].min()), int(dfSOEP['wealth_12'].min()), int(dfSOEP['wealth_17'].min())],
-                                                       ['p50', int(dfPSID['wealth2_01'].quantile()), int(dfPSID['wealth2_03'].quantile()), int(dfPSID['wealth2_05'].quantile()), int(dfPSID['wealth2_07'].quantile()), int(dfPSID['wealth2_09'].quantile()), int(dfPSID['wealth2_11'].quantile()), int(dfPSID['wealth2_13'].quantile()), int(dfPSID['wealth2_15'].quantile()), int(dfPSID['wealth2_17'].quantile()), int(dfSOEP['wealth_02'].quantile()), int(dfSOEP['wealth_07'].quantile()), int(dfSOEP['wealth_12'].quantile()), int(dfSOEP['wealth_17'].quantile())],
-                                                       ['p75', int(dfPSID['wealth2_01'].quantile(.75)), int(dfPSID['wealth2_03'].quantile(.75)), int(dfPSID['wealth2_05'].quantile(.75)), int(dfPSID['wealth2_07'].quantile(.75)), int(dfPSID['wealth2_09'].quantile(.75)), int(dfPSID['wealth2_11'].quantile(.75)), int(dfPSID['wealth2_13'].quantile(.75)), int(dfPSID['wealth2_15'].quantile(.75)), int(dfPSID['wealth2_17'].quantile(.75)), int(dfSOEP['wealth_02'].quantile(.75)), int(dfSOEP['wealth_07'].quantile(.75)), int(dfSOEP['wealth_12'].quantile(.75)), int(dfSOEP['wealth_17'].quantile(.75))],
-                                                       ['p90', int(dfPSID['wealth2_01'].quantile(.9)), int(dfPSID['wealth2_03'].quantile(.9)), int(dfPSID['wealth2_05'].quantile(.9)), int(dfPSID['wealth2_07'].quantile(.9)), int(dfPSID['wealth2_09'].quantile(.9)), int(dfPSID['wealth2_11'].quantile(.9)), int(dfPSID['wealth2_13'].quantile(.9)), int(dfPSID['wealth2_15'].quantile(.9)), int(dfPSID['wealth2_17'].quantile(.9)), int(dfSOEP['wealth_02'].quantile(.9)), int(dfSOEP['wealth_07'].quantile(.9)), int(dfSOEP['wealth_12'].quantile(.9)), int(dfSOEP['wealth_17'].quantile(.9))],
-                                                       ['p99', int(dfPSID['wealth2_01'].quantile(.99)), int(dfPSID['wealth2_03'].quantile(.99)), int(dfPSID['wealth2_05'].quantile(.99)), int(dfPSID['wealth2_07'].quantile(.99)), int(dfPSID['wealth2_09'].quantile(.99)), int(dfPSID['wealth2_11'].quantile(.99)), int(dfPSID['wealth2_13'].quantile(.99)), int(dfPSID['wealth2_15'].quantile(.99)), int(dfPSID['wealth2_17'].quantile(.99)), int(dfSOEP['wealth_02'].quantile(.99)), int(dfSOEP['wealth_07'].quantile(.99)), int(dfSOEP['wealth_12'].quantile(.99)), int(dfSOEP['wealth_17'].quantile(.99))],
-                                                       ['p99.9', int(dfPSID['wealth2_01'].quantile(.999)), int(dfPSID['wealth2_03'].quantile(.999)), int(dfPSID['wealth2_05'].quantile(.999)), int(dfPSID['wealth2_07'].quantile(.999)), int(dfPSID['wealth2_09'].quantile(.999)), int(dfPSID['wealth2_11'].quantile(.999)), int(dfPSID['wealth2_13'].quantile(.999)), int(dfPSID['wealth2_15'].quantile(.999)), int(dfPSID['wealth2_17'].quantile(.999)), int(dfSOEP['wealth_02'].quantile(.999)), int(dfSOEP['wealth_07'].quantile(.999)), int(dfSOEP['wealth_12'].quantile(.999)), int(dfSOEP['wealth_17'].quantile(.999))],
-                                                       ['max', int(dfPSID['wealth2_01'].max()), int(dfPSID['wealth2_03'].max()), int(dfPSID['wealth2_05'].max()), int(dfPSID['wealth2_07'].max()), int(dfPSID['wealth2_09'].max()), int(dfPSID['wealth2_11'].max()), int(dfPSID['wealth2_13'].max()), int(dfPSID['wealth2_15'].max()), int(dfPSID['wealth2_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max()), int(dfSOEP['wealth_17'].max())],
-                                                       ]),
-                                             columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP', '2017SOEP'])
+# # unweighted, psid: wealth2, soep: wealth
+# df_unweighted_descriptives_w2 = pd.DataFrame(np.array([['N', dfPSID['wealth2_01'].count(), dfPSID['wealth2_03'].count(), dfPSID['wealth2_05'].count(), dfPSID['wealth2_07'].count(), dfPSID['wealth2_09'].count(), dfPSID['wealth2_11'].count(), dfPSID['wealth2_13'].count(), dfPSID['wealth2_15'].count(), dfPSID['wealth2_17'].count(), dfSOEP['wealth_02'].count(), dfSOEP['wealth_07'].count(), dfSOEP['wealth_12'].count(), dfSOEP['wealth_17'].count()],
+#                                                        ['mean', int(dfPSID['wealth2_01'].mean()), int(dfPSID['wealth2_03'].mean()), int(dfPSID['wealth2_05'].mean()), int(dfPSID['wealth2_07'].mean()), int(dfPSID['wealth2_09'].mean()), int(dfPSID['wealth2_11'].mean()), int(dfPSID['wealth2_13'].mean()), int(dfPSID['wealth2_15'].mean()), int(dfPSID['wealth2_17'].mean()), int(dfSOEP['wealth_02'].mean()), int(dfSOEP['wealth_07'].mean()), int(dfSOEP['wealth_12'].mean()), int(dfSOEP['wealth_17'].mean())],
+#                                                        ['sd', int(dfPSID['wealth2_01'].std()), int(dfPSID['wealth2_03'].std()), int(dfPSID['wealth2_05'].std()), int(dfPSID['wealth2_07'].std()), int(dfPSID['wealth2_09'].std()), int(dfPSID['wealth2_11'].std()), int(dfPSID['wealth2_13'].std()), int(dfPSID['wealth2_15'].std()), int(dfPSID['wealth2_17'].std()), int(dfSOEP['wealth_02'].std()), int(dfSOEP['wealth_07'].std()), int(dfSOEP['wealth_12'].std()), int(dfSOEP['wealth_17'].std())],
+#                                                        ['min', int(dfPSID['wealth2_01'].min()), int(dfPSID['wealth2_03'].min()), int(dfPSID['wealth2_05'].min()), int(dfPSID['wealth2_07'].min()), int(dfPSID['wealth2_09'].min()), int(dfPSID['wealth2_11'].min()), int(dfPSID['wealth2_13'].min()), int(dfPSID['wealth2_15'].min()), int(dfPSID['wealth2_17'].min()), int(dfSOEP['wealth_02'].min()), int(dfSOEP['wealth_07'].min()), int(dfSOEP['wealth_12'].min()), int(dfSOEP['wealth_17'].min())],
+#                                                        ['p50', int(dfPSID['wealth2_01'].quantile()), int(dfPSID['wealth2_03'].quantile()), int(dfPSID['wealth2_05'].quantile()), int(dfPSID['wealth2_07'].quantile()), int(dfPSID['wealth2_09'].quantile()), int(dfPSID['wealth2_11'].quantile()), int(dfPSID['wealth2_13'].quantile()), int(dfPSID['wealth2_15'].quantile()), int(dfPSID['wealth2_17'].quantile()), int(dfSOEP['wealth_02'].quantile()), int(dfSOEP['wealth_07'].quantile()), int(dfSOEP['wealth_12'].quantile()), int(dfSOEP['wealth_17'].quantile())],
+#                                                        ['p75', int(dfPSID['wealth2_01'].quantile(.75)), int(dfPSID['wealth2_03'].quantile(.75)), int(dfPSID['wealth2_05'].quantile(.75)), int(dfPSID['wealth2_07'].quantile(.75)), int(dfPSID['wealth2_09'].quantile(.75)), int(dfPSID['wealth2_11'].quantile(.75)), int(dfPSID['wealth2_13'].quantile(.75)), int(dfPSID['wealth2_15'].quantile(.75)), int(dfPSID['wealth2_17'].quantile(.75)), int(dfSOEP['wealth_02'].quantile(.75)), int(dfSOEP['wealth_07'].quantile(.75)), int(dfSOEP['wealth_12'].quantile(.75)), int(dfSOEP['wealth_17'].quantile(.75))],
+#                                                        ['p90', int(dfPSID['wealth2_01'].quantile(.9)), int(dfPSID['wealth2_03'].quantile(.9)), int(dfPSID['wealth2_05'].quantile(.9)), int(dfPSID['wealth2_07'].quantile(.9)), int(dfPSID['wealth2_09'].quantile(.9)), int(dfPSID['wealth2_11'].quantile(.9)), int(dfPSID['wealth2_13'].quantile(.9)), int(dfPSID['wealth2_15'].quantile(.9)), int(dfPSID['wealth2_17'].quantile(.9)), int(dfSOEP['wealth_02'].quantile(.9)), int(dfSOEP['wealth_07'].quantile(.9)), int(dfSOEP['wealth_12'].quantile(.9)), int(dfSOEP['wealth_17'].quantile(.9))],
+#                                                        ['p99', int(dfPSID['wealth2_01'].quantile(.99)), int(dfPSID['wealth2_03'].quantile(.99)), int(dfPSID['wealth2_05'].quantile(.99)), int(dfPSID['wealth2_07'].quantile(.99)), int(dfPSID['wealth2_09'].quantile(.99)), int(dfPSID['wealth2_11'].quantile(.99)), int(dfPSID['wealth2_13'].quantile(.99)), int(dfPSID['wealth2_15'].quantile(.99)), int(dfPSID['wealth2_17'].quantile(.99)), int(dfSOEP['wealth_02'].quantile(.99)), int(dfSOEP['wealth_07'].quantile(.99)), int(dfSOEP['wealth_12'].quantile(.99)), int(dfSOEP['wealth_17'].quantile(.99))],
+#                                                        ['p99.9', int(dfPSID['wealth2_01'].quantile(.999)), int(dfPSID['wealth2_03'].quantile(.999)), int(dfPSID['wealth2_05'].quantile(.999)), int(dfPSID['wealth2_07'].quantile(.999)), int(dfPSID['wealth2_09'].quantile(.999)), int(dfPSID['wealth2_11'].quantile(.999)), int(dfPSID['wealth2_13'].quantile(.999)), int(dfPSID['wealth2_15'].quantile(.999)), int(dfPSID['wealth2_17'].quantile(.999)), int(dfSOEP['wealth_02'].quantile(.999)), int(dfSOEP['wealth_07'].quantile(.999)), int(dfSOEP['wealth_12'].quantile(.999)), int(dfSOEP['wealth_17'].quantile(.999))],
+#                                                        ['max', int(dfPSID['wealth2_01'].max()), int(dfPSID['wealth2_03'].max()), int(dfPSID['wealth2_05'].max()), int(dfPSID['wealth2_07'].max()), int(dfPSID['wealth2_09'].max()), int(dfPSID['wealth2_11'].max()), int(dfPSID['wealth2_13'].max()), int(dfPSID['wealth2_15'].max()), int(dfPSID['wealth2_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max()), int(dfSOEP['wealth_17'].max())],
+#                                                        ]),
+#                                              columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP', '2017SOEP'])
 
 ## weighted
 
@@ -221,58 +270,56 @@ for year in ['02', '07', '12', '17']:
     globals()['w_wgt_mean_soep_{}'.format(year)] = np.average(dfSOEP['wealth_{}'.format(year)][~np.isnan(dfSOEP['wealth_{}'.format(year)])], weights=dfSOEP['weight_{}'.format(year)][~np.isnan(dfSOEP['wealth_{}'.format(year)])])
 
 
-# weighted, psid: wealth1
+# weighted, psid: wealth
 for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
     # weighted pcts
-    globals()['w1_wgt_pcts_psid_{}'.format(year)] = weighted_quantile(dfPSID['wealth1_{}'.format(year)][~np.isnan(dfPSID['wealth1_{}'.format(year)])], quantiles= [.5, .75, .9, .99, .999], sample_weight=dfPSID['weight1_{}'.format(year)][~np.isnan(dfPSID['weight1_{}'.format(year)])])
+    globals()['w_wgt_pcts_psid_{}'.format(year)] = weighted_quantile(dfPSID['wealth_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])], quantiles= [.5, .75, .9, .99, .999], sample_weight=dfPSID['weight_{}'.format(year)][~np.isnan(dfPSID['weight_{}'.format(year)])])
     # weighted sd
-    globals()['w1_wgt_sd_psid_{}'.format(year)] = np.sqrt(np.cov(dfPSID['wealth1_{}'.format(year)][~np.isnan(dfPSID['wealth1_{}'.format(year)])], aweights=dfPSID['weight1_{}'.format(year)][~np.isnan(dfPSID['weight1_{}'.format(year)])]))
+    globals()['w_wgt_sd_psid_{}'.format(year)] = np.sqrt(np.cov(dfPSID['wealth_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])], aweights=dfPSID['weight_{}'.format(year)][~np.isnan(dfPSID['weight_{}'.format(year)])]))
     # weighted avg
-    globals()['w1_wgt_mean_psid_{}'.format(year)] = np.average(dfPSID['wealth1_{}'.format(year)][~np.isnan(dfPSID['wealth1_{}'.format(year)])], weights=dfPSID['weight1_{}'.format(year)][~np.isnan(dfPSID['weight1_{}'.format(year)])])
+    globals()['w_wgt_mean_psid_{}'.format(year)] = np.average(dfPSID['wealth_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])], weights=dfPSID['weight_{}'.format(year)][~np.isnan(dfPSID['weight_{}'.format(year)])])
 
-# weighted, psid: wealth2
-for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
-    # weighted pcts
-    globals()['w2_wgt_pcts_psid_{}'.format(year)] = weighted_quantile(dfPSID['wealth2_{}'.format(year)][~np.isnan(dfPSID['wealth2_{}'.format(year)])], quantiles= [.5, .75, .9, .99, .999], sample_weight=dfPSID['weight1_{}'.format(year)][~np.isnan(dfPSID['weight1_{}'.format(year)])])
-    # weighted sd
-    globals()['w2_wgt_sd_psid_{}'.format(year)] = np.sqrt(np.cov(dfPSID['wealth2_{}'.format(year)][~np.isnan(dfPSID['wealth2_{}'.format(year)])], aweights=dfPSID['weight1_{}'.format(year)][~np.isnan(dfPSID['weight1_{}'.format(year)])]))
-    # weighted avg
-    globals()['w2_wgt_mean_psid_{}'.format(year)] = np.average(dfPSID['wealth2_{}'.format(year)][~np.isnan(dfPSID['wealth2_{}'.format(year)])], weights=dfPSID['weight1_{}'.format(year)][~np.isnan(dfPSID['weight1_{}'.format(year)])])
+# # weighted, psid: wealth2
+# for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
+#     # weighted pcts
+#     globals()['w2_wgt_pcts_psid_{}'.format(year)] = weighted_quantile(dfPSID['wealth2_{}'.format(year)][~np.isnan(dfPSID['wealth2_{}'.format(year)])], quantiles= [.5, .75, .9, .99, .999], sample_weight=dfPSID['weight1_{}'.format(year)][~np.isnan(dfPSID['weight1_{}'.format(year)])])
+#     # weighted sd
+#     globals()['w2_wgt_sd_psid_{}'.format(year)] = np.sqrt(np.cov(dfPSID['wealth2_{}'.format(year)][~np.isnan(dfPSID['wealth2_{}'.format(year)])], aweights=dfPSID['weight1_{}'.format(year)][~np.isnan(dfPSID['weight1_{}'.format(year)])]))
+#     # weighted avg
+#     globals()['w2_wgt_mean_psid_{}'.format(year)] = np.average(dfPSID['wealth2_{}'.format(year)][~np.isnan(dfPSID['wealth2_{}'.format(year)])], weights=dfPSID['weight1_{}'.format(year)][~np.isnan(dfPSID['weight1_{}'.format(year)])])
 
-# write statistics to dataframe, psid: wealth1, soep: wealth
-df_weighted_descriptives_w1 = pd.DataFrame(np.array([['N', int(dfPSID['weight1_01'].sum()), int(dfPSID['weight1_03'].sum()), int(dfPSID['weight1_05'].sum()), int(dfPSID['weight1_07'].sum()), int(dfPSID['weight1_09'].sum()), int(dfPSID['weight1_11'].sum()), int(dfPSID['weight1_13'].sum()), int(dfPSID['weight1_15'].sum()), int(dfPSID['weight1_17'].sum()), int(dfSOEP['weight_02'].sum()), int(dfSOEP['weight_07'].sum()), int(dfSOEP['weight_12'].sum()), int(dfSOEP['weight_17'].sum())],
-                                                       ['mean', int(w1_wgt_mean_psid_01), int(w1_wgt_mean_psid_03), int(w1_wgt_mean_psid_05), int(w1_wgt_mean_psid_07), int(w1_wgt_mean_psid_09), int(w1_wgt_mean_psid_11), int(w1_wgt_mean_psid_13), int(w1_wgt_mean_psid_15), int(w1_wgt_mean_psid_17), int(w_wgt_mean_soep_02), int(w_wgt_mean_soep_07), int(w_wgt_mean_soep_12), int(w_wgt_mean_soep_17)],
-                                                       ['sd', int(w1_wgt_sd_psid_01), int(w1_wgt_sd_psid_03), int(w1_wgt_sd_psid_05), int(w1_wgt_sd_psid_07), int(w1_wgt_sd_psid_09), int(w1_wgt_sd_psid_11), int(w1_wgt_sd_psid_13), int(w1_wgt_sd_psid_15), int(w1_wgt_sd_psid_17), int(w_wgt_sd_soep_02), int(w_wgt_sd_soep_07), int(w_wgt_sd_soep_12), int(w_wgt_sd_soep_17)],
-                                                       ['min', int(dfPSID['wealth1_01'].min()), int(dfPSID['wealth1_03'].min()), int(dfPSID['wealth1_05'].min()), int(dfPSID['wealth1_07'].min()), int(dfPSID['wealth1_09'].min()), int(dfPSID['wealth1_11'].min()), int(dfPSID['wealth1_13'].min()), int(dfPSID['wealth1_15'].min()), int(dfPSID['wealth1_17'].min()), int(dfSOEP['wealth_02'].min()), int(dfSOEP['wealth_07'].min()), int(dfSOEP['wealth_12'].min()), int(dfSOEP['wealth_17'].min())],
-                                                       ['p50', int(w1_wgt_pcts_psid_01[0]), int(w1_wgt_pcts_psid_03[0]), int(w1_wgt_pcts_psid_05[0]), int(w1_wgt_pcts_psid_07[0]), int(w1_wgt_pcts_psid_09[0]), int(w1_wgt_pcts_psid_11[0]), int(w1_wgt_pcts_psid_13[0]), int(w1_wgt_pcts_psid_15[0]), int(w1_wgt_pcts_psid_17[0]), int(w_wgt_pcts_soep_02[0]), int(w_wgt_pcts_soep_07[0]), int(w_wgt_pcts_soep_12[0]), int(w_wgt_pcts_soep_17[0])],
-                                                       ['p75', int(w1_wgt_pcts_psid_01[1]), int(w1_wgt_pcts_psid_03[1]), int(w1_wgt_pcts_psid_05[1]), int(w1_wgt_pcts_psid_07[1]), int(w1_wgt_pcts_psid_09[1]), int(w1_wgt_pcts_psid_11[1]), int(w1_wgt_pcts_psid_13[1]), int(w1_wgt_pcts_psid_15[1]), int(w1_wgt_pcts_psid_17[1]), int(w_wgt_pcts_soep_02[1]), int(w_wgt_pcts_soep_07[1]), int(w_wgt_pcts_soep_12[1]), int(w_wgt_pcts_soep_17[1])],
-                                                       ['p90', int(w1_wgt_pcts_psid_01[2]), int(w1_wgt_pcts_psid_03[2]), int(w1_wgt_pcts_psid_05[2]), int(w1_wgt_pcts_psid_07[2]), int(w1_wgt_pcts_psid_09[2]), int(w1_wgt_pcts_psid_11[2]), int(w1_wgt_pcts_psid_13[2]), int(w1_wgt_pcts_psid_15[2]), int(w1_wgt_pcts_psid_17[2]), int(w_wgt_pcts_soep_02[2]), int(w_wgt_pcts_soep_07[2]), int(w_wgt_pcts_soep_12[2]), int(w_wgt_pcts_soep_17[2])],
-                                                       ['p99', int(w1_wgt_pcts_psid_01[3]), int(w1_wgt_pcts_psid_03[3]), int(w1_wgt_pcts_psid_05[3]), int(w1_wgt_pcts_psid_07[3]), int(w1_wgt_pcts_psid_09[3]), int(w1_wgt_pcts_psid_11[3]), int(w1_wgt_pcts_psid_13[3]), int(w1_wgt_pcts_psid_15[3]), int(w1_wgt_pcts_psid_17[3]), int(w_wgt_pcts_soep_02[3]), int(w_wgt_pcts_soep_07[3]), int(w_wgt_pcts_soep_12[3]), int(w_wgt_pcts_soep_17[3])],
-                                                       ['p99.9', int(w1_wgt_pcts_psid_01[4]), int(w1_wgt_pcts_psid_03[4]), int(w1_wgt_pcts_psid_05[4]), int(w1_wgt_pcts_psid_07[4]), int(w1_wgt_pcts_psid_09[4]), int(w1_wgt_pcts_psid_11[4]), int(w1_wgt_pcts_psid_13[4]), int(w1_wgt_pcts_psid_15[4]), int(w1_wgt_pcts_psid_17[4]), int(w_wgt_pcts_soep_02[4]), int(w_wgt_pcts_soep_07[4]), int(w_wgt_pcts_soep_12[4]), int(w_wgt_pcts_soep_17[4])],
-                                                       ['max', int(dfPSID['wealth1_01'].max()), int(dfPSID['wealth1_03'].max()), int(dfPSID['wealth1_05'].max()), int(dfPSID['wealth1_07'].max()), int(dfPSID['wealth1_09'].max()), int(dfPSID['wealth1_11'].max()), int(dfPSID['wealth1_13'].max()), int(dfPSID['wealth1_15'].max()), int(dfPSID['wealth1_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max()), int(dfSOEP['wealth_17'].max())],
+# write statistics to dataframe, psid: wealth, soep: wealth
+df_weighted_descriptives_w = pd.DataFrame(np.array([['N', int(dfPSID['weight_01'].sum()), int(dfPSID['weight_03'].sum()), int(dfPSID['weight_05'].sum()), int(dfPSID['weight_07'].sum()), int(dfPSID['weight_09'].sum()), int(dfPSID['weight_11'].sum()), int(dfPSID['weight_13'].sum()), int(dfPSID['weight_15'].sum()), int(dfPSID['weight_17'].sum()), int(dfSOEP['weight_02'].sum()), int(dfSOEP['weight_07'].sum()), int(dfSOEP['weight_12'].sum()), int(dfSOEP['weight_17'].sum())],
+                                                       ['mean', int(w_wgt_mean_psid_01), int(w_wgt_mean_psid_03), int(w_wgt_mean_psid_05), int(w_wgt_mean_psid_07), int(w_wgt_mean_psid_09), int(w_wgt_mean_psid_11), int(w_wgt_mean_psid_13), int(w_wgt_mean_psid_15), int(w_wgt_mean_psid_17), int(w_wgt_mean_soep_02), int(w_wgt_mean_soep_07), int(w_wgt_mean_soep_12), int(w_wgt_mean_soep_17)],
+                                                       ['sd', int(w_wgt_sd_psid_01), int(w_wgt_sd_psid_03), int(w_wgt_sd_psid_05), int(w_wgt_sd_psid_07), int(w_wgt_sd_psid_09), int(w_wgt_sd_psid_11), int(w_wgt_sd_psid_13), int(w_wgt_sd_psid_15), int(w_wgt_sd_psid_17), int(w_wgt_sd_soep_02), int(w_wgt_sd_soep_07), int(w_wgt_sd_soep_12), int(w_wgt_sd_soep_17)],
+                                                       ['min', int(dfPSID['wealth_01'].min()), int(dfPSID['wealth_03'].min()), int(dfPSID['wealth_05'].min()), int(dfPSID['wealth_07'].min()), int(dfPSID['wealth_09'].min()), int(dfPSID['wealth_11'].min()), int(dfPSID['wealth_13'].min()), int(dfPSID['wealth_15'].min()), int(dfPSID['wealth_17'].min()), int(dfSOEP['wealth_02'].min()), int(dfSOEP['wealth_07'].min()), int(dfSOEP['wealth_12'].min()), int(dfSOEP['wealth_17'].min())],
+                                                       ['p50', int(w_wgt_pcts_psid_01[0]), int(w_wgt_pcts_psid_03[0]), int(w_wgt_pcts_psid_05[0]), int(w_wgt_pcts_psid_07[0]), int(w_wgt_pcts_psid_09[0]), int(w_wgt_pcts_psid_11[0]), int(w_wgt_pcts_psid_13[0]), int(w_wgt_pcts_psid_15[0]), int(w_wgt_pcts_psid_17[0]), int(w_wgt_pcts_soep_02[0]), int(w_wgt_pcts_soep_07[0]), int(w_wgt_pcts_soep_12[0]), int(w_wgt_pcts_soep_17[0])],
+                                                       ['p75', int(w_wgt_pcts_psid_01[1]), int(w_wgt_pcts_psid_03[1]), int(w_wgt_pcts_psid_05[1]), int(w_wgt_pcts_psid_07[1]), int(w_wgt_pcts_psid_09[1]), int(w_wgt_pcts_psid_11[1]), int(w_wgt_pcts_psid_13[1]), int(w_wgt_pcts_psid_15[1]), int(w_wgt_pcts_psid_17[1]), int(w_wgt_pcts_soep_02[1]), int(w_wgt_pcts_soep_07[1]), int(w_wgt_pcts_soep_12[1]), int(w_wgt_pcts_soep_17[1])],
+                                                       ['p90', int(w_wgt_pcts_psid_01[2]), int(w_wgt_pcts_psid_03[2]), int(w_wgt_pcts_psid_05[2]), int(w_wgt_pcts_psid_07[2]), int(w_wgt_pcts_psid_09[2]), int(w_wgt_pcts_psid_11[2]), int(w_wgt_pcts_psid_13[2]), int(w_wgt_pcts_psid_15[2]), int(w_wgt_pcts_psid_17[2]), int(w_wgt_pcts_soep_02[2]), int(w_wgt_pcts_soep_07[2]), int(w_wgt_pcts_soep_12[2]), int(w_wgt_pcts_soep_17[2])],
+                                                       ['p99', int(w_wgt_pcts_psid_01[3]), int(w_wgt_pcts_psid_03[3]), int(w_wgt_pcts_psid_05[3]), int(w_wgt_pcts_psid_07[3]), int(w_wgt_pcts_psid_09[3]), int(w_wgt_pcts_psid_11[3]), int(w_wgt_pcts_psid_13[3]), int(w_wgt_pcts_psid_15[3]), int(w_wgt_pcts_psid_17[3]), int(w_wgt_pcts_soep_02[3]), int(w_wgt_pcts_soep_07[3]), int(w_wgt_pcts_soep_12[3]), int(w_wgt_pcts_soep_17[3])],
+                                                       ['p99.9', int(w_wgt_pcts_psid_01[4]), int(w_wgt_pcts_psid_03[4]), int(w_wgt_pcts_psid_05[4]), int(w_wgt_pcts_psid_07[4]), int(w_wgt_pcts_psid_09[4]), int(w_wgt_pcts_psid_11[4]), int(w_wgt_pcts_psid_13[4]), int(w_wgt_pcts_psid_15[4]), int(w_wgt_pcts_psid_17[4]), int(w_wgt_pcts_soep_02[4]), int(w_wgt_pcts_soep_07[4]), int(w_wgt_pcts_soep_12[4]), int(w_wgt_pcts_soep_17[4])],
+                                                       ['max', int(dfPSID['wealth_01'].max()), int(dfPSID['wealth_03'].max()), int(dfPSID['wealth_05'].max()), int(dfPSID['wealth_07'].max()), int(dfPSID['wealth_09'].max()), int(dfPSID['wealth_11'].max()), int(dfPSID['wealth_13'].max()), int(dfPSID['wealth_15'].max()), int(dfPSID['wealth_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max()), int(dfSOEP['wealth_17'].max())],
                                                        ]),
                                              columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP', '2017SOEP'])
 
 # write statistics to dataframe, psid: wealth2, soep: wealth
-df_weighted_descriptives_w2 = pd.DataFrame(np.array([['N', int(dfPSID['weight1_01'].sum()), int(dfPSID['weight1_03'].sum()), int(dfPSID['weight1_05'].sum()), int(dfPSID['weight1_07'].sum()), int(dfPSID['weight1_09'].sum()), int(dfPSID['weight1_11'].sum()), int(dfPSID['weight1_13'].sum()), int(dfPSID['weight1_15'].sum()), int(dfPSID['weight1_17'].sum()), int(dfSOEP['weight_02'].sum()), int(dfSOEP['weight_07'].sum()), int(dfSOEP['weight_12'].sum())],
-                                                       ['mean', int(w2_wgt_mean_psid_01), int(w2_wgt_mean_psid_03), int(w2_wgt_mean_psid_05), int(w2_wgt_mean_psid_07), int(w2_wgt_mean_psid_09), int(w2_wgt_mean_psid_11), int(w2_wgt_mean_psid_13), int(w2_wgt_mean_psid_15), int(w2_wgt_mean_psid_17), int(w_wgt_mean_soep_02), int(w_wgt_mean_soep_07), int(w_wgt_mean_soep_12)],
-                                                       ['sd', int(w2_wgt_sd_psid_01), int(w2_wgt_sd_psid_03), int(w2_wgt_sd_psid_05), int(w2_wgt_sd_psid_07), int(w2_wgt_sd_psid_09), int(w2_wgt_sd_psid_11), int(w2_wgt_sd_psid_13), int(w2_wgt_sd_psid_15), int(w2_wgt_sd_psid_17), int(w_wgt_sd_soep_02), int(w_wgt_sd_soep_07), int(w_wgt_sd_soep_12)],
-                                                       ['min', int(dfPSID['wealth2_01'].min()), int(dfPSID['wealth2_03'].min()), int(dfPSID['wealth2_05'].min()), int(dfPSID['wealth2_07'].min()), int(dfPSID['wealth2_09'].min()), int(dfPSID['wealth2_11'].min()), int(dfPSID['wealth2_13'].min()), int(dfPSID['wealth2_15'].min()), int(dfPSID['wealth2_17'].min()), int(dfSOEP['wealth_02'].min()), int(dfSOEP['wealth_07'].min()), int(dfSOEP['wealth_12'].min())],
-                                                       ['p50', int(w2_wgt_pcts_psid_01[0]), int(w2_wgt_pcts_psid_03[0]), int(w2_wgt_pcts_psid_05[0]), int(w2_wgt_pcts_psid_07[0]), int(w2_wgt_pcts_psid_09[0]), int(w2_wgt_pcts_psid_11[0]), int(w2_wgt_pcts_psid_13[0]), int(w2_wgt_pcts_psid_15[0]), int(w2_wgt_pcts_psid_17[0]), int(w_wgt_pcts_soep_02[0]), int(w_wgt_pcts_soep_07[0]), int(w_wgt_pcts_soep_12[0])],
-                                                       ['p75', int(w2_wgt_pcts_psid_01[1]), int(w2_wgt_pcts_psid_03[1]), int(w2_wgt_pcts_psid_05[1]), int(w2_wgt_pcts_psid_07[1]), int(w2_wgt_pcts_psid_09[1]), int(w2_wgt_pcts_psid_11[1]), int(w2_wgt_pcts_psid_13[1]), int(w2_wgt_pcts_psid_15[1]), int(w2_wgt_pcts_psid_17[1]), int(w_wgt_pcts_soep_02[1]), int(w_wgt_pcts_soep_07[1]), int(w_wgt_pcts_soep_12[1])],
-                                                       ['p90', int(w2_wgt_pcts_psid_01[2]), int(w2_wgt_pcts_psid_03[2]), int(w2_wgt_pcts_psid_05[2]), int(w2_wgt_pcts_psid_07[2]), int(w2_wgt_pcts_psid_09[2]), int(w2_wgt_pcts_psid_11[2]), int(w2_wgt_pcts_psid_13[2]), int(w2_wgt_pcts_psid_15[2]), int(w2_wgt_pcts_psid_17[2]), int(w_wgt_pcts_soep_02[2]), int(w_wgt_pcts_soep_07[2]), int(w_wgt_pcts_soep_12[2])],
-                                                       ['p99', int(w2_wgt_pcts_psid_01[3]), int(w2_wgt_pcts_psid_03[3]), int(w2_wgt_pcts_psid_05[3]), int(w2_wgt_pcts_psid_07[3]), int(w2_wgt_pcts_psid_09[3]), int(w2_wgt_pcts_psid_11[3]), int(w2_wgt_pcts_psid_13[3]), int(w2_wgt_pcts_psid_15[3]), int(w2_wgt_pcts_psid_17[3]), int(w_wgt_pcts_soep_02[3]), int(w_wgt_pcts_soep_07[3]), int(w_wgt_pcts_soep_12[3])],
-                                                       ['p99.9', int(w2_wgt_pcts_psid_01[4]), int(w2_wgt_pcts_psid_03[4]), int(w2_wgt_pcts_psid_05[4]), int(w2_wgt_pcts_psid_07[4]), int(w2_wgt_pcts_psid_09[4]), int(w2_wgt_pcts_psid_11[4]), int(w2_wgt_pcts_psid_13[4]), int(w2_wgt_pcts_psid_15[4]), int(w2_wgt_pcts_psid_17[4]), int(w_wgt_pcts_soep_02[4]), int(w_wgt_pcts_soep_07[4]), int(w_wgt_pcts_soep_12[4])],
-                                                       ['max', int(dfPSID['wealth2_01'].max()), int(dfPSID['wealth2_03'].max()), int(dfPSID['wealth2_05'].max()), int(dfPSID['wealth2_07'].max()), int(dfPSID['wealth2_09'].max()), int(dfPSID['wealth2_11'].max()), int(dfPSID['wealth2_13'].max()), int(dfPSID['wealth2_15'].max()), int(dfPSID['wealth2_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max())],
-                                                       ]),
-                                             columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP'])
+# df_weighted_descriptives_w2 = pd.DataFrame(np.array([['N', int(dfPSID['weight1_01'].sum()), int(dfPSID['weight1_03'].sum()), int(dfPSID['weight1_05'].sum()), int(dfPSID['weight1_07'].sum()), int(dfPSID['weight1_09'].sum()), int(dfPSID['weight1_11'].sum()), int(dfPSID['weight1_13'].sum()), int(dfPSID['weight1_15'].sum()), int(dfPSID['weight1_17'].sum()), int(dfSOEP['weight_02'].sum()), int(dfSOEP['weight_07'].sum()), int(dfSOEP['weight_12'].sum())],
+#                                                        ['mean', int(w2_wgt_mean_psid_01), int(w2_wgt_mean_psid_03), int(w2_wgt_mean_psid_05), int(w2_wgt_mean_psid_07), int(w2_wgt_mean_psid_09), int(w2_wgt_mean_psid_11), int(w2_wgt_mean_psid_13), int(w2_wgt_mean_psid_15), int(w2_wgt_mean_psid_17), int(w_wgt_mean_soep_02), int(w_wgt_mean_soep_07), int(w_wgt_mean_soep_12)],
+#                                                        ['sd', int(w2_wgt_sd_psid_01), int(w2_wgt_sd_psid_03), int(w2_wgt_sd_psid_05), int(w2_wgt_sd_psid_07), int(w2_wgt_sd_psid_09), int(w2_wgt_sd_psid_11), int(w2_wgt_sd_psid_13), int(w2_wgt_sd_psid_15), int(w2_wgt_sd_psid_17), int(w_wgt_sd_soep_02), int(w_wgt_sd_soep_07), int(w_wgt_sd_soep_12)],
+#                                                        ['min', int(dfPSID['wealth2_01'].min()), int(dfPSID['wealth2_03'].min()), int(dfPSID['wealth2_05'].min()), int(dfPSID['wealth2_07'].min()), int(dfPSID['wealth2_09'].min()), int(dfPSID['wealth2_11'].min()), int(dfPSID['wealth2_13'].min()), int(dfPSID['wealth2_15'].min()), int(dfPSID['wealth2_17'].min()), int(dfSOEP['wealth_02'].min()), int(dfSOEP['wealth_07'].min()), int(dfSOEP['wealth_12'].min())],
+#                                                        ['p50', int(w2_wgt_pcts_psid_01[0]), int(w2_wgt_pcts_psid_03[0]), int(w2_wgt_pcts_psid_05[0]), int(w2_wgt_pcts_psid_07[0]), int(w2_wgt_pcts_psid_09[0]), int(w2_wgt_pcts_psid_11[0]), int(w2_wgt_pcts_psid_13[0]), int(w2_wgt_pcts_psid_15[0]), int(w2_wgt_pcts_psid_17[0]), int(w_wgt_pcts_soep_02[0]), int(w_wgt_pcts_soep_07[0]), int(w_wgt_pcts_soep_12[0])],
+#                                                        ['p75', int(w2_wgt_pcts_psid_01[1]), int(w2_wgt_pcts_psid_03[1]), int(w2_wgt_pcts_psid_05[1]), int(w2_wgt_pcts_psid_07[1]), int(w2_wgt_pcts_psid_09[1]), int(w2_wgt_pcts_psid_11[1]), int(w2_wgt_pcts_psid_13[1]), int(w2_wgt_pcts_psid_15[1]), int(w2_wgt_pcts_psid_17[1]), int(w_wgt_pcts_soep_02[1]), int(w_wgt_pcts_soep_07[1]), int(w_wgt_pcts_soep_12[1])],
+#                                                        ['p90', int(w2_wgt_pcts_psid_01[2]), int(w2_wgt_pcts_psid_03[2]), int(w2_wgt_pcts_psid_05[2]), int(w2_wgt_pcts_psid_07[2]), int(w2_wgt_pcts_psid_09[2]), int(w2_wgt_pcts_psid_11[2]), int(w2_wgt_pcts_psid_13[2]), int(w2_wgt_pcts_psid_15[2]), int(w2_wgt_pcts_psid_17[2]), int(w_wgt_pcts_soep_02[2]), int(w_wgt_pcts_soep_07[2]), int(w_wgt_pcts_soep_12[2])],
+#                                                        ['p99', int(w2_wgt_pcts_psid_01[3]), int(w2_wgt_pcts_psid_03[3]), int(w2_wgt_pcts_psid_05[3]), int(w2_wgt_pcts_psid_07[3]), int(w2_wgt_pcts_psid_09[3]), int(w2_wgt_pcts_psid_11[3]), int(w2_wgt_pcts_psid_13[3]), int(w2_wgt_pcts_psid_15[3]), int(w2_wgt_pcts_psid_17[3]), int(w_wgt_pcts_soep_02[3]), int(w_wgt_pcts_soep_07[3]), int(w_wgt_pcts_soep_12[3])],
+#                                                        ['p99.9', int(w2_wgt_pcts_psid_01[4]), int(w2_wgt_pcts_psid_03[4]), int(w2_wgt_pcts_psid_05[4]), int(w2_wgt_pcts_psid_07[4]), int(w2_wgt_pcts_psid_09[4]), int(w2_wgt_pcts_psid_11[4]), int(w2_wgt_pcts_psid_13[4]), int(w2_wgt_pcts_psid_15[4]), int(w2_wgt_pcts_psid_17[4]), int(w_wgt_pcts_soep_02[4]), int(w_wgt_pcts_soep_07[4]), int(w_wgt_pcts_soep_12[4])],
+#                                                        ['max', int(dfPSID['wealth2_01'].max()), int(dfPSID['wealth2_03'].max()), int(dfPSID['wealth2_05'].max()), int(dfPSID['wealth2_07'].max()), int(dfPSID['wealth2_09'].max()), int(dfPSID['wealth2_11'].max()), int(dfPSID['wealth2_13'].max()), int(dfPSID['wealth2_15'].max()), int(dfPSID['wealth2_17'].max()), int(dfSOEP['wealth_02'].max()), int(dfSOEP['wealth_07'].max()), int(dfSOEP['wealth_12'].max())],
+#                                                        ]),
+#                                              columns=['', '2001', '2003', '2005', '2007', '2009', '2011', '2013', '2015', '2017', '2002SOEP', '2007SOEP', '2012SOEP'])
 
 # save dataframes to excel sheet
 with ExcelWriter(descriptivespath + 'wealth_descriptives.xlsx', mode='w') as writer:
-    df_unweighted_descriptives_w1.to_excel(writer, sheet_name='unweighted_descriptives_w1', index=False)
-    df_unweighted_descriptives_w2.to_excel(writer, sheet_name='unweighted_descriptives_w2', index=False)
-    df_weighted_descriptives_w1.to_excel(writer, sheet_name='weighted_descriptives_w1', index=False)
-    df_weighted_descriptives_w2.to_excel(writer, sheet_name='weighted_descriptives_w2', index=False)
+    df_unweighted_descriptives_w.to_excel(writer, sheet_name='unweighted_wealth_descriptives', index=False)
+    df_weighted_descriptives_w.to_excel(writer, sheet_name='weighted_wealth_descriptives', index=False)
 
 
 """
