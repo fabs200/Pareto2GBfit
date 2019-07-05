@@ -699,12 +699,6 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
     if return_gofs:
         fit = True
     if fit:
-        # # save calculation time and use Pareto_icdf which is equivalent if parms fall in Pareto branch restrictions
-        # if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05):
-        #     model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
-        # else:
-        #     model, u = IB1_icdf_ne(x=x, b=b, p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
-
         model, u = IB1_icdf_ne(x=x, b=b, p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
         soe = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
         # ssr = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).ssr
@@ -1011,12 +1005,6 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
     if return_gofs:
         fit = True
     if fit:
-        # # save calculation time and use Pareto_icdf which is equivalent if parms fall in Pareto branch restrictions
-        # if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05) and (-1.05<np.mean(a_fit_bs)<-.95) | (-1.05<a_fit<-.95):
-        #     model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
-        # else:
-        #     model, u = GB1_icdf_ne(x=x, b=b, a=np.mean(a_fit_bs), p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
-
         model, u = GB1_icdf_ne(x=x, b=b, a=np.mean(a_fit_bs), p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
 
         soe = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
@@ -1344,14 +1332,6 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
     if return_gofs:
         fit = True
     if fit:
-        # # save calculation time and use Pareto_icdf which is equivalent if parms fall in Pareto branch restrictions
-        # if (.95<np.mean(q_fit_bs)<1.05) | (.95<q_fit<1.05) \
-        #         and (-1.05<np.mean(a_fit_bs)<-.95) | (-1.05<a_fit<-.95) \
-        #         and (-.05<np.mean(c_fit_bs)<.05) | (-.05<c_fit<-.05):
-        #     model = Pareto_icdf(u=np.array(np.random.uniform(.0, 1., len(x))), b=b, p=np.mean(p_fit_bs))
-        # else:
-        #     model, u = GB_icdf_ne(x=x, b=b, a=np.mean(a_fit_bs), c=np.mean(c_fit_bs), p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
-
         model, u = GB_icdf_ne(x=x, b=b, a=np.mean(a_fit_bs), c=np.mean(c_fit_bs), p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
         soe = gof(x=x, x_hat=model, b=b, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
         # ssr = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).ssr

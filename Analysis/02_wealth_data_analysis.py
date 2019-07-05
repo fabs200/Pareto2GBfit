@@ -7,19 +7,19 @@ import os
 # diw path
 if os.getlogin() == "fnemeczek":
     descriptivespath = 'H:/Meine Dateien/Masterarbeit/Python/descriptives'
-    data_PSID = 'H:/Meine Dateien/Masterarbeit/J262205/'
+    data_PSID = 'H:/Meine Dateien/Masterarbeit/DATA/J262243/'
     data_SOEP = 'H:/Meine Dateien/Masterarbeit/DATA/SOEP/'
 
 # windows paths
 if os.getlogin() == 'Fabian' and os.name == 'nt':
     descriptivespath = 'D:/OneDrive/Studium/Masterarbeit/Python/descriptives/'
-    data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/J262205/'
+    data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/J262243/'
     data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v34/stata_de+en/'
 
 # mac paths
 if os.getlogin() == 'Fabian' and os.name == 'posix':
     descriptivespath = '/Users/Fabian/OneDrive/Studium/Masterarbeit/Python/descriptives/'
-    data_PSID = "/Users/Fabian/OneDrive/Studium/Masterarbeit/data/psid/J262205/"
+    data_PSID = "/Users/Fabian/OneDrive/Studium/Masterarbeit/data/psid/J262243/"
     data_SOEP = '/Users/Fabian/Documents/DATA/STATA/SOEP_v34/stata_de+en/'
 
 """
@@ -99,61 +99,57 @@ PSID data preparation
 """
 
 # load dataset PSID
-dfPSID = pd.read_csv(data_PSID + 'J262205.csv', delimiter=";", skiprows=False, decimal=',')
+dfPSID = pd.read_csv(data_PSID + 'psid_prepared.csv', delimiter=";", skiprows=False, decimal=',')
 
 # renaming
-columns={"ER32006": "nonsample",
+# columns={"ER32006": "nonsample",
+#
+#     "ER17001": "release_01", "ER17002": "famid_01", "ER20394": "weight_01",
+#     "S500": "wrelease_01", "S516": "wealth_01", "S517": "wealth2_01", "S516A": "wealthA1_01", "S517A": "wealthA2_01",
+#     "ER33601": "interview_01", "ER33602": "seqnr_01", "ER33603": "head_01",
+#
+#     "ER21001": "release_03", "ER21002": "famid_03", "ER24179": "weight_03",
+#     "S600": "wrelease_03", "S616": "wealth_03", "S617": "wealth2_03", "S616A": "wealthA1_03", "S617A": "wealthA2_03",
+#     "ER33701": "interview_03", "ER33702": "seqnr_03", "ER33703": "head_03",
+#
+#     "ER25001": "release_05", "ER25002": "famid_05", "ER28078": "weight_05",
+#     "S700": "wrelease_05", "S716": "wealth_05", "S717": "wealth2_05", "S716A": "wealthA1_05", "S717A": "wealthA2_05",
+#     "ER33801": "interview_05", "ER33802": "seqnr_05", "ER33803": "head_05",
+#
+#     "ER36001": "release_07", "ER36002": "famid_07", "ER41069": "weight_07",
+#     "S800": "wrelease_07", "S816": "wealth_07", "S817": "wealth2_07", "S816A": "wealthA1_07", "S817A": "wealthA2_07",
+#     "ER33901": "interview_07", "ER33902": "seqnr_07", "ER33903": "head_07",
+#
+#     "ER42001": "release_09", "ER42002": "famid_09", "ER47012": "weight_09",
+#     "ER46968": "wealth_09", "ER46970": "wealth2_09", "ER46969": "wealthA1_09", "ER46971": "wealthA2_09",
+#     "ER34001": "interview_09", "ER34002": "seqnr_09", "ER34003": "head_09",
+#
+#     "ER47301": "release_11", "ER47302": "famid_11", "ER52436": "weight_11",
+#     "ER52392": "wealth_11", "ER52394": "wealth2_11", "ER52393": "wealthA1_11", "ER52395": "wealthA2_11",
+#     "ER34101": "interview_11", "ER34102": "seqnr_11", "ER34103": "head_11",
+#
+#     "ER53001": "release_13", "ER53002": "famid_13", "ER58257": "weight_13",
+#     "ER58209": "wealth_13", "ER58211": "wealth2_13", "ER58210": "wealthA1_13", "ER58212": "wealthA2_13",
+#     "ER34201": "interview_13", "ER34202": "seqnr_13", "ER34203": "head_13",
+#
+#     "ER60001": "release_15", "ER60002": "famid_15", "ER65492": "weight_15",
+#     "ER65406": "wealth_15", "ER65408": "wealth2_15", "ER65407": "wealthA1_15", "ER65409": "wealthA2_15",
+#     "ER34301": "interview_15", "ER34302": "seqnr_15", "ER34303": "head_15",
+#
+#     "ER66001": "release_17", "ER66002": "famid_17", "ER71570": "weight_17",
+#     "ER71483": "wealth_17", "ER71485": "wealth2_17", "ER71484": "wealthA1_17", "ER71486": "wealthA2_17",
+#     "ER34501": "interview_17", "ER34502": "seqnr_17", "ER34503": "head_17"}
+#
+# dfPSID = dfPSID.rename(index=str, columns=columns)
 
-    "ER17001": "release_01", "ER17002": "famid_01", "ER20394": "weight_01",
-    "S500": "wrelease_01", "S516": "wealth_01", "S517": "wealth2_01", "S516A": "wealthA1_01", "S517A": "wealthA2_01",
-    "ER33601": "interview_01", "ER33602": "seqnr_01", "ER33603": "head_01",
-
-    "ER21001": "release_03", "ER21002": "famid_03", "ER24179": "weight_03",
-    "S600": "wrelease_03", "S616": "wealth_03", "S617": "wealth2_03", "S616A": "wealthA1_03", "S617A": "wealthA2_03",
-    "ER33701": "interview_03", "ER33702": "seqnr_03", "ER33703": "head_03",
-
-    "ER25001": "release_05", "ER25002": "famid_05", "ER28078": "weight_05",
-    "S700": "wrelease_05", "S716": "wealth_05", "S717": "wealth2_05", "S716A": "wealthA1_05", "S717A": "wealthA2_05",
-    "ER33801": "interview_05", "ER33802": "seqnr_05", "ER33803": "head_05",
-
-    "ER36001": "release_07", "ER36002": "famid_07", "ER41069": "weight_07",
-    "S800": "wrelease_07", "S816": "wealth_07", "S817": "wealth2_07", "S816A": "wealthA1_07", "S817A": "wealthA2_07",
-    "ER33901": "interview_07", "ER33902": "seqnr_07", "ER33903": "head_07",
-
-    "ER42001": "release_09", "ER42002": "famid_09", "ER47012": "weight_09",
-    "ER46968": "wealth_09", "ER46970": "wealth2_09", "ER46969": "wealthA1_09", "ER46971": "wealthA2_09",
-    "ER34001": "interview_09", "ER34002": "seqnr_09", "ER34003": "head_09",
-
-    "ER47301": "release_11", "ER47302": "famid_11", "ER52436": "weight_11",
-    "ER52392": "wealth_11", "ER52394": "wealth2_11", "ER52393": "wealthA1_11", "ER52395": "wealthA2_11",
-    "ER34101": "interview_11", "ER34102": "seqnr_11", "ER34103": "head_11",
-
-    "ER53001": "release_13", "ER53002": "famid_13", "ER58257": "weight_13",
-    "ER58209": "wealth_13", "ER58211": "wealth2_13", "ER58210": "wealthA1_13", "ER58212": "wealthA2_13",
-    "ER34201": "interview_13", "ER34202": "seqnr_13", "ER34203": "head_13",
-
-    "ER60001": "release_15", "ER60002": "famid_15", "ER65492": "weight_15",
-    "ER65406": "wealth_15", "ER65408": "wealth2_15", "ER65407": "wealthA1_15", "ER65409": "wealthA2_15",
-    "ER34301": "interview_15", "ER34302": "seqnr_15", "ER34303": "head_15",
-
-    "ER66001": "release_17", "ER66002": "famid_17", "ER71570": "weight_17",
-    "ER71483": "wealth_17", "ER71485": "wealth2_17", "ER71484": "wealthA1_17", "ER71486": "wealthA2_17",
-    "ER34501": "interview_17", "ER34502": "seqnr_17", "ER34503": "head_17"}
-
-dfPSID = dfPSID.rename(index=str, columns=columns)
-
-# if not head, set to missing (NaN) in each year
+# convert imported vars to numeric
 for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
+    dfPSID['hhwgt_{}'.format(year)] = pd.to_numeric(dfPSID['hhwgt_{}'.format(year)], errors='coerce')
 
-    dfPSID['weight_{}'.format(year)] = pd.to_numeric(dfPSID['weight_{}'.format(year)], errors='coerce')
-    # multiply longitudinal weights by 1000 as described in the documentation of PSID
-    # compare for example https://psidonline.isr.umich.edu/data/weights/cross_sec_weights_13.pdf
-    dfPSID['weight_{}'.format(year)] *= 1000
-    # set NaN compare https://psidonline.isr.umich.edu/Guide/FAQ.aspx?Type=1 keep head==10 and seqnr==1
-    dfPSID['wealth_{}'.format(year)] = np.where(dfPSID['head_{}'.format(year)] == 10, dfPSID['wealth_{}'.format(year)], np.nan)
-    dfPSID['wealth_{}'.format(year)] = np.where(dfPSID['seqnr_{}'.format(year)] == 1, dfPSID['wealth_{}'.format(year)], np.nan)
-    dfPSID['weight_{}'.format(year)] = np.where(dfPSID['head_{}'.format(year)] == 10, dfPSID['weight_{}'.format(year)], np.nan)
-    dfPSID['weight_{}'.format(year)] = np.where(dfPSID['seqnr_{}'.format(year)] == 1, dfPSID['weight_{}'.format(year)], np.nan)
+# rename weights
+dfPSID = dfPSID.rename(index=str, columns={'hhwgt_01': 'weight_01', 'hhwgt_03': 'weight_03', 'hhwgt_05': 'weight_05',
+                                           'hhwgt_07': 'weight_07', 'hhwgt_09': 'weight_09', 'hhwgt_11': 'weight_11',
+                                           'hhwgt_13': 'weight_13', 'hhwgt_15': 'weight_15', 'hhwgt_17': 'weight_17'})
 
 # check seqnr and head:
 # pd.crosstab(dfPSID['seqnr_01'], dfPSID['head_01'])
@@ -162,7 +158,7 @@ for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 # dfPSID.head()
 # dfPSID.dtypes
 # dfPSID.groupby('nonsample').count()
-# dfPSID['weight_17'].sum()
+# dfPSID['hhwgt_17'].sum()
 
 """
 -----------------------
@@ -186,7 +182,7 @@ dfSOEP_wealth = dfSOEP_wealth.pivot(index='hid', columns='syear', values='wealth
 # merge datasets
 dfSOEP = dfSOEP_wealth.merge(dfSOEP_hhweights, left_on='hid', right_on='hid')
 
-# rename weights
+# rename weights according to PSID
 dfSOEP = dfSOEP.rename(index=str, columns={2002: 'wealth_02', 2007: 'wealth_07', 2012: 'wealth_12', 2017: 'wealth_17',
                                            'shhrf': 'weight_02', 'xhhrf': 'weight_07', 'bchhrf': 'weight_12', 'bhhhrf': 'weight_17'})
 
@@ -232,11 +228,11 @@ for year in ['02', '07', '12', '17']:
 # weighted, psid: wealth
 for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
     # weighted pcts
-    globals()['w_wgt_pcts_psid_{}'.format(year)] = weighted_quantile(dfPSID['wealth_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])], quantiles= [.5, .75, .9, .99, .999], sample_weight=dfPSID['weight_{}'.format(year)][~np.isnan(dfPSID['weight_{}'.format(year)])])
+    globals()['w_wgt_pcts_psid_{}'.format(year)] = weighted_quantile(dfPSID['wealth_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])], quantiles= [.5, .75, .9, .99, .999], sample_weight=dfPSID['weight_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])])
     # weighted sd
-    globals()['w_wgt_sd_psid_{}'.format(year)] = np.sqrt(np.cov(dfPSID['wealth_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])], aweights=dfPSID['weight_{}'.format(year)][~np.isnan(dfPSID['weight_{}'.format(year)])]))
+    globals()['w_wgt_sd_psid_{}'.format(year)] = np.sqrt(np.cov(dfPSID['wealth_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])], aweights=dfPSID['weight_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])]))
     # weighted avg
-    globals()['w_wgt_mean_psid_{}'.format(year)] = np.average(dfPSID['wealth_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])], weights=dfPSID['weight_{}'.format(year)][~np.isnan(dfPSID['weight_{}'.format(year)])])
+    globals()['w_wgt_mean_psid_{}'.format(year)] = np.average(dfPSID['wealth_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])], weights=dfPSID['weight_{}'.format(year)][~np.isnan(dfPSID['wealth_{}'.format(year)])])
 
 # write statistics to dataframe, psid: wealth, soep: wealth
 df_weighted_descriptives_w = pd.DataFrame(np.array([['N', int(dfPSID['weight_01'].sum()), int(dfPSID['weight_03'].sum()), int(dfPSID['weight_05'].sum()), int(dfPSID['weight_07'].sum()), int(dfPSID['weight_09'].sum()), int(dfPSID['weight_11'].sum()), int(dfPSID['weight_13'].sum()), int(dfPSID['weight_15'].sum()), int(dfPSID['weight_17'].sum()), int(dfSOEP['weight_02'].sum()), int(dfSOEP['weight_07'].sum()), int(dfSOEP['weight_12'].sum()), int(dfSOEP['weight_17'].sum())],

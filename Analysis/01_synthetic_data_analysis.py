@@ -89,17 +89,17 @@ if plot_data:
     plt.scatter(u, Pareto_data_gauss_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,200^2)$')
     plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
     plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
-    plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x');
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x');
     for type in ['png', 'pdf']:
         plt.savefig(fname=graphspath + 'icdf_gauss_noise.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
 
     # check heteroscedastic noise data
-    plt.scatter(u, Pareto_data_het_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=x\cdot s\cdot N(0,100^2)$')
-    plt.scatter(u, Pareto_data_het_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=x\cdot s\cdot N(0,200^2)$')
+    plt.scatter(u, Pareto_data_het_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=x\cdot s\cdot N(0,200^2)$')
+    plt.scatter(u, Pareto_data_het_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=x\cdot s\cdot N(0,100^2)$')
     plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
-    plt.legend(loc='upper left'); plt.xlabel('cdf'); plt.ylabel('x')
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
         plt.savefig(fname=graphspath + 'icdf_het_noise.' + type, dpi=300, format=type)
     plt.show()
