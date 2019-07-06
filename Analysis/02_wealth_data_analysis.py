@@ -13,7 +13,7 @@ if os.getlogin() == "fnemeczek":
 # windows paths
 if os.getlogin() == 'Fabian' and os.name == 'nt':
     descriptivespath = 'D:/OneDrive/Studium/Masterarbeit/Python/descriptives/'
-    data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/J262243/'
+    data_PSID = 'D:/OneDrive/Studium/Masterarbeit/data/psid/J262243/'
     data_SOEP = 'C:/Users/fabia/Documents/DATA/SOEP_v34/stata_de+en/'
 
 # mac paths
@@ -99,7 +99,7 @@ PSID data preparation
 """
 
 # load dataset PSID
-dfPSID = pd.read_csv(data_PSID + 'psid_prepared.csv', delimiter=";", skiprows=False, decimal=',')
+dfPSID = pd.read_csv(data_PSID + 'psid_prepared.csv', delimiter=";", skiprows=False, decimal=',', low_memory=False)
 
 # renaming
 # columns={"ER32006": "nonsample",
@@ -262,7 +262,7 @@ Fit data
 
 b = 500000
 x0 = (-1, .5, 1, 1)
-bootstraps = (100, 100, 100, 100)
+bootstraps = (500, 500, 500, 500)
 
 ### PSID
 for test in ['LRtest', 'AIC']:
@@ -271,8 +271,8 @@ for test in ['LRtest', 'AIC']:
         print('PSID:', year, test)
 
         # write temp variables names
-        wealth = 'wealth1_' + year
-        weight = 'weight1_' + year
+        wealth = 'wealth_' + year
+        weight = 'weight_' + year
         data = dfPSID[wealth]
         # wgt = int(dfPSID[weight])
         wgt = pd.to_numeric(dfPSID[weight], downcast='signed')
@@ -373,12 +373,12 @@ print(plt.rcParams.get('figure.figsize'))
 plt.rcParams['figure.figsize'] = 10, 8
 
 # LRtest
-Paretobranchfit(x=dfPSID['wealth1_17'], weights=dfPSID['weight1_17'], b=b, x0=x0,
+Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=False, plot=True,
                 rejection_criteria='LRtest',
                 plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 # AIC
-Paretobranchfit(x=dfPSID['wealth1_17'], weights=dfPSID['weight1_17'], b=b, x0=x0,
+Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=True, plot=True,
                 rejection_criteria='LRtest',
                 plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
