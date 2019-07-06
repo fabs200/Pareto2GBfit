@@ -19,7 +19,7 @@ if os.getlogin() == 'Fabian' and os.name == 'nt':
 # mac paths
 if os.getlogin() == 'Fabian' and os.name == 'posix':
     descriptivespath = '/Users/Fabian/OneDrive/Studium/Masterarbeit/Python/descriptives/'
-    data_PSID = "/Users/Fabian/OneDrive/Studium/Masterarbeit/data/psid/J262243/"
+    data_PSID = "/Users/Fabian/OneDrive/Studium/Masterarbeit/data/psid/"
     data_SOEP = '/Users/Fabian/Documents/DATA/STATA/SOEP_v34/stata_de+en/'
 
 """
@@ -144,12 +144,12 @@ dfPSID = pd.read_csv(data_PSID + 'psid_prepared.csv', delimiter=";", skiprows=Fa
 
 # convert imported vars to numeric
 for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
-    dfPSID['hhwgt_{}'.format(year)] = pd.to_numeric(dfPSID['hhwgt_{}'.format(year)], errors='coerce')
+    dfPSID['famwgt_{}'.format(year)] = pd.to_numeric(dfPSID['famwgt_{}'.format(year)], errors='coerce')
 
 # rename weights
-dfPSID = dfPSID.rename(index=str, columns={'hhwgt_01': 'weight_01', 'hhwgt_03': 'weight_03', 'hhwgt_05': 'weight_05',
-                                           'hhwgt_07': 'weight_07', 'hhwgt_09': 'weight_09', 'hhwgt_11': 'weight_11',
-                                           'hhwgt_13': 'weight_13', 'hhwgt_15': 'weight_15', 'hhwgt_17': 'weight_17'})
+dfPSID = dfPSID.rename(index=str, columns={'famwgt_01': 'weight_01', 'famwgt_03': 'weight_03', 'famwgt_05': 'weight_05',
+                                           'famwgt_07': 'weight_07', 'famwgt_09': 'weight_09', 'famwgt_11': 'weight_11',
+                                           'famwgt_13': 'weight_13', 'famwgt_15': 'weight_15', 'famwgt_17': 'weight_17'})
 
 # check seqnr and head:
 # pd.crosstab(dfPSID['seqnr_01'], dfPSID['head_01'])
@@ -158,7 +158,7 @@ dfPSID = dfPSID.rename(index=str, columns={'hhwgt_01': 'weight_01', 'hhwgt_03': 
 # dfPSID.head()
 # dfPSID.dtypes
 # dfPSID.groupby('nonsample').count()
-# dfPSID['hhwgt_17'].sum()
+# dfPSID['famwgt_17'].sum()
 
 """
 -----------------------
@@ -260,7 +260,7 @@ Fit data
 -----------------------------
 """
 
-b = 500000
+b = 1000000
 x0 = (-1, .5, 1, 1)
 bootstraps = (500, 500, 500, 500)
 
