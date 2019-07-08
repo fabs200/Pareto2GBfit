@@ -1568,11 +1568,11 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         # save LRtest results to tbl
         tbl = PrettyTable()
         tbl.field_names = ['comparison', 'H0', 'LR test', '', 'stop', 'best model']
-        tbl.add_row(['Pareto vs IB1', 'q=1', 'chi2({}) = '.format(2), '{:.3f}'.format(LRtest1v2.w), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.add_row(['Pareto vs IB1', 'q=1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtest1v2.w), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
         tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtest1v2.pval), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
-        tbl.add_row(['IB1 vs GB1', 'a=-1', 'chi2({}) = '.format(3), '{:.3f}'.format(LRtest2v3.w), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['IB1 vs GB1', 'a=-1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtest2v3.w), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
         tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtest2v3.pval), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
-        tbl.add_row(['GB1 vs GB', 'c=0', 'chi2({}) = '.format(4), '{:.3f}'.format(LRtest3v4.w), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+        tbl.add_row(['GB1 vs GB', 'c=0', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtest3v4.w), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
         tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtest3v4.pval), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
         if GB_remaining:
             tbl.add_row(['GB', '', '', '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
