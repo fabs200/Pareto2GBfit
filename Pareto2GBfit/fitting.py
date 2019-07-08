@@ -1372,8 +1372,8 @@ Pareto branch fitting
 ---------------------------------------------------
 """
 
-def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bootstraps=250, method='SLSQP', rejection_criteria="LRtest",
-                    verbose_bootstrap=False, verbose_single=False, verbose=True, alpha=.05,
+def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bootstraps=250, method='SLSQP',
+                    rejection_criteria="LRtest", verbose_bootstrap=False, verbose_single=False, verbose=True, alpha=.05,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
                     suppress_warnings=True, omit_missings=True,
           plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -1394,6 +1394,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     :param bootstraps: either 1x1 OR 1x2 array (1st arg: Pareto+IB1, 2nd arg: GB1+GB) OR pass 1x4 array [Pareto_bs, IB1_bs, GB1_bs, GB_bs]
     :param method: as above
     :param verbose_bootstrap: as above
+    :param rejection_criteria: LRtest or AIC (as recommended by McDonald)
     :param verbose: table with parameters and another with gofs, display only final result
     :param verbose_single: display each optimization results
     :param alpha: significance level of LRtest, default: 5%
