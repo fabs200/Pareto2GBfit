@@ -1373,7 +1373,7 @@ Pareto branch fitting
 """
 
 def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bootstraps=250, method='SLSQP',
-                    rejection_criteria="LRtest", verbose_bootstrap=False, verbose_single=False, verbose=True, alpha=.05,
+                    rejection_criteria='LRtest', verbose_bootstrap=False, verbose_single=False, verbose=True, alpha=.05,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
                     suppress_warnings=True, omit_missings=True,
           plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -1533,20 +1533,20 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     a_fit4, a_se4, c_fit4, c_se4, p_fit4, p_se4, q_fit4, q_se4 = GB_fit[:8]
 
     # run rejection based on LRtest
-    if rejection_criteria == "LRtest":
+    if rejection_criteria == 'LRtest':
         # alpha = .05
-        # 1. LRtest Pareto vs IB1
-        LRtest1v2 = LRtest(Pareto(x=x, b=b, p=p_fit1).LL,
-                                IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
-                                df=1, verbose=False)
-        # 2. LRtest IB1 vs GB1
-        LRtest2v3 = LRtest(IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
-                                GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
-                                df=1, verbose=False)
-        # 3. LRtest GB1 vs GB
-        LRtest3v4 = LRtest(GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
-                                GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
-                                df=1, verbose=False)
+        # 1. LRtest IB1 restriction q=1
+        LRtest1v2 = LRtest(IB1(x=x, b=b, p=p_fit1, q=1).LL,
+                           IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
+                           df=1, verbose=False)
+        # 2. LRtest GB1 restriction a=-1
+        LRtest2v3 = LRtest(GB1(x=x, b=b, a=-1, p=p_fit2, q=q_fit2).LL,
+                           GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
+                           df=1, verbose=False)
+        # 3. LRtest GB restriction c=0
+        LRtest3v4 = LRtest(GB(x=x, b=b, a=a_fit3, c=0, p=p_fit3, q=q_fit3).LL,
+                           GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
+                           df=1, verbose=False)
 
         # 1v2, 2v3, 3v4
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
@@ -1567,12 +1567,12 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
 
         # save LRtest results to tbl
         tbl = PrettyTable()
-        tbl.field_names = ['comparison', 'H0', 'LR test', '', 'stop', 'best model']
-        tbl.add_row(['Pareto vs IB1', 'q=1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtest1v2.w), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.field_names = ['test restriction', 'H0', 'LR test', '', 'stop', 'best model']
+        tbl.add_row(['IB1 restriction', 'q=1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtest1v2.w), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
         tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtest1v2.pval), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
-        tbl.add_row(['IB1 vs GB1', 'a=-1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtest2v3.w), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['GB1 restriction', 'a=-1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtest2v3.w), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
         tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtest2v3.pval), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
-        tbl.add_row(['GB1 vs GB', 'c=0', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtest3v4.w), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+        tbl.add_row(['GB restriction', 'c=0', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtest3v4.w), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
         tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtest3v4.pval), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
         if GB_remaining:
             tbl.add_row(['GB', '', '', '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
@@ -1607,7 +1607,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
 
         # save LRtest results to tbl
         tbl = PrettyTable()
-        tbl.field_names = ['comparison', 'AIC1', 'AIC2', 'stop', 'best model']
+        tbl.field_names = ['model comparison', 'AIC1', 'AIC2', 'stop', 'best model']
         tbl.add_row(['Pareto vs IB1', '{:.3f}'.format(Pareto_aic), '{:.3f}'.format(IB1_aic), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
         tbl.add_row(['IB1 vs GB1', '{:.3f}'.format(IB1_aic), '{:.3f}'.format(GB1_aic), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
         tbl.add_row(['GB1 vs GB', '{:.3f}'.format(GB1_aic), '{:.3f}'.format(GB_aic), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
