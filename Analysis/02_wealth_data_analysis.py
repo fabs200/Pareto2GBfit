@@ -223,8 +223,8 @@ b = 500000
 x0 = (-1, .5, 1, 1)
 bootstraps = (500, 500, 500, 500)
 
-### PSID
-for test in ['LRtest', 'AIC']:
+### PSID    ['LRtest', 'AIC']
+for test in ['LRtest']:
     for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 
         print('PSID:', year, test)

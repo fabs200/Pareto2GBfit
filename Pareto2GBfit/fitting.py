@@ -1551,10 +1551,16 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         # 1v2, 2v3, 3v4
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
         GB_remaining = False
-        if alpha < LRtest1v2.pval:
-            if alpha < LRtest2v3.pval:
+        if LRtest1v2.pval < alpha:
+            # LRtest1v2.pval is smaller than alpha, reject H0,
+            # q=1 not valid, go one parm. level up in pareto branch and test next GB1 restriction
+            if LRtest2v3.pval < alpha:
+                # LRtest2v3.pval is smaller than alpha, reject H0,
+                # a=-1 not valid, go one parm. level up in pareto branch and test next GB restriction
                 bestmodel, Pareto_marker = '--', 'IB1'
-                if alpha < LRtest3v4.pval:
+                if LRtest3v4.pval < alpha:
+                    # LRtest3v4.pval is smaller than alpha, reject H0,
+                    # c=0 not valid, go one parm. level up in pareto branch and test next GB1 restriction
                     GB_bm, bestmodel, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
                     Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
                 else:
@@ -1588,13 +1594,35 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         GB1_aic = GB1_fit[6]
         GB_aic = GB_fit[8]
 
-        # 1v2, 2v3, 3v4
+    # calculate AICs of models with nested restriction
+        IB1_aic_nested = -2*IB1_ll([p=IB1_fit[0], q=1], b=b, x=x)-2
+        GB1_aic_nested = -2*GB1_ll([a=-1, p=GB1_fit[2], q=GB1_fit[4]], b=b, x=x)-2
+        GB_aic_nested = -2*GB_ll([a=GB_fit[0], c=0, p=GB_fit[4], q=GB_fit[6]], b=b, x=x)-2
+
+        # # OLD: 1v2, 2v3, 3v4
+        # Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
+        # GB_remaining = False
+        # if Pareto_aic > IB1_aic:
+        #     if IB1_aic > GB1_aic:
+        #         bestmodel, Pareto_marker = '--', 'IB1'
+        #         if GB1_aic > GB_aic:
+        #             GB_bm, bestmodel, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
+        #             Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
+        #         else:
+        #             GB1_bm, bestmodel, GB1_marker = 'GB1', 'GB1', 'XX'
+        #             IB1_marker = Pareto_marker = '--'
+        #     else:
+        #         IB1_bm, bestmodel, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
+        # else:
+        #     Pareto_bm, bestmodel, Pareto_marker = 'Pareto', 'Pareto', 'XX'
+
+        # OLD: 1v2, 2v3, 3v4
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
         GB_remaining = False
-        if Pareto_aic > IB1_aic:
-            if IB1_aic > GB1_aic:
+        if IB1_aic_nested > IB1_aic:
+            if GB1_aic_nested > GB1_aic:
                 bestmodel, Pareto_marker = '--', 'IB1'
-                if GB1_aic > GB_aic:
+                if GB_aic_nested > GB_aic:
                     GB_bm, bestmodel, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
                     Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
                 else:
@@ -1616,7 +1644,6 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
             tbl.add_row(['GB', '{:.3f}'.format(GB_aic), '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
 
         print('\n{}'.format(tbl))
-
 
     if verbose:
         tbl_parms = PrettyTable()
