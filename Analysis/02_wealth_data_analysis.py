@@ -219,12 +219,12 @@ Fit data
 -----------------------------
 """
 
-b = 500000
+b = 1000000
 x0 = (-1, .5, 1, 1)
 bootstraps = (500, 500, 500, 500)
 
 ### PSID    ['LRtest', 'AIC']
-for test in ['LRtest']:
+for test in ['LRtest', 'AIC']:
     for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 
         print('PSID:', year, test)
