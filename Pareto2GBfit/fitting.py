@@ -1548,7 +1548,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
                            GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
                            df=1, verbose=False) #df: # of tested parms
 
-        # 1v2, 2v3, 3v4
+        # LR testing procedure
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
         GB_remaining = False
         if LRtestIB1_restrict.pval < alpha:
@@ -1589,40 +1589,23 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     if rejection_criteria == "AIC":
 
         # unpack aic
-        Pareto_aic = Pareto_fit[2]
-        IB1_aic = IB1_fit[4]
-        GB1_aic = GB1_fit[6]
-        GB_aic = GB_fit[8]
+        Pareto_aic = -2*Pareto(p=Pareto_fit[0], b=b, x=x).LL-2*1
+        IB1_aic = -2*IB1(p=IB1_fit[0], q=IB1_fit[2], b=b, x=x).LL-2*2
+        GB1_aic = -2*GB1(a=GB1_fit[0], p=GB1_fit[2], q=GB1_fit[4], b=b, x=x).LL-2*3
+        GB_aic  = -2*GB(a=GB_fit[0], c=GB_fit[2], p=GB_fit[4], q=GB_fit[6], b=b, x=x).LL-2*4
 
-        # calculate AICs of models with nested Pareto branch restriction
-        IB1_aic_nested = IB1(x=x, b=b, p=IB1_fit[0], q=1).LL-2*2
-        GB1_aic_nested = GB1(x=x, b=b, a=-1, p=GB1_fit[2], q=GB1_fit[4]).LL-2*3
-        GB_aic_nested  = GB(x=x, b=b, a=GB_fit[0], c=0, p=GB_fit[4], q=GB_fit[6]).LL-2*4
+        # calculate AICs of models with restriction of Pareto branch
+        IB1_aic_restrict = IB1(x=x, b=b, p=IB1_fit[0], q=1).LL-2*2
+        GB1_aic_restrict = GB1(x=x, b=b, a=-1, p=GB1_fit[2], q=GB1_fit[4]).LL-2*3
+        GB_aic_restrict  = GB(x=x, b=b, a=GB_fit[0], c=0, p=GB_fit[4], q=GB_fit[6]).LL-2*4
 
-        # # OLD: 1v2, 2v3, 3v4
-        # Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
-        # GB_remaining = False
-        # if Pareto_aic > IB1_aic:
-        #     if IB1_aic > GB1_aic:
-        #         bestmodel, Pareto_marker = '--', 'IB1'
-        #         if GB1_aic > GB_aic:
-        #             GB_bm, bestmodel, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
-        #             Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
-        #         else:
-        #             GB1_bm, bestmodel, GB1_marker = 'GB1', 'GB1', 'XX'
-        #             IB1_marker = Pareto_marker = '--'
-        #     else:
-        #         IB1_bm, bestmodel, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
-        # else:
-        #     Pareto_bm, bestmodel, Pareto_marker = 'Pareto', 'Pareto', 'XX'
-
-        # LRtest 1v2, 2v3, 3v4
+        # AIC testing procedure
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
         GB_remaining = False
-        if IB1_aic_nested > IB1_aic:
-            if GB1_aic_nested > GB1_aic:
+        if IB1_aic_restrict > IB1_aic:
+            if GB1_aic_restrict > GB1_aic:
                 bestmodel, Pareto_marker = '--', 'IB1'
-                if GB_aic_nested > GB_aic:
+                if GB_aic_restrict > GB_aic:
                     GB_bm, bestmodel, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
                     Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
                 else:
@@ -1635,12 +1618,12 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
 
         # save LRtest results to tbl
         tbl = PrettyTable()
-        tbl.field_names = ['AIC comparison', 'AIC with nested restriction', 'AIC with fitted parameter', 'stop', 'best model']
-        tbl.add_row(['IB1(pfit, q=1) vs. IB1(pfit, qfit)', '{:.3f}'.format(IB1_aic_nested), '{:.3f}'.format(IB1_aic), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
-        tbl.add_row(['GB1(a=-1, pfit, qfit) vs', '', '', '', ''])
-        tbl.add_row(['GB1(afit, pfit, qfit)', '{:.3f}'.format(GB1_aic_nested), '{:.3f}'.format(GB1_aic), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
-        tbl.add_row(['GB(afit, c=0, pfit, qfit) vs', '', '', '', ''])
-        tbl.add_row(['GB(afit, cfit, pfit, qfit)', '{:.3f}'.format(GB_aic_nested), '{:.3f}'.format(GB_aic), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+        tbl.field_names = ['AIC comparison', 'AIC (restricted)', 'AIC (full)', 'stop', 'best model']
+        tbl.add_row(['IB1(pfit, q=1) vs. IB1(pfit, qfit)', '{:.3f}'.format(IB1_aic_restrict), '{:.3f}'.format(IB1_aic), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.add_row(['GB1(a=-1, pfit, qfit) vs.', '', '', '', ''])
+        tbl.add_row(['GB1(afit, pfit, qfit)', '{:.3f}'.format(GB1_aic_restrict), '{:.3f}'.format(GB1_aic), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['GB(afit, c=0, pfit, qfit) vs.', '', '', '', ''])
+        tbl.add_row(['GB(afit, cfit, pfit, qfit)', '{:.3f}'.format(GB_aic_restrict), '{:.3f}'.format(GB_aic), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
 
         if GB_remaining:
             tbl.add_row(['GB', '{:.3f}'.format(GB_aic), '', '{}'.format(GB_marker), '{}'.format(GB_bm)])

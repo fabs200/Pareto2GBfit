@@ -282,7 +282,7 @@ if run_optimize:
 
 
     # Robustness Check: NON Pareto data
-    IB1_non_Pareto_parms_LR = Paretobranchfit(x=IB1_data, x0=(-1, .5, 1, 1), b=25,
+    IB1_non_Pareto_parms_LR = Paretobranchfit(x=IB1_data, x0=(-1, .5, 1, 1), b=250,
                                               bootstraps=(250, 250, 250, 250),
                                               return_bestmodel=True, rejection_criteria='LRtest', plot=True,
                                               plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
