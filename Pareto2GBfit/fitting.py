@@ -1589,15 +1589,15 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     if rejection_criteria == "AIC":
 
         # unpack aic
-        Pareto_aic = -2*Pareto(p=Pareto_fit[0], b=b, x=x).LL-2*1
-        IB1_aic = -2*IB1(p=IB1_fit[0], q=IB1_fit[2], b=b, x=x).LL-2*2
-        GB1_aic = -2*GB1(a=GB1_fit[0], p=GB1_fit[2], q=GB1_fit[4], b=b, x=x).LL-2*3
-        GB_aic  = -2*GB(a=GB_fit[0], c=GB_fit[2], p=GB_fit[4], q=GB_fit[6], b=b, x=x).LL-2*4
+        Pareto_aic = -2*Pareto(p=Pareto_fit[0], b=b, x=x).LL+2*1
+        IB1_aic = -2*IB1(p=IB1_fit[0], q=IB1_fit[2], b=b, x=x).LL+2*2
+        GB1_aic = -2*GB1(a=GB1_fit[0], p=GB1_fit[2], q=GB1_fit[4], b=b, x=x).LL+2*3
+        GB_aic  = -2*GB(a=GB_fit[0], c=GB_fit[2], p=GB_fit[4], q=GB_fit[6], b=b, x=x).LL+2*4
 
         # calculate AICs of models with restriction of Pareto branch
-        IB1_aic_restrict = IB1(x=x, b=b, p=IB1_fit[0], q=1).LL-2*2
-        GB1_aic_restrict = GB1(x=x, b=b, a=-1, p=GB1_fit[2], q=GB1_fit[4]).LL-2*3
-        GB_aic_restrict  = GB(x=x, b=b, a=GB_fit[0], c=0, p=GB_fit[4], q=GB_fit[6]).LL-2*4
+        IB1_aic_restrict = -2*IB1(x=x, b=b, p=IB1_fit[0], q=1).LL+2*2
+        GB1_aic_restrict = -2*GB1(x=x, b=b, a=-1, p=GB1_fit[2], q=GB1_fit[4]).LL+2*3
+        GB_aic_restrict  = -2*GB(x=x, b=b, a=GB_fit[0], c=0, p=GB_fit[4], q=GB_fit[6]).LL+2*4
 
         # AIC testing procedure
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
