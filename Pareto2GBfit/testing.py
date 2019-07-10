@@ -2,10 +2,6 @@ from scipy.stats.distributions import chi2
 from .distributions import *
 from prettytable import PrettyTable
 
-# def LRtest(llmin, llmax):
-#     return (2*(llmax-llmin))
-
-
 class Pareto:
     def __init__(self, x, b, p):
         x = np.array(x)
@@ -44,7 +40,7 @@ class GB:
 class LRtest:
     def __init__(self, LL1, LL2, df, verbose=True):
         self.w = w = 2*(LL1 - LL2)
-        self.pval = pval = chi2.sf(w, df=df)
+        self.pval = pval = 1-chi2.cdf(w, df=df)
         tbl = PrettyTable()
         tbl.field_names = ['LR test', '']
         tbl.add_row(['chi2({}) = '.format(df), '{:.4f}'.format(w)])
