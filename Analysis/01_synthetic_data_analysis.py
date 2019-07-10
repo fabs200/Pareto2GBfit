@@ -117,7 +117,7 @@ Pareto_data_het_noise_2 = het(x=Pareto_data, sigma=sigma2, s=s)
 IB1_data = IB1_icdf_ne(x=x, b=b, p=p, q=5)
 
 # 6. Robustness Check: Generate GB1 distrib. data which are NOT Pareto (i.e. a!=-1)
-GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=1, a=-5)
+GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=5, a=-5)
 
 
 
@@ -210,11 +210,11 @@ if run_descriptives:
                                                             ['p99.9', '{:.2f}'.format(np.percentile(IB1_data, q=.999)), '{:.2f}'.format(np.percentile(GB1_data, q=.999))],
                                                             ['max', '{:.2f}'.format(np.max(IB1_data)), '{:.2f}'.format(np.max(GB1_data))],
                                                             ]),
-                                                 columns=['', 'Pareto_data', 'GB1_data,'])
+                                                 columns=['', 'IB1_data', 'GB1_data,'])
 
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'synthetic_non_Pareto_descriptives.xlsx', mode='w') as writer:
-        df_synthetic_data_descriptives.to_excel(writer, sheet_name='descriptives', index=False)
+        df_synthetic_non_Pareto_descriptives.to_excel(writer, sheet_name='descriptives', index=False)
 
 
 
@@ -412,7 +412,7 @@ if run_optimize:
                                  columns=['', 'IB1_non_Pareto_LR', 'IB1_non_Pareto_AIC', 'GB1_non_Pareto_LR', 'GB1_non_Pareto_AIC'])
 
     # save dataframes to excel sheet
-    with ExcelWriter(descriptivespath + 'non_pareto_descriptives.xlsx', engine='openpyxl', mode='w') as writer:
+    with ExcelWriter(descriptivespath + 'non_pareto_fit_results.xlsx', engine='openpyxl', mode='w') as writer:
         df_non_Pareto_fit_results.to_excel(writer, sheet_name='descriptives', index=False)
 
 
