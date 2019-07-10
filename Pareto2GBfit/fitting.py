@@ -51,19 +51,19 @@ class gof:
         self.mape = (100/n) * np.sum(np.abs(e/x))
         self.rrmse = np.sqrt(1/n * np.sum((e/x)**2))
         if len(parms) == 1:
-            self.ll = ll = (-10000)*Pareto_ll(parms=parms, x=x_hat, b=b)
+            self.ll = ll = (-10000)*Pareto_ll(parms=parms, x=x, b=b)
             self.aic = -2*ll + 2
             self.bic = -2*ll + np.log(n)
         if len(parms) == 2:
-            self.ll = ll = (-10000)*IB1_ll(parms=parms, x=x_hat, b=b)
+            self.ll = ll = (-10000)*IB1_ll(parms=parms, x=x, b=b)
             self.aic = -2*ll + 2*2
             self.bic = -2*ll + np.log(n)*2
         if len(parms) == 3:
-            self.ll = ll = (-100)*GB1_ll(parms=parms, x=x_hat, b=b)
+            self.ll = ll = (-100)*GB1_ll(parms=parms, x=x, b=b)
             self.aic = -2*ll + 2*3
             self.bic = -2*ll + np.log(n)*3
         if len(parms) == 4:
-            self.ll = ll = (-100)*GB_ll(parms, x=x_hat, b=b)
+            self.ll = ll = (-100)*GB_ll(parms, x=x, b=b)
             self.aic = -2*ll + 2*4
             self.bic = -2*ll + np.log(n)*4
 

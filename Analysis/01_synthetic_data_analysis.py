@@ -22,6 +22,42 @@ if os.name == 'posix':
     descriptivespath = '/Users/Fabian/OneDrive/Studium/Masterarbeit/Python/descriptives/'
 
 
+"""
+--------------------------------
+Define Functions
+--------------------------------
+"""
+def prep_fit_results_for_table(fit_result):
+    """
+    prepares the returned vector of the optimization for a simplified exporting to dataframe/Excel
+    :param fit_result: result of Paretobranchfit, needs return_bestmodel=True
+    :return: returns vector with same shape, doesn't matter which model is best
+    """
+    bestfit, fit_result, placeholder, list = fit_result[0], np.array(fit_result[1]).tolist(), ['--', '--'], []
+    for el in fit_result[:-2]:
+        list.append('{:.3f}'.format(el))
+    for el in fit_result[-2:]:
+        list.append('{:.3f}'.format(int(el)))
+    if bestfit == "Pareto_best" or len(list) == 16:
+        out = placeholder * 2 #a,c
+        out = out + list[0:2] + placeholder #p,q
+        out = out + list[2:] #q, rest
+    if bestfit == "IB1_best" or len(list) == 18:
+        out = placeholder * 2 #a,c
+        out = out + list #p,q, rest
+    if bestfit == "GB1_best" or len(list) == 20:
+        out = list[0:2] + placeholder #c
+        out = out + list[2:] #rest
+    if bestfit == "GB_best" or len(list) == 22:
+        out = list
+    del out[15] # remove soe
+    del out[13] # remove rrmse
+    del out[10] # remove mae
+    del out[9] # remove bic
+    return out # returns: parameters, aic, mse, rrmse, ll, ... (always same structure)
+
+
+
 """ 
 --------------------------------
 1. Data Generating Process 
@@ -77,6 +113,13 @@ Pareto_data_het_noise_1 = het(x=Pareto_data, sigma=sigma1, s=s)
 # 4. Large heteroscedastic Gaussian noise
 Pareto_data_het_noise_2 = het(x=Pareto_data, sigma=sigma2, s=s)
 
+# 5. Robustness Check: Generate IB1 distrib. data which are NOT Pareto (i.e. q!=1)
+IB1_data = IB1_icdf_ne(x=x, b=b, p=p, q=5)
+
+# 6. Robustness Check: Generate GB1 distrib. data which are NOT Pareto (i.e. a!=-1)
+GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=1, a=-5)
+
+
 
 """
 --------------------------------
@@ -104,6 +147,17 @@ if plot_data:
         plt.savefig(fname=graphspath + 'icdf_het_noise.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
+
+    # check NON Pareto data (IB1, GB1)
+    plt.scatter(IB1_data[1], IB1_data[0], marker="o", s=2, color='blue', alpha=.75, label='IB1 data with q=2')
+    plt.scatter(IB1_data[1], GB1_data[0], marker="o", s=2, color='orangered', alpha=.75, label='GB1 data with a=-4')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+    for type in ['png', 'pdf']:
+        plt.savefig(fname=graphspath + 'NON_Pareto_IB1_GB1.' + type, dpi=300, format=type)
+    plt.show()
+    plt.close()
+
 
 """
 --------------------------------
@@ -137,6 +191,32 @@ if run_descriptives:
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'synthetic_data_descriptives.xlsx', mode='w') as writer:
         df_synthetic_data_descriptives.to_excel(writer, sheet_name='synthetic_data_descriptives', index=False)
+
+    # sort
+    Pareto_data = np.sort(Pareto_data)
+    IB1_data = np.sort(IB1_data[0])
+    GB1_data = np.sort(GB1_data[0])
+
+    # write descriptives to dataframe
+    df_synthetic_non_Pareto_descriptives = pd.DataFrame(np.array([['N', '{:d}'.format(np.size(IB1_data)), '{:d}'.format(np.size(GB1_data))],
+                                                            ['mean', '{:.2f}'.format(np.mean(IB1_data)), '{:.2f}'.format(np.mean(GB1_data))],
+                                                            ['sd', '{:.2f}'.format(np.std(IB1_data)), '{:.2f}'.format(np.std(GB1_data))],
+                                                            ['lower bound b', b, b],
+                                                            ['min', '{:.2f}'.format(np.min(IB1_data)), '{:.2f}'.format(np.min(GB1_data))],
+                                                            ['p50', '{:.2f}'.format(np.percentile(IB1_data, q=.5)), '{:.2f}'.format(np.percentile(GB1_data, q=.5))],
+                                                            ['p75', '{:.2f}'.format(np.percentile(IB1_data, q=.75)), '{:.2f}'.format(np.percentile(GB1_data, q=.75))],
+                                                            ['p90', '{:.2f}'.format(np.percentile(IB1_data, q=.9)), '{:.2f}'.format(np.percentile(GB1_data, q=.9))],
+                                                            ['p99', '{:.2f}'.format(np.percentile(IB1_data, q=.99)), '{:.2f}'.format(np.percentile(GB1_data, q=.99))],
+                                                            ['p99.9', '{:.2f}'.format(np.percentile(IB1_data, q=.999)), '{:.2f}'.format(np.percentile(GB1_data, q=.999))],
+                                                            ['max', '{:.2f}'.format(np.max(IB1_data)), '{:.2f}'.format(np.max(GB1_data))],
+                                                            ]),
+                                                 columns=['', 'Pareto_data', 'GB1_data,'])
+
+    # save dataframes to excel sheet
+    with ExcelWriter(descriptivespath + 'synthetic_non_Pareto_descriptives.xlsx', mode='w') as writer:
+        df_synthetic_data_descriptives.to_excel(writer, sheet_name='descriptives', index=False)
+
+
 
 """ 
 --------------------------------
@@ -199,6 +279,30 @@ if run_optimize:
                                                     bootstraps=(250, 250, 250, 250),
                                                     return_bestmodel=True, rejection_criteria='LRtest', plot=True,
                                                     plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+
+
+    # Robustness Check: NON Pareto data
+    IB1_non_Pareto_parms_LR = Paretobranchfit(x=IB1_data, x0=(-1, .5, 1, 1), b=250,
+                                              bootstraps=(250, 250, 250, 250),
+                                              return_bestmodel=True, rejection_criteria='LRtest', plot=True,
+                                              plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+
+    IB1_non_Pareto_parms_AIC = Paretobranchfit(x=IB1_data, x0=(-1, .5, 1, 1), b=250,
+                                               bootstraps=(250, 250, 250, 250),
+                                               return_bestmodel=True, rejection_criteria='AIC', plot=True,
+                                               plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+
+    GB1_non_Pareto_parms_LR = Paretobranchfit(x=GB1_data, x0=(-1, .5, 1, 1), b=250,
+                                               bootstraps=(250, 250, 250, 250),
+                                               return_bestmodel=True, rejection_criteria='LRtest', plot=True,
+                                               plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+
+    GB1_non_Pareto_parms_AIC = Paretobranchfit(x=GB1_data, x0=(-1, .5, 1, 1), b=250,
+                                               bootstraps=(250, 250, 250, 250),
+                                               return_bestmodel=True, rejection_criteria='AIC', plot=True,
+                                               plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+
+
 
 """
 --------------------------------
@@ -275,6 +379,37 @@ if run_optimize:
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'synthetic_data_fit_results.xlsx', engine='openpyxl', mode='a') as writer:
         df_synthetic_fit_parms_LR.to_excel(writer, sheet_name='synthetic_data_fit_results_LR', index=False)
+
+
+
+    # NON Pareto data: shorter names
+    parms15 = prep_fit_results_for_table(IB1_non_Pareto_parms_LR[1])
+    parms16 = prep_fit_results_for_table(IB1_non_Pareto_parms_AIC[1])
+    parms15 = prep_fit_results_for_table(GB1_non_Pareto_parms_LR[1])
+    parms16 = prep_fit_results_for_table(GB1_non_Pareto_parms_AIC[1])
+
+df_wealth_results_LR = pd.DataFrame(np.array([['best fitted model', '{}'.format(IB1_non_Pareto_parms_LR[0]), '{}'.format(IB1_non_Pareto_parms_AIC[0]), '{}'.format(GB1_non_Pareto_parms_LR[0]), '{}'.format(GB1_non_Pareto_parms_AIC[0])],
+                                           ['a',               '{}'.format(parms15[0]), '{}'.format(parms16[0]),'{}'.format(parms17[0]), '{}'.format(parms18[0]),
+                                           [' ',               '{}'.format(parms15[1]), '{}'.format(parms16[1]),'{}'.format(parms17[1]), '{}'.format(parms18[1]),
+                                           ['c',               '{}'.format(parms15[2]), '{}'.format(parms16[2]),'{}'.format(parms17[2]), '{}'.format(parms18[2]),
+                                           [' ',               '{}'.format(parms15[3]), '{}'.format(parms16[3]),'{}'.format(parms17[3]), '{}'.format(parms18[3]),
+                                           ['p',               '{}'.format(parms15[4]), '{}'.format(parms16[4]),'{}'.format(parms17[4]), '{}'.format(parms18[4]),
+                                           [' ',               '{}'.format(parms15[5]), '{}'.format(parms16[5]),'{}'.format(parms17[5]), '{}'.format(parms18[5]),
+                                           ['q',               '{}'.format(parms15[6]), '{}'.format(parms16[6]),'{}'.format(parms17[6]), '{}'.format(parms18[6]),
+                                           [' ',               '{}'.format(parms15[7]), '{}'.format(parms16[7]),'{}'.format(parms17[7]), '{}'.format(parms18[7]),
+                                           ['lower bound b',   '{}'.format(b),          '{}'.format(b),         '{}'.format(b),          '{}'.format(b),
+                                           ['LL',              '{}'.format(parms15[11]),'{}'.format(parms16[11]),'{}'.format(parms17[11]),'{}'.format(parms18[11]),
+                                           ['AIC',             '{}'.format(parms15[8]), '{}'.format(parms16[8]),'{}'.format(parms17[8]), '{}'.format(parms18[8]),
+                                           ['MSE',             '{}'.format(parms15[9]), '{}'.format(parms16[9]),'{}'.format(parms17[9]), '{}'.format(parms18[9]),
+                                           ['RMSE',            '{}'.format(parms15[10]),'{}'.format(parms16[10]),'{}'.format(parms17[10]),'{}'.format(parms18[10]),
+                                           ['emp. mean',       '{}'.format(parms15[12]),'{}'.format(parms16[12]),'{}'.format(parms17[12]),'{}'.format(parms18[12]),
+                                           ['emp. var.',       '{}'.format(parms15[13]),'{}'.format(parms16[13]),'{}'.format(parms17[13]),'{}'.format(parms18[13]),
+                                           ['pred. mean',      '{}'.format(parms15[14]),'{}'.format(parms16[14]),'{}'.format(parms17[14]),'{}'.format(parms18[14]),
+                                           ['pred. var.',      '{}'.format(parms15[15]),'{}'.format(parms16[15]),'{}'.format(parms17[15]),'{}'.format(parms18[15]),
+                                           ['n',               '{}'.format(parms15[16]),'{}'.format(parms16[16]),'{}'.format(parms17[16]),'{}'.format(parms18[16]),
+                                           ['N',               '{}'.format(parms15[17]),'{}'.format(parms16[17]),'{}'.format(parms17[17]),'{}'.format(parms18[17]),
+                                           ]),
+                                 columns=['', 'IB1_non_Pareto_LR', 'IB1_non_Pareto_AIC', 'GB1_non_Pareto_LR', 'GB1_non_Pareto_AIC'])
 
 
 
