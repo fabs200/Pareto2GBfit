@@ -230,62 +230,62 @@ if run_descriptives:
 
 if run_optimize:
 
-    ## with AIC rejection criterion
-
-    Pareto_data_parms = Paretobranchfit(x=Pareto_data, x0=(-1, .5, 1, 1), b=250,
-                                        bootstraps=(250, 250, 250, 250),
-                                        return_bestmodel=True, rejection_criterion='AIC', plot=True,
-                                        plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: IB1
-
-    Pareto_data_gauss_noise_1_parms = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1), b=250,
-                                                      bootstraps=(250, 250, 250, 250),
-                                                      return_bestmodel=True, rejection_criterion='AIC', plot=True,
-                                                      plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
-
-    Pareto_data_gauss_noise_2_parms = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=(-1, .5, 1, 1), b=250,
-                                                      bootstraps=(250, 250, 250, 250),
-                                                      return_bestmodel=True, rejection_criterion='AIC', plot=True,
-                                                      plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB
-
-    Pareto_data_het_noise_1_parms = Paretobranchfit(x=Pareto_data_het_noise_1, x0=(-1, .5, 1, 1), b=250,
-                                                    bootstraps=(250, 250, 250, 250),
-                                                    return_bestmodel=True, rejection_criterion='AIC', plot=True,
-                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
-
-    Pareto_data_het_noise_2_parms = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-1, .5, 1, 1), b=250,
-                                                    bootstraps=(250, 250, 250, 250),
-                                                    return_bestmodel=True, rejection_criterion='AIC', plot=True,
-                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
-
     ## with LRtest rejection criterion
 
     Pareto_data_parms_LR = Paretobranchfit(x=Pareto_data, x0=(-1, .5, 1, 1), b=250,
                                         bootstraps=(250, 250, 250, 250),
                                         return_bestmodel=True, rejection_criterion='LRtest', plot=True,
-                                        plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                                        plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB
 
     Pareto_data_gauss_noise_1_parms_LR = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1), b=250,
                                                       bootstraps=(250, 250, 250, 250),
                                                       return_bestmodel=True, rejection_criterion='LRtest', plot=True,
-                                                      plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                                                      plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
 
     Pareto_data_gauss_noise_2_parms_LR = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=(-1, .5, 1, 1), b=250,
                                                       bootstraps=(250, 250, 250, 250),
                                                       return_bestmodel=True, rejection_criterion='LRtest', plot=True,
-                                                      plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                                                      plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB
 
     Pareto_data_het_noise_1_parms_LR = Paretobranchfit(x=Pareto_data_het_noise_1, x0=(-1, .5, 1, 1), b=250,
                                                     bootstraps=(250, 250, 250, 250),
                                                     return_bestmodel=True, rejection_criterion='LRtest', plot=True,
-                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
 
     Pareto_data_het_noise_2_parms_LR = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-1, .5, 1, 1), b=250,
                                                     bootstraps=(250, 250, 250, 250),
                                                     return_bestmodel=True, rejection_criterion='LRtest', plot=True,
-                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
 
+    ## with AIC rejection criterion
+
+    Pareto_data_parms_Aic = Paretobranchfit(x=Pareto_data, x0=(-1, .5, 1, 1), b=250,
+                                        bootstraps=(250, 250, 250, 250),
+                                        return_bestmodel=True, rejection_criterion='AIC', plot=True,
+                                        plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: IB1
+
+    Pareto_data_gauss_noise_1_parms_Aic = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1), b=250,
+                                                      bootstraps=(250, 250, 250, 250),
+                                                      return_bestmodel=True, rejection_criterion='AIC', plot=True,
+                                                      plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
+
+    Pareto_data_gauss_noise_2_parms_Aic = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=(-1, .5, 1, 1), b=250,
+                                                      bootstraps=(250, 250, 250, 250),
+                                                      return_bestmodel=True, rejection_criterion='AIC', plot=True,
+                                                      plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB
+
+    Pareto_data_het_noise_1_parms_Aic = Paretobranchfit(x=Pareto_data_het_noise_1, x0=(-1, .5, 1, 1), b=250,
+                                                    bootstraps=(250, 250, 250, 250),
+                                                    return_bestmodel=True, rejection_criterion='AIC', plot=True,
+                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
+
+    Pareto_data_het_noise_2_parms_Aic = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-1, .5, 1, 1), b=250,
+                                                    bootstraps=(250, 250, 250, 250),
+                                                    return_bestmodel=True, rejection_criterion='AIC', plot=True,
+                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
 
     # Robustness Check: NON Pareto data
+
     IB1_non_Pareto_parms_LR = Paretobranchfit(x=IB1_data, x0=(-1, .5, 1, 1), b=250,
                                               bootstraps=(250, 250, 250, 250),
                                               return_bestmodel=True, rejection_criterion='LRtest', plot=True,
@@ -315,11 +315,11 @@ if run_optimize:
 """
 
 # shorter names
-parms1 = prep_fit_results_for_table(Pareto_data_parms)
-parms2 = prep_fit_results_for_table(Pareto_data_gauss_noise_1_parms)
-parms3 = prep_fit_results_for_table(Pareto_data_gauss_noise_2_parms)
-parms4 = prep_fit_results_for_table(Pareto_data_het_noise_1_parms)
-parms5 = prep_fit_results_for_table(Pareto_data_het_noise_2_parms)
+parms1 = prep_fit_results_for_table(Pareto_data_parms_AIC)
+parms2 = prep_fit_results_for_table(Pareto_data_gauss_noise_1_parms_AIC)
+parms3 = prep_fit_results_for_table(Pareto_data_gauss_noise_2_parms_AIC)
+parms4 = prep_fit_results_for_table(Pareto_data_het_noise_1_parms_AIC)
+parms5 = prep_fit_results_for_table(Pareto_data_het_noise_2_parms_AIC)
 
 if run_optimize:
     df_synthetic_fit_parms_AIC = pd.DataFrame(np.array([['best fitted model', '{}'.format(Pareto_data_parms[0]),  '{}'.format(Pareto_data_gauss_noise_1_parms[0]),  '{}'.format(Pareto_data_gauss_noise_2_parms[0]),  '{}'.format(Pareto_data_het_noise_1_parms[0]),  '{}'.format(Pareto_data_het_noise_2_parms[0])],
