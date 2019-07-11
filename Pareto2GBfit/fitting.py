@@ -1652,17 +1652,17 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         tbl_gof.add_row(['IB1', '{:.3f}'.format(IB1_fit[4]), '{:.3f}'.format(IB1_fit[5]), '{:.3f}'.format(IB1_fit[6]),
                          '{:.3f}'.format(IB1_fit[7]), '{:.3f}'.format(IB1_fit[8]), '{:.3f}'.format(IB1_fit[9]),
                          '{:.3f}'.format(IB1_fit[10]), '{:.3f}'.format(IB1_fit[11]), '{:.3f}'.format(IB1_fit[12]),
-                         '{:.3f}'.format(IB1_fit[13]), '{:.3f}'.format(IB1_fit[14]), '{:.3f}'.format(IB1_fit[15]), 1,
+                         '{:.3f}'.format(IB1_fit[13]), '{:.3f}'.format(IB1_fit[14]), '{:.3f}'.format(IB1_fit[15]), 2,
                          '{}'.format(IB1_fit[16]), '{}'.format(IB1_fit[17])])
         tbl_gof.add_row(['GB1', '{:.3f}'.format(GB1_fit[6]), '{:.3f}'.format(GB1_fit[7]), '{:.3f}'.format(GB1_fit[8]),
                          '{:.3f}'.format(GB1_fit[9]), '{:.3f}'.format(GB1_fit[10]), '{:.3f}'.format(GB1_fit[11]),
                          '{:.3f}'.format(GB1_fit[12]), '{:.3f}'.format(GB1_fit[13]), '{:.3f}'.format(GB1_fit[14]),
-                         '{:.3f}'.format(GB1_fit[15]), '{:.3f}'.format(GB1_fit[16]), '{:.3f}'.format(GB1_fit[17]), 1,
+                         '{:.3f}'.format(GB1_fit[15]), '{:.3f}'.format(GB1_fit[16]), '{:.3f}'.format(GB1_fit[17]), 3,
                          '{}'.format(GB1_fit[18]), '{}'.format(GB1_fit[19])])
         tbl_gof.add_row(['GB', '{:.3f}'.format(GB_fit[8]), '{:.3f}'.format(GB_fit[9]), '{:.3f}'.format(GB_fit[10]),
                          '{:.3f}'.format(GB_fit[11]), '{:.3f}'.format(GB_fit[12]), '{:.3f}'.format(GB_fit[13]),
                          '{:.3f}'.format(GB_fit[14]), '{:.3f}'.format(GB_fit[15]), '{:.3f}'.format(GB_fit[16]),
-                         '{:.3f}'.format(GB_fit[17]), '{:.3f}'.format(GB_fit[18]), '{:.3f}'.format(GB_fit[19]), 1,
+                         '{:.3f}'.format(GB_fit[17]), '{:.3f}'.format(GB_fit[18]), '{:.3f}'.format(GB_fit[19]), 4,
                          '{}'.format(GB_fit[20]), '{}'.format(GB_fit[21])])
 
         print('\n{}'.format(tbl_parms))
