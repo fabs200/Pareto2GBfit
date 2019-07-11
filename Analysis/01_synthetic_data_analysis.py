@@ -259,30 +259,30 @@ if run_optimize:
 
     ## with AIC rejection criterion
 
-    Pareto_data_parms_Aic = Paretobranchfit(x=Pareto_data, x0=(-1, .5, 1, 1), b=250,
+    Pareto_data_parms_AIC = Paretobranchfit(x=Pareto_data, x0=(-1, .5, 1, 1), b=250,
                                         bootstraps=(250, 250, 250, 250),
                                         return_bestmodel=True, rejection_criterion='AIC', plot=True,
-                                        plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: IB1
+                                        plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: Pareto
 
-    Pareto_data_gauss_noise_1_parms_Aic = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1), b=250,
+    Pareto_data_gauss_noise_1_parms_AIC = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1), b=250,
                                                       bootstraps=(250, 250, 250, 250),
                                                       return_bestmodel=True, rejection_criterion='AIC', plot=True,
                                                       plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
 
-    Pareto_data_gauss_noise_2_parms_Aic = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=(-1, .5, 1, 1), b=250,
+    Pareto_data_gauss_noise_2_parms_AIC = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=(-1, .5, 1, 1), b=250,
                                                       bootstraps=(250, 250, 250, 250),
                                                       return_bestmodel=True, rejection_criterion='AIC', plot=True,
                                                       plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB
 
-    Pareto_data_het_noise_1_parms_Aic = Paretobranchfit(x=Pareto_data_het_noise_1, x0=(-1, .5, 1, 1), b=250,
+    Pareto_data_het_noise_1_parms_AIC = Paretobranchfit(x=Pareto_data_het_noise_1, x0=(-1, .5, 1, 1), b=250,
                                                     bootstraps=(250, 250, 250, 250),
                                                     return_bestmodel=True, rejection_criterion='AIC', plot=True,
-                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
+                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: IB1
 
-    Pareto_data_het_noise_2_parms_Aic = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-1, .5, 1, 1), b=250,
+    Pareto_data_het_noise_2_parms_AIC = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-1, .5, 1, 1), b=250,
                                                     bootstraps=(250, 250, 250, 250),
                                                     return_bestmodel=True, rejection_criterion='AIC', plot=True,
-                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: GB1
+                                                    plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'}) # best: IB1
 
     # Robustness Check: NON Pareto data
 
@@ -322,7 +322,7 @@ parms4 = prep_fit_results_for_table(Pareto_data_het_noise_1_parms_AIC)
 parms5 = prep_fit_results_for_table(Pareto_data_het_noise_2_parms_AIC)
 
 if run_optimize:
-    df_synthetic_fit_parms_AIC = pd.DataFrame(np.array([['best fitted model', '{}'.format(Pareto_data_parms[0]),  '{}'.format(Pareto_data_gauss_noise_1_parms[0]),  '{}'.format(Pareto_data_gauss_noise_2_parms[0]),  '{}'.format(Pareto_data_het_noise_1_parms[0]),  '{}'.format(Pareto_data_het_noise_2_parms[0])],
+    df_synthetic_fit_parms_AIC = pd.DataFrame(np.array([['best fitted model', '{}'.format(Pareto_data_parms_AIC[0]),  '{}'.format(Pareto_data_gauss_noise_1_parms_AIC[0]),  '{}'.format(Pareto_data_gauss_noise_2_parms_AIC[0]),  '{}'.format(Pareto_data_het_noise_1_parms_AIC[0]),  '{}'.format(Pareto_data_het_noise_2_parms_AIC[0])],
                                                     ['a',               '{}'.format(parms1[0]),     '{}'.format(parms2[0]),     '{}'.format(parms3[0]),     '{}'.format(parms4[0]),     '{}'.format(parms5[0])],
                                                     [' ',               '{}'.format(parms1[1]),     '{}'.format(parms2[1]),     '{}'.format(parms3[1]),     '{}'.format(parms4[1]),     '{}'.format(parms5[1])],
                                                     ['c',               '{}'.format(parms1[2]),     '{}'.format(parms2[2]),     '{}'.format(parms3[2]),     '{}'.format(parms4[2]),     '{}'.format(parms5[2])],
@@ -350,14 +350,14 @@ if run_optimize:
 
 
 # shorter names
-parms10 = Pareto_data_parms_LR[1] #IB1
-parms11 = Pareto_data_gauss_noise_1_parms_LR[1] #GB1
-parms12 = Pareto_data_gauss_noise_2_parms_LR[1] #GB
-parms13 = Pareto_data_het_noise_1_parms_LR[1] #IB1
-parms14 = Pareto_data_het_noise_2_parms_LR[1] #IB1
+parms10 = prep_fit_results_for_table(Pareto_data_parms_LR)
+parms11 = prep_fit_results_for_table(Pareto_data_gauss_noise_1_parms_LR)
+parms12 = prep_fit_results_for_table(Pareto_data_gauss_noise_2_parms_LR)
+parms13 = prep_fit_results_for_table(Pareto_data_het_noise_1_parms_LR)
+parms14 = prep_fit_results_for_table(Pareto_data_het_noise_2_parms_LR)
 
 if run_optimize:
-    df_synthetic_fit_parms_LR = pd.DataFrame(np.array([['best fitted model', '{}'.format(Pareto_data_parms[0]),  '{}'.format(Pareto_data_gauss_noise_1_parms[0]),  '{}'.format(Pareto_data_gauss_noise_2_parms[0]),  '{}'.format(Pareto_data_het_noise_1_parms[0]),  '{}'.format(Pareto_data_het_noise_2_parms[0])],
+    df_synthetic_fit_parms_LR = pd.DataFrame(np.array([['best fitted model', '{}'.format(Pareto_data_parms_LR[0]),  '{}'.format(Pareto_data_gauss_noise_1_parms_LR[0]),  '{}'.format(Pareto_data_gauss_noise_2_parms_LR[0]),  '{}'.format(Pareto_data_het_noise_1_parms_LR[0]),  '{}'.format(Pareto_data_het_noise_2_parms_LR[0])],
                                                     ['a',               '{}'.format(parms10[0]),     '{}'.format(parms11[0]),     '{}'.format(parms12[0]),     '{}'.format(parms13[0]),     '{}'.format(parms14[0])],
                                                     [' ',               '{}'.format(parms10[1]),     '{}'.format(parms11[1]),     '{}'.format(parms12[1]),     '{}'.format(parms13[1]),     '{}'.format(parms14[1])],
                                                     ['c',               '{}'.format(parms10[2]),     '{}'.format(parms11[2]),     '{}'.format(parms12[2]),     '{}'.format(parms13[2]),     '{}'.format(parms14[2])],
@@ -366,7 +366,7 @@ if run_optimize:
                                                     [' ',               '{}'.format(parms10[5]),     '{}'.format(parms11[5]),     '{}'.format(parms12[5]),     '{}'.format(parms13[5]),     '{}'.format(parms14[5])],
                                                     ['q',               '{}'.format(parms10[6]),     '{}'.format(parms11[6]),     '{}'.format(parms12[6]),     '{}'.format(parms13[6]),     '{}'.format(parms14[6])],
                                                     [' ',               '{}'.format(parms10[7]),     '{}'.format(parms11[7]),     '{}'.format(parms12[7]),     '{}'.format(parms13[7]),     '{}'.format(parms14[7])],
-                                                    ['lower bound b',   '{}'.format(b),             '{}'.format(b),             '{}'.format(b),             '{}'.format(b),             '{}'.format(b)],
+                                                    ['lower bound b',   '{}'.format(b),                 '{}'.format(b),           '{}'.format(b),              '{}'.format(b),              '{}'.format(b)],
                                                     ['LL',              '{}'.format(parms10[11]),    '{}'.format(parms11[11]),    '{}'.format(parms12[11]),    '{}'.format(parms13[11]),    '{}'.format(parms14[11])],
                                                     ['AIC',             '{}'.format(parms10[8]),     '{}'.format(parms11[8]),     '{}'.format(parms12[8]),     '{}'.format(parms13[8]),     '{}'.format(parms14[8])],
                                                     ['MSE',             '{}'.format(parms10[9]),     '{}'.format(parms11[9]),     '{}'.format(parms12[9]),     '{}'.format(parms13[9]),     '{}'.format(parms14[9])],
@@ -425,78 +425,175 @@ if run_optimize:
 """
 
 if run_optimize:
-    ### fit of Pareto_data
-    print('best fit for Pareto_data:', Pareto_data_parms[0])
+
+    ### fit of Pareto_data (LRtest)
+    print('best fit for Pareto_data_LR:', Pareto_data_parms_LR[0])
 
     # generate new data based on fitted parms and best model
-    Pareto_data_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_parms[1][0])
+    Pareto_data_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_parms_LR[1][0])
 
     # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
 
     # plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
     plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
-    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_parms[1][0],3)))
+    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_parms_LR[1][0],3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
-        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data.' + type, dpi=300, format=type)
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_LR.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
 
 
-    ### fit of Pareto_data_gauss_noise_1
-    print('best fit for Pareto_data_gauss_noise_1:', Pareto_data_gauss_noise_1_parms[0])
+    ### fit of Pareto_data_gauss_noise_1 (LRtest)
+    print('best fit for Pareto_data_gauss_noise_1_LR:', Pareto_data_gauss_noise_1_parms_LR[0])
 
     # generate new data based on fitted parms and best model
-    Pareto_data_gauss_noise_1_fit, u_temp = IB1_icdf_ne(x=Pareto_data, b=b, p=Pareto_data_gauss_noise_1_parms[1][0], q=Pareto_data_gauss_noise_1_parms[1][2])
+    Pareto_data_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_parms_LR[1][0])
 
-    plt.scatter(u, Pareto_data_het_noise_1, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}}) + \epsilon\,\,with\,\,\epsilon=N(0,{{{}}}^2)$'.format(p, sigma1))
-    plt.plot(u_temp, Pareto_data_gauss_noise_1_fit, color='red', alpha=.75, label=r'$icdf_{{IB1}}(b=250, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_gauss_noise_1_parms[1][0],3), np.around(Pareto_data_gauss_noise_1_parms[1][2],3)))
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    # plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_parms_LR[1][0],3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
-        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data_gauss_noise_1.' + type, dpi=300, format=type)
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Gauss1_LR.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
 
-    ### Pareto_data_gauss_noise_2
-    print('best fit for Pareto_data_gauss_noise_2:', Pareto_data_gauss_noise_2_parms[0])
+    ### Pareto_data_gauss_noise_2 (LRtest)
+    print('best fit for Pareto_data_gauss_noise_2_LR:', Pareto_data_gauss_noise_2_parms_LR[0])
 
     # generate new data based on fitted parms and best model
-    Pareto_data_gauss_noise_2_fit, u_temp = IB1_icdf_ne(x=Pareto_data, b=b, p=Pareto_data_gauss_noise_2_parms[1][0], q=Pareto_data_gauss_noise_2_parms[1][2])
+    Pareto_data_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_parms_LR[1][0])
 
-    plt.scatter(u, Pareto_data_het_noise_2, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}}) + \epsilon\,\,with\,\,\epsilon=N(0,200^2)$'.format(p))
-    plt.plot(u_temp, Pareto_data_gauss_noise_2_fit, color='red', alpha=.75, label=r'$icdf_{{IB1}}(b=250, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_gauss_noise_2_parms[1][0],3), np.around(Pareto_data_gauss_noise_2_parms[1][2],3)))
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    # plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_parms_LR[1][0],3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
-        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data_gauss_noise_2.' + type, dpi=300, format=type)
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Gauss2_LR.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
 
-    ### Pareto_data_het_noise_1
-    print('best fit for Pareto_data_het_noise_1_parms:', Pareto_data_het_noise_1_parms[0])
+    ### Pareto_data_het_noise_1 (LRtest)
+    print('best fit for Pareto_data_het_noise_1_parms_LR:', Pareto_data_het_noise_1_parms_LR[0])
 
     # generate new data based on fitted parms and best model
-    Pareto_data_het_noise_1_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_het_noise_1_parms[1][0])
+    Pareto_data_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_parms_LR[1][0])
 
-    plt.scatter(u, Pareto_data_het_noise_1, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}}) +\epsilon\,\,with\,\,\epsilon=x\cdot s\cdot N(0,{{{}}}^2)$'.format(p,sigma1))
-    plt.plot(u_temp, Pareto_data_het_noise_1_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_het_noise_1_parms[1][0],3)))
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    # plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_parms_LR[1][0],3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
-        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data_het_noise_1.' + type, dpi=300, format=type)
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Het1_LR.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
 
-    ### Pareto_data_het_noise_2
-    print('best fit for Pareto_data_het_noise_2_parms:', Pareto_data_het_noise_2_parms[0])
+    ### Pareto_data_het_noise_2 (LRtest)
+    print('best fit for Pareto_data_het_noise_2_parms_LR:', Pareto_data_het_noise_2_parms_LR[0])
 
     # generate new data based on fitted parms and best model
-    Pareto_data_het_noise_2_fit, u_temp = GB_icdf_ne(x=Pareto_data, b=b,
-                                             a=Pareto_data_het_noise_2_parms[1][0], c=Pareto_data_het_noise_2_parms[1][2],
-                                             p=Pareto_data_het_noise_2_parms[1][4], q=Pareto_data_het_noise_2_parms[1][6])
+    Pareto_data_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_parms_LR[1][0])
 
-    plt.scatter(u, Pareto_data_het_noise_2, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}}) +\epsilon\,\,with\,\,\epsilon=x\cdot s\cdot N(0,{{{}}}^2)$'.format(p,sigma2))
-    plt.plot(u_temp, Pareto_data_het_noise_2_fit, color='red', alpha=.75, label=r'$icdf_{{GB}}(b=250, \hat{{a}}={{{}}}, \hat{{c}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_het_noise_2_parms[1][0],3), np.around(Pareto_data_het_noise_2_parms[1][2],3), np.around(Pareto_data_het_noise_2_parms[1][4],3), np.around(Pareto_data_het_noise_2_parms[1][6],3)))
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    # plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_parms_LR[1][0],3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
-        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_data_het_noise_2.' + type, dpi=300, format=type)
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Het2_LR.' + type, dpi=300, format=type)
+    plt.show()
+    plt.close()
+
+
+    ### fit of Pareto_data (AIC)
+    print('best fit for Pareto_data_AIC:', Pareto_data_parms_AIC[0])
+
+    # generate new data based on fitted parms and best model
+    Pareto_data_fit = Pareto_icdf(u=u, b=b, p=Pareto_data_parms_AIC[1][0])
+
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    # plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(Pareto_data_parms_AIC[1][0],3)))
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+    for type in ['png', 'pdf']:
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_AIC.' + type, dpi=300, format=type)
+    plt.show()
+    plt.close()
+
+
+    ### fit of Pareto_data_gauss_noise_1 (AIC)
+    print('best fit for Pareto_data_gauss_noise_1_AIC:', Pareto_data_gauss_noise_1_parms_AIC[0])
+
+    # generate new data based on fitted parms and best model
+    Pareto_Gauss1_AIC, u_temp = GB1_icdf_ne(x=Pareto_data, b=b, a=Pareto_data_gauss_noise_1_parms_AIC[1][0], p=Pareto_data_gauss_noise_1_parms_AIC[1][2], q=Pareto_data_gauss_noise_1_parms_AIC[1][4])
+
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.plot(u, Pareto_Gauss1_AIC, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b=250, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_gauss_noise_1_parms_AIC[1][0],3), np.around(Pareto_data_gauss_noise_1_parms_AIC[1][2],3), np.around(Pareto_data_gauss_noise_1_parms_AIC[1][4],3)))
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+    for type in ['png', 'pdf']:
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Gauss1_AIC.' + type, dpi=300, format=type)
+    plt.show()
+    plt.close()
+
+    ### Pareto_data_gauss_noise_2 (AIC)
+    print('best fit for Pareto_data_gauss_noise_2_AIC:', Pareto_data_gauss_noise_2_parms_AIC[0])
+
+    # generate new data based on fitted parms and best model
+    Pareto_Gauss2_AIC, u_temp = GB_icdf_ne(x=Pareto_data, b=b, a=Pareto_data_gauss_noise_2_parms_AIC[1][0], c=Pareto_data_gauss_noise_2_parms_AIC[1][2], p=Pareto_data_gauss_noise_2_parms_AIC[1][4], q=Pareto_data_gauss_noise_2_parms_AIC[1][6])
+
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    # plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.plot(u, Pareto_Gauss2_AIC, color='red', alpha=.75, label=r'$icdf_{{GB}}(b=250, \hat{{a}}={{{}}}, \hat{{c}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_gauss_noise_2_parms_AIC[1][0],3), np.around(Pareto_data_gauss_noise_2_parms_AIC[1][2],3), np.around(Pareto_data_gauss_noise_2_parms_AIC[1][4],3), np.around(Pareto_data_gauss_noise_2_parms_AIC[1][6],3)))
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+    for type in ['png', 'pdf']:
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Gauss2_AIC.' + type, dpi=300, format=type)
+    plt.show()
+    plt.close()
+
+    ### Pareto_data_het_noise_1 (AIC)
+    print('best fit for Pareto_data_het_noise_1_parms_AIC:', Pareto_data_het_noise_1_parms_AIC[0])
+
+    # generate new data based on fitted parms and best model
+    Pareto_Het1_AIC = IB1_icdf_ne(x=Pareto_data, b=b, p=Pareto_data_het_noise_1_parms_AIC[1][0], q=Pareto_data_het_noise_1_parms_AIC[1][2])
+
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    # plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{IB1}}(b=250, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_het_noise_1_parms_AIC[1][0],3), np.around(Pareto_data_het_noise_1_parms_AIC[1][2],3)))
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+    for type in ['png', 'pdf']:
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Het1_AIC.' + type, dpi=300, format=type)
+    plt.show()
+    plt.close()
+
+    ### Pareto_data_het_noise_2 (AIC)
+    print('best fit for Pareto_data_het_noise_2_parms_AIC:', Pareto_data_het_noise_2_parms_AIC[0])
+
+    # generate new data based on fitted parms and best model
+    Pareto_Het2_AIC = IB1_icdf_ne(x=Pareto_data, b=b, p=Pareto_data_het_noise_2_parms_AIC[1][0], q=Pareto_data_het_noise_2_parms_AIC[1][2])
+
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    # plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{IB1}}(b=250, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(Pareto_data_het_noise_2_parms_AIC[1][0],3), np.around(Pareto_data_het_noise_2_parms_AIC[1][2],3)))
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+    for type in ['png', 'pdf']:
+        plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Het2_AIC.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
