@@ -175,7 +175,7 @@ def GB1_cdf_ne(x, a, b, p, q):
     """
     x = np.array(x)
     F = []
-    widgets = ['GB1_cdf_ne  ', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
+    widgets = ['GB1_cdf_ne\t', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=len(x)).start()
     i = 0
     if a<0:
@@ -211,7 +211,7 @@ def GB1_icdf_ne(x, a, b, p, q):
     k = len(x) # TODO: check, right position or 4 lines above?
     u = np.array(np.random.uniform(.0, 1., k)) # (1xn)
     u = np.sort(u)
-    widgets = ['GB1_icdf_ne ', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
+    widgets = ['GB1_icdf_ne\t', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=k).start()
     # Generate synthetic data via interpolation of F_ne, x_ne based on u
     def icdf(u):
@@ -264,7 +264,7 @@ def GB_cdf_ne(x, a, b, c, p, q):
     ## if (c==0) and (a==-1): ## Note: too rigorous restriction, ending up in empty F, thus relax restriction
     if (0<c<.2) and (-np.inf<a<-10e-6):
         x = x[x>b]
-        widgets = ['GB_cdf_ne  ', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
+        widgets = ['GB_cdf_ne\t', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
         bar = progressbar.ProgressBar(widgets=widgets, maxval=len(x)).start()
         for idx, i in enumerate(x):
             F.append(integrate.quad(lambda x: GB_pdf(x, a, b, c, p, q), b, i)[0])
@@ -274,7 +274,7 @@ def GB_cdf_ne(x, a, b, c, p, q):
     # UG: c==0, 0<a<1; Half Normal: c==0, a==2, p==.5; Rayleigh: c==0,p==1, a==2
     if (c==0) and ((a==1) or (0<a<1) or ((a==2) and (p==.5)) or ((a==2) and (p==1))):
         x = x[x<=b]
-        widgets = ['GB_cdf_ne  ', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
+        widgets = ['GB_cdf_ne\t', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
         bar = progressbar.ProgressBar(widgets=widgets, maxval=len(x)).start()
         for idx, i in enumerate(x):
             F.append(integrate.quad(lambda x: GB_pdf(x, a, b, c, p, q), 0, i)[0])
@@ -300,7 +300,7 @@ def GB_icdf_ne(x, a, b, c, p, q):
     # UG: c==0, 0<a<1; Half Normal: c==0, a==2, p==.5; Rayleigh: c==0,p==1, a==2
     if (c==0) and ((a==1) or (0<a<1) or ((a==2) and (a==.5)) or ((a==2) and (p==1))):
         x = x[x<=b]
-    widgets = ['GB_icdf_ne ', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
+    widgets = ['GB_icdf_ne\t', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=len(x)).start()
     # Generate cdf via numeric evaluating pdf
     F_ne = GB_cdf_ne(x, a, b, c, p, q)

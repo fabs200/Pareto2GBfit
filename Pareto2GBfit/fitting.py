@@ -153,7 +153,7 @@ def GB_ll(parms, x, b):
 Fitting Functions
 ---------------------------------------------------
 """
-def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit_missings=True,
+def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
               verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
               return_parameters=False, return_gofs=False, #save_plot=False,
               plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -167,7 +167,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [p] or simply (p)
     :param weights: weight, default: numpy.ones array of same shape as x
-    :param bootstraps: amount of bootstraps
+    :param bootstraps: amount of bootstraps, default is size k (x>b)
     :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
     :param verbose_bootstrap: display each bootstrap
     :param ci: default ci displayed
@@ -236,8 +236,12 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
     except:
         print("error - something went wrong while inflating x by its weights!")
 
+    # bootstraps (default: size k)
+    if bootstraps is None:
+        bootstraps = k
+
     # prepare progress bar and printed tables
-    widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
+    widgets = ['Bootstrapping (Pareto)\t', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
 
@@ -436,7 +440,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', o
         return np.mean(p_fit_bs), np.std(p_fit_bs)
 
 
-def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit_missings=True,
+def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
            plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -450,7 +454,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [p,q] or simply (p,q)
     :param weights: weight, default: numpy.ones array of same shape as x
-    :param bootstraps: amount of bootstraps
+    :param bootstraps: amount of bootstraps, default is size k (x>b)
     :param method: default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
     :param verbose_bootstrap: display each bootstrap
     :param ci: default ci displayed
@@ -519,8 +523,12 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
     except:
         print("error - something went wrong while inflating x by its weights!")
 
+    # bootstraps (default: size k)
+    if bootstraps is None:
+        bootstraps = k
+
     # prepare progress bar and printed tables
-    widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
+    widgets = ['Bootstrapping (IB1)\t\t', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
 
@@ -732,7 +740,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=500, method='SLSQP', omit
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_missings=True,
+def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
            plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -746,7 +754,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [a,p,q] or simply (a,p,q)
     :param weights: weight, default: numpy.ones array of same shape as x
-    :param bootstraps: amount of bootstraps
+    :param bootstraps: amount of bootstraps, default is size k (x>b)
     :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
     :param verbose_bootstrap: display each bootstrap
     :param ci: default ci displayed
@@ -815,8 +823,12 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
     except:
         print("error - something went wrong while inflating x by its weights!")
 
+    # bootstraps (default: size k)
+    if bootstraps is None:
+        bootstraps = k
+
     # prepare progress bar and printed tables
-    widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
+    widgets = ['Bootstrapping (GB1)\t\t', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
 
@@ -1039,7 +1051,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_missings=True,
+def GBfit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
           return_parameters=False, return_gofs=False, #save_plot=False,
           plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -1053,7 +1065,7 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [a,c,p,q] or simply (q,c,p,q)
     :param weights: weight, default: numpy.ones array of same shape as x
-    :param bootstraps: amount of bootstraps
+    :param bootstraps: amount of bootstraps, default is size k (x>b)
     :param method: # default: SLSQP (local optimization, much faster), 'L-BFGS-B' (global optimization, but slower)
     :param verbose_bootstrap: display each bootstrap
     :param ci: default ci displayed
@@ -1122,8 +1134,12 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=250, method='SLSQP', omit_
     except:
         print("error - something went wrong while inflating x by its weights!")
 
+    # bootstraps (default: size k)
+    if bootstraps is None:
+        bootstraps = k
+
     # prepare progress bar and printed tables
-    widgets = ['Bootstrapping ', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
+    widgets = ['Bootstrapping (GB)\t\t', progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
 
@@ -1372,7 +1388,7 @@ Pareto branch fitting
 ---------------------------------------------------
 """
 
-def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bootstraps=250, method='SLSQP',
+def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bootstraps=None, method='SLSQP',
                     rejection_criterion='LRtest', verbose_bootstrap=False, verbose_single=False, verbose=True, alpha=.05,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
                     suppress_warnings=True, omit_missings=True,
@@ -1478,7 +1494,9 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         else:
             raise Exception("error - x0 not correctly specified")
 
-    # bootstraps
+    # bootstraps (default: size k)
+    if bootstraps is None:
+        bootstraps = k
     try:
         if int(bootstraps):
             Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps, bootstraps, bootstraps, bootstraps
