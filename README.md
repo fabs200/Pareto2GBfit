@@ -53,7 +53,8 @@ with following options:
 |           `x`          |                                                                                    --                                                                                   | actual data, will be converted to a numpy.array                                                                                                                                                                                                                                                                                                                     |
 |           `b`          |                                                                                    --                                                                                   | lower bound                                                                                                                                                                                                                                                                                                                                                         |
 |        `weights`       |                                                                              `array([1., 1.,...])`                                                                      | array with frequency weights, default is a `numpy.ones` array of same shape as `x`. Note that that each observation in x is "inflated" w-times. Thus, all elements in `weights` needs to be integer, and, ideally `numpy.int64` to prevent loss of precision.                                                                                                                    |
-|      `bootstraps`      |                                                                              size of x>b                                                                                | default is size of x when x is cut at b (x>b). You can specify one number for all 4 models, or an array with 2 numbers (first two: Pareto+IB1, last two: GB1+GB), or an array with 4 numbers in this order: Pareto, IB1, GB1, GB                                                                                                                                                  |
+|        `weighting`     |                                                                              `multiply`                                                                                 | if 'weights' are applied, specify how to internally handle weights. Per default, `x` is multiplied `weights` internally. Other option: `expand` where `x` is expanded by its weight but is much more computational intense.                                                                                                                                         |
+|      `bootstraps`      |                                                                              size of x>b                                                                                | default is size of x when x is cut at b (x>b). You can specify one number for all 4 models, or an array with 2 numbers (first two: Pareto+IB1, last two: GB1+GB), or an array with 4 numbers in this order: Pareto, IB1, GB1, GB. Note that if `weights` are applied, you may specify smaller bootstraps to save computational time.                                |
 |        `method`        |                                                                                 `SLSQP`                                                                                 | either run `SLSQP` (= local optimization with bounds, constraints, much faster), or chose 'L-BFGS-B' which bases on Basin-Hopping (=global optimization) . Note that depending on the selected method different optimization options are available (see [SciPy's documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html)) |
 |   `verbose_bootstrap`  |                                                                                 `False`                                                                                 | display each bootstrap round                                                                                                                                                                                                                                                                                                                                        |
 |          `ci`          |                                                                                  `True`                                                                                 | display fitted parameters with 95th confidence intervals                                                                                                                                                                                                                                                                                                            |
@@ -73,7 +74,7 @@ Also you can fit the whole Pareto branch with following function:
 |---------------|---------------------------------|
 | Pareto to GB 	| `Paretobranchfit(x, b, x0, ...)`|
 
-This is a wrapper that applies all fit functions above in a row (from Paretofit to GBfit), saves all parameters and GOFs and finally evaluates the fit according the specified rejection criteria (rejection_criteria='LRtest' or `rejection_criteria='AIC'`).
+This is a wrapper that applies all fit functions above in a row (from Paretofit to GBfit), saves all parameters and GOFs and finally evaluates the fit according the specified rejection criteria (rejection_criterion='LRtest' or `rejection_criterion='AIC'`).
 Options:
 
 | arg                    | default                                                                                                                                                                 | description                                                         |
@@ -81,9 +82,10 @@ Options:
 | `x`                    | --                                                                                                                                                                      | see above                                                           |
 | `b`                    | --                                                                                                                                                                      | see above                                                           |
 | `weights`              | `array([1., 1.,...])`                                                                                                                                                   | see above                                                           |
-| `rejection_criteria`   | `LRtest`                                                                                                                                                                |                                                                     |
+| `weighting`            |                                                                              `multiply`                                                                                 | see above                                                           |
+| `rejection_criterion`   | `LRtest`                                                                                                                                                                |                                                                     |
 | `alpha`                | `.05`                                                                                                                                                                   | significance level of LR test                                       |
-|      `bootstraps`      | size of x>b                                                                                | default is size of x when x is cut at b (x>b). You can specify one number for all 4 models, or an array with 2 numbers (first two: Pareto+IB1, last two: GB1+GB), or an array with 4 numbers in this order: Pareto, IB1, GB1, GB|
+| `bootstraps`      | size of x>b                                                                                | default is size of x when x is cut at b (x>b). You can specify one number for all 4 models, or an array with 2 numbers (first two: Pareto+IB1, last two: GB1+GB), or an array with 4 numbers in this order: Pareto, IB1, GB1, GB|
 | `method`               | `SLSQP`                                                                                                                                                                 | see above                                                           |
 | `omit_missings`        | `True`                                                                                                                                                                  | see above                                                           |
 | `verbose_bootstrap`    | `False`                                                                                                                                                                 | see above                                                           |
@@ -326,9 +328,9 @@ import numpy as np
 ```
 netwealth = np.loadtxt("netwealth.csv", delimiter = ",")
 ```
-3. Apply the Paretobranchfit with the rejection criteria LR test by simply specifying `rejection_criteria='LRtest'`. (Note that the significance level: alpha=.05)
+3. Apply the Paretobranchfit with the rejection criteria LR test by simply specifying `rejection_criterion='LRtest'`. (Note that the significance level: alpha=.05)
 ```
-Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='LRtest')
+Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='LRtest')
 ```
 Output:
 ```
@@ -369,9 +371,9 @@ GB_icdf_ne  99%|>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |ETA:  0:00:00
 |   GB   |  185693.0  | 185720.45  | 534535.937 | 22940534834454.793 | 4789627.839 | 4.077 |  -92842.5  | -284552298.345 | 475902.08  |  630238966114.576  | 516189.818 | 24693433986030.39 | 1  | 7063 | 7063 |
 +--------+------------+------------+------------+--------------------+-------------+-------+------------+----------------+------------+--------------------+------------+-------------------+----+------+------+
 ```
-4. Lets check the AIC criteria by specifying `rejection_criteria='AIC'`
+4. Lets check the AIC criteria by specifying `rejection_criterion='AIC'`
 ```
-Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='AIC', verbose=False)
+Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='AIC', verbose=False)
 ```
 Output:
 ```

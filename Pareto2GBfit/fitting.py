@@ -204,10 +204,17 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     if omit_missings:
         if np.isnan(x).any():
             if verbose: print('data contains NaNs and will be omitted')
-            x = x[~np.isnan(x)]
+            x_nan_index = np.where(~np.isnan(x))[0]
+            # x = x[~np.isnan(x)]
+            x = np.array(x)[x_nan_index]
+            weights = np.array(weights)[x_nan_index]
+
         if np.isnan(weights).any():
             if verbose: print('weights contain NaNs and will be omitted')
-            weights = weights[~np.isnan(weights)]
+            w_nan_index = np.where(~np.isnan(weights))[0]
+            # weights = weights[~np.isnan(weights)]
+            x = np.array(x)[w_nan_index]
+            weights = np.array(weights)[w_nan_index]
 
     # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
     if len(weights)>1:
@@ -215,7 +222,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
         weights = np.array(weights)
         weights_applied = True
 
-        # TODO: check whether there are weights=0, if True, drop w, x
+        # check whether there are weights=0, if True, drop w, x
         if np.any(weights == 0):
             nonzero_index = np.where(weights != 0)[0]
             weights = np.array(weights)[nonzero_index]
@@ -254,6 +261,80 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     bnd = (10**-14, np.inf)
     constr = {'type': 'ineq', 'fun': Pareto_constraint}
     bootstrapping, p_fit_bs = 1, []
+
+    if method == 'SLSQP':
+
+        # shorter variable name
+        opts = slsqp_options
+
+        # defaults
+        if 'jac' not in opts.keys():
+            opts['jac'] = None
+        if 'tol' not in opts.keys():
+            opts['tol'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        # if 'func' not in opts.keys():
+        #     opts['func'] = None
+        if 'maxiter' not in opts.keys():
+            opts['maxiter'] = 100
+        if 'ftol' not in opts.keys():
+            opts['ftol'] = 1e-14
+        if 'iprint' not in opts.keys():
+            opts['iprint'] = 1
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'eps' not in opts.keys():
+            opts['eps'] = 1.4901161193847656e-08
+
+        while bootstrapping <= bootstraps:
+
+            # first, bootstrap indexes of sample x: x_index
+            boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
+
+            # second, select x of sample based on bootstrapped idx
+            boot_sample = [x[i] for i in boot_sample_idx]
+
+            # third, if weights were applied, also select W of weights based on bootstrapped idx
+            if weights_applied is True:
+                boot_sample_weights = [weights[i] for i in boot_sample_idx]
+
+            # fourth, expand/multiply x_inflated by weight
+            if weighting == 'expand':
+                try:
+                    x_inflated = []
+                    for idx, i in enumerate(boot_sample):
+                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
+                        x_inflated.extend(x_extendby)
+                    x_weighted = x_inflated
+                except MemoryError:
+                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
+                except:
+                    print("error - something went wrong while inflating x by its weights!")
+
+            if weighting == 'multiply':
+                try:
+                    xw = np.multiply(boot_sample, boot_sample_weights)
+                    x_weighted = xw
+                except:
+                    print("error - something went wrong while when trying to apply weights to x!")
+
+            result = opt.minimize(Pareto_ll, x0,
+                                  args=(x_weighted, b),
+                                  method='SLSQP',
+                                  jac=opts['jac'],
+                                  bounds=(bnd,),
+                                  constraints=constr,
+                                  tol=opts['tol'],
+                                  callback=opts['callback'],
+                                  options={'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
+                                           'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']})
+            if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+            p_fit = result.x.item(0)
+            p_fit_bs.append(p_fit)
+            bar.update(bootstrapping)
+            bootstrapping += 1
+        bar.finish()
 
     if method == 'basinhopping':
 
@@ -336,80 +417,6 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
             bar.update(bootstrapping)
             bootstrapping += 1
 
-        bar.finish()
-
-    if method == 'SLSQP':
-
-        # shorter variable name
-        opts = slsqp_options
-
-        # defaults
-        if 'jac' not in opts.keys():
-            opts['jac'] = None
-        if 'tol' not in opts.keys():
-            opts['tol'] = None
-        if 'callback' not in opts.keys():
-            opts['callback'] = None
-        # if 'func' not in opts.keys():
-        #     opts['func'] = None
-        if 'maxiter' not in opts.keys():
-            opts['maxiter'] = 100
-        if 'ftol' not in opts.keys():
-            opts['ftol'] = 1e-14
-        if 'iprint' not in opts.keys():
-            opts['iprint'] = 1
-        if 'disp' not in opts.keys():
-            opts['disp'] = False
-        if 'eps' not in opts.keys():
-            opts['eps'] = 1.4901161193847656e-08
-
-        while bootstrapping <= bootstraps:
-
-            # first, bootstrap indexes of sample x: x_index
-            boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
-
-            # second, select x of sample based on bootstrapped idx
-            boot_sample = [x[i] for i in boot_sample_idx]
-
-            # third, if weights were applied, also select W of weights based on bootstrapped idx
-            if weights_applied is True:
-                boot_sample_weights = [weights[i] for i in boot_sample_idx]
-
-            # fourth, expand/multiply x_inflated by weight
-            if weighting == 'expand':
-                try:
-                    x_inflated = []
-                    for idx, i in enumerate(boot_sample):
-                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                        x_inflated.extend(x_extendby)
-                    x_weighted = x_inflated
-                except MemoryError:
-                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                except:
-                    print("error - something went wrong while inflating x by its weights!")
-
-            if weighting == 'multiply':
-                try:
-                    xw = np.multiply(boot_sample, boot_sample_weights)
-                    x_weighted = xw
-                except:
-                    print("error - something went wrong while when trying to apply weights to x!")
-
-            result = opt.minimize(Pareto_ll, x0,
-                                  args=(x_weighted, b),
-                                  method='SLSQP',
-                                  jac=opts['jac'],
-                                  bounds=(bnd,),
-                                  constraints=constr,
-                                  tol=opts['tol'],
-                                  callback=opts['callback'],
-                                  options={'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
-                                           'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']})
-            if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
-            p_fit = result.x.item(0)
-            p_fit_bs.append(p_fit)
-            bar.update(bootstrapping)
-            bootstrapping += 1
         bar.finish()
 
     if ci is False and verbose:
@@ -547,30 +554,40 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=Non
 
     # convert to numpy.array for easier data handling
     x = np.array(x)
-    weights = np.array(weights)
     x0 = np.array(x0)
 
-    """ Weights """
+    # help flag
     weights_applied = False
 
-    # if default, assign weight of ones if no W specified
-    if len(weights) == 1:
-        weights = np.ones(len(x))
+    # handle nans (Note: length of x, w must be same)
+    if omit_missings:
+        if np.isnan(x).any():
+            if verbose: print('data contains NaNs and will be omitted')
+            x_nan_index = np.where(~np.isnan(x))[0]
+            # x = x[~np.isnan(x)]
+            x = np.array(x)[x_nan_index]
+            weights = np.array(weights)[x_nan_index]
+
+        if np.isnan(weights).any():
+            if verbose: print('weights contain NaNs and will be omitted')
+            w_nan_index = np.where(~np.isnan(weights))[0]
+            # weights = weights[~np.isnan(weights)]
+            x = np.array(x)[w_nan_index]
+            weights = np.array(weights)[w_nan_index]
 
     # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
-    if len(weights) == len(x):
+    if len(weights)>1:
         N = int(np.sum(weights))
+        weights = np.array(weights)
         weights_applied = True
 
         # check whether there are weights=0, if True, drop w, x
         if np.any(weights == 0):
-            zeroweights_index = np.where(weights == 0)[0]
-            weights = [weights[i] for i in zeroweights_index]
-            x = [x[i] for i in zeroweights_index]
-            weights = np.array(weights)
-            x = np.array(x)
+            nonzero_index = np.where(weights != 0)[0]
+            weights = np.array(weights)[nonzero_index]
+            x = np.array(x)[nonzero_index]
 
-    else:
+    if len(weights) != len(x):
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # round weights
@@ -578,17 +595,12 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=Non
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
     x = x[x>b]
-    if len(weights) > 1:
-        weights = weights[x>b]
+    if weights_applied is True:
+        xlargerb_index = np.where(x > b)[0]
+        weights = np.array(weights)[xlargerb_index]
+    else:
+        weights = np.ones(len(x))
     k = len(x[x>b])
-
-    if omit_missings:
-        if np.isnan(x).any():
-            if verbose: print('data contain NaNs and will be omitted')
-            x = x[~np.isnan(x)]
-        if np.isnan(weights).any():
-            if verbose: print('weights contain NaNs and will be omitted')
-            weights = weights[~np.isnan(weights)]
 
     # create list with indexes of x
     x_index = np.arange(0, k, 1)
@@ -609,6 +621,84 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=Non
     constr = {'type': 'ineq', 'fun': IB1_constraint}
     bnds = (10**-14, np.inf)
     bootstrapping, p_fit_bs, q_fit_bs = 1, [], []
+
+    if method == 'SLSQP':
+
+        # shorter variable name
+        opts = slsqp_options
+
+        # defaults
+        if 'jac' not in opts.keys():
+            opts['jac'] = None
+        if 'tol' not in opts.keys():
+            opts['tol'] = 1e-14
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'func' not in opts.keys():
+            opts['func'] = None
+        if 'maxiter' not in opts.keys():
+            opts['maxiter'] = 300
+        if 'ftol' not in opts.keys():
+            opts['ftol'] = 1e-14
+        if 'iprint' not in opts.keys():
+            opts['iprint'] = 1
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'eps' not in opts.keys():
+            opts['eps'] = 1.4901161193847656e-08
+
+        while bootstrapping <= bootstraps:
+
+            # first, bootstrap indexes of sample x: x_index
+            boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
+
+            # second, select x of sample based on bootstrapped idx
+            boot_sample = [x[i] for i in boot_sample_idx]
+
+            # third, if weights were applied, also select W of weights based on bootstrapped idx
+            if weights_applied is True:
+                boot_sample_weights = [weights[i] for i in boot_sample_idx]
+
+            # fourth, expand/multiply x_inflated by weight
+            if weighting == 'expand':
+                try:
+                    x_inflated = []
+                    for idx, i in enumerate(boot_sample):
+                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
+                        x_inflated.extend(x_extendby)
+                    x_weighted = x_inflated
+                except MemoryError:
+                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
+                except:
+                    print("error - something went wrong while inflating x by its weights!")
+
+            if weighting == 'multiply':
+                try:
+                    xw = np.multiply(boot_sample, boot_sample_weights)
+                    x_weighted = xw
+                except:
+                    print("error - something went wrong while when trying to apply weights to x!")
+
+            result = opt.minimize(IB1_ll, x0,
+                                  args=(x_weighted, b),
+                                  method='SLSQP',
+                                  jac=opts['jac'],
+                                  bounds=(bnds, bnds,),
+                                  constraints=constr,
+                                  tol=opts['tol'],
+                                  callback=opts['callback'],
+                                  options=({'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
+                                            'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']}))
+
+            if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
+            p_fit, q_fit = result.x.item(0), result.x.item(1)
+            p_fit_bs.append(p_fit)
+            q_fit_bs.append(q_fit)
+            bar.update(bootstrapping)
+            bootstrapping += 1
+
+        bar.finish()
 
     if method == 'basinhopping':
 
@@ -684,84 +774,6 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=Non
                                       disp=opts['disp'],
                                       niter_success=opts['niter_success'],
                                       seed=opts['seed'])
-
-            if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
-
-            p_fit, q_fit = result.x.item(0), result.x.item(1)
-            p_fit_bs.append(p_fit)
-            q_fit_bs.append(q_fit)
-            bar.update(bootstrapping)
-            bootstrapping += 1
-
-        bar.finish()
-
-    if method == 'SLSQP':
-
-        # shorter variable name
-        opts = slsqp_options
-
-        # defaults
-        if 'jac' not in opts.keys():
-            opts['jac'] = None
-        if 'tol' not in opts.keys():
-            opts['tol'] = 1e-14
-        if 'callback' not in opts.keys():
-            opts['callback'] = None
-        if 'func' not in opts.keys():
-            opts['func'] = None
-        if 'maxiter' not in opts.keys():
-            opts['maxiter'] = 300
-        if 'ftol' not in opts.keys():
-            opts['ftol'] = 1e-14
-        if 'iprint' not in opts.keys():
-            opts['iprint'] = 1
-        if 'disp' not in opts.keys():
-            opts['disp'] = False
-        if 'eps' not in opts.keys():
-            opts['eps'] = 1.4901161193847656e-08
-
-        while bootstrapping <= bootstraps:
-
-            # first, bootstrap indexes of sample x: x_index
-            boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
-
-            # second, select x of sample based on bootstrapped idx
-            boot_sample = [x[i] for i in boot_sample_idx]
-
-            # third, if weights were applied, also select W of weights based on bootstrapped idx
-            if weights_applied is True:
-                boot_sample_weights = [weights[i] for i in boot_sample_idx]
-
-            # fourth, expand/multiply x_inflated by weight
-            if weighting == 'expand':
-                try:
-                    x_inflated = []
-                    for idx, i in enumerate(boot_sample):
-                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                        x_inflated.extend(x_extendby)
-                    x_weighted = x_inflated
-                except MemoryError:
-                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                except:
-                    print("error - something went wrong while inflating x by its weights!")
-
-            if weighting == 'multiply':
-                try:
-                    xw = np.multiply(boot_sample, boot_sample_weights)
-                    x_weighted = xw
-                except:
-                    print("error - something went wrong while when trying to apply weights to x!")
-
-            result = opt.minimize(IB1_ll, x0,
-                                  args=(x_weighted, b),
-                                  method='SLSQP',
-                                  jac=opts['jac'],
-                                  bounds=(bnds, bnds,),
-                                  constraints=constr,
-                                  tol=opts['tol'],
-                                  callback=opts['callback'],
-                                  options=({'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
-                                            'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']}))
 
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
 
@@ -917,30 +929,40 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=Non
 
     # convert to numpy.array for easier data handling
     x = np.array(x)
-    weights = np.array(weights)
     x0 = np.array(x0)
 
-    """ Weights """
+    # help flag
     weights_applied = False
 
-    # if default, assign weight of ones if no W specified
-    if len(weights) == 1:
-        weights = np.ones(len(x))
+    # handle nans (Note: length of x, w must be same)
+    if omit_missings:
+        if np.isnan(x).any():
+            if verbose: print('data contains NaNs and will be omitted')
+            x_nan_index = np.where(~np.isnan(x))[0]
+            # x = x[~np.isnan(x)]
+            x = np.array(x)[x_nan_index]
+            weights = np.array(weights)[x_nan_index]
+
+        if np.isnan(weights).any():
+            if verbose: print('weights contain NaNs and will be omitted')
+            w_nan_index = np.where(~np.isnan(weights))[0]
+            # weights = weights[~np.isnan(weights)]
+            x = np.array(x)[w_nan_index]
+            weights = np.array(weights)[w_nan_index]
 
     # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
-    if len(weights) == len(x):
+    if len(weights)>1:
         N = int(np.sum(weights))
+        weights = np.array(weights)
         weights_applied = True
 
         # check whether there are weights=0, if True, drop w, x
         if np.any(weights == 0):
-            zeroweights_index = np.where(weights == 0)[0]
-            weights = [weights[i] for i in zeroweights_index]
-            x = [x[i] for i in zeroweights_index]
-            weights = np.array(weights)
-            x = np.array(x)
+            nonzero_index = np.where(weights != 0)[0]
+            weights = np.array(weights)[nonzero_index]
+            x = np.array(x)[nonzero_index]
 
-    else:
+    if len(weights) != len(x):
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # round weights
@@ -948,17 +970,12 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=Non
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
     x = x[x>b]
-    if len(weights) > 1:
-        weights = weights[x>b]
+    if weights_applied is True:
+        xlargerb_index = np.where(x > b)[0]
+        weights = np.array(weights)[xlargerb_index]
+    else:
+        weights = np.ones(len(x))
     k = len(x[x>b])
-
-    if omit_missings:
-        if np.isnan(x).any():
-            if verbose: print('data contain NaNs and will be omitted')
-            x = x[~np.isnan(x)]
-        if np.isnan(weights).any():
-            if verbose: print('weights contain NaNs and will be omitted')
-            weights = weights[~np.isnan(weights)]
 
     # create list with indexes of x
     x_index = np.arange(0, k, 1)
@@ -979,6 +996,86 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=Non
     constr = {'type': 'ineq', 'fun': GB1_constraint}
     a_bnd, bnds = (-10, -1e-10), (10**-14, np.inf)
     bootstrapping, a_fit_bs, p_fit_bs, q_fit_bs = 1, [], [], []
+
+    if method == 'SLSQP':
+
+        # shorter variable name
+        opts = slsqp_options
+
+        # defaults
+        if 'jac' not in opts.keys():
+            opts['jac'] = None
+        if 'tol' not in opts.keys():
+            opts['tol'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'func' not in opts.keys():
+            opts['func'] = None
+        if 'maxiter' not in opts.keys():
+            opts['maxiter'] = 300
+        if 'ftol' not in opts.keys():
+            opts['ftol'] = 1e-14
+        if 'iprint' not in opts.keys():
+            opts['iprint'] = 1
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'eps' not in opts.keys():
+            opts['eps'] = 1.4901161193847656e-08
+
+
+        while bootstrapping <= bootstraps:
+
+            # first, bootstrap indexes of sample x: x_index
+            boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
+
+            # second, select x of sample based on bootstrapped idx
+            boot_sample = [x[i] for i in boot_sample_idx]
+
+            # third, if weights were applied, also select W of weights based on bootstrapped idx
+            if weights_applied is True:
+                boot_sample_weights = [weights[i] for i in boot_sample_idx]
+
+            # fourth, expand/multiply x_inflated by weight
+            if weighting == 'expand':
+                try:
+                    x_inflated = []
+                    for idx, i in enumerate(boot_sample):
+                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
+                        x_inflated.extend(x_extendby)
+                    x_weighted = x_inflated
+                except MemoryError:
+                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
+                except:
+                    print("error - something went wrong while inflating x by its weights!")
+
+            if weighting == 'multiply':
+                try:
+                    xw = np.multiply(boot_sample, boot_sample_weights)
+                    x_weighted = xw
+                except:
+                    print("error - something went wrong while when trying to apply weights to x!")
+
+            result = opt.minimize(GB1_ll, x0,
+                                  args=(x_weighted, b),
+                                  method='SLSQP',
+                                  jac=opts['jac'],
+                                  bounds=(a_bnd, bnds, bnds,),
+                                  constraints=constr,
+                                  tol=opts['tol'],
+                                  callback=opts['callback'],
+                                  options=({'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
+                                            'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']}))
+
+            if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
+            a_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2)
+            a_fit_bs.append(a_fit)
+            p_fit_bs.append(p_fit)
+            q_fit_bs.append(q_fit)
+            bar.update(bootstrapping)
+            bootstrapping += 1
+
+        bar.finish()
 
     if method == 'basinhopping':
 
@@ -1063,86 +1160,6 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=Non
             q_fit_bs.append(q_fit)
             bar.update(bootstrapping)
 
-            bootstrapping += 1
-
-        bar.finish()
-
-    if method == 'SLSQP':
-
-        # shorter variable name
-        opts = slsqp_options
-
-        # defaults
-        if 'jac' not in opts.keys():
-            opts['jac'] = None
-        if 'tol' not in opts.keys():
-            opts['tol'] = None
-        if 'callback' not in opts.keys():
-            opts['callback'] = None
-        if 'func' not in opts.keys():
-            opts['func'] = None
-        if 'maxiter' not in opts.keys():
-            opts['maxiter'] = 300
-        if 'ftol' not in opts.keys():
-            opts['ftol'] = 1e-14
-        if 'iprint' not in opts.keys():
-            opts['iprint'] = 1
-        if 'disp' not in opts.keys():
-            opts['disp'] = False
-        if 'eps' not in opts.keys():
-            opts['eps'] = 1.4901161193847656e-08
-
-
-        while bootstrapping <= bootstraps:
-
-            # first, bootstrap indexes of sample x: x_index
-            boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
-
-            # second, select x of sample based on bootstrapped idx
-            boot_sample = [x[i] for i in boot_sample_idx]
-
-            # third, if weights were applied, also select W of weights based on bootstrapped idx
-            if weights_applied is True:
-                boot_sample_weights = [weights[i] for i in boot_sample_idx]
-
-            # fourth, expand/multiply x_inflated by weight
-            if weighting == 'expand':
-                try:
-                    x_inflated = []
-                    for idx, i in enumerate(boot_sample):
-                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                        x_inflated.extend(x_extendby)
-                    x_weighted = x_inflated
-                except MemoryError:
-                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                except:
-                    print("error - something went wrong while inflating x by its weights!")
-
-            if weighting == 'multiply':
-                try:
-                    xw = np.multiply(boot_sample, boot_sample_weights)
-                    x_weighted = xw
-                except:
-                    print("error - something went wrong while when trying to apply weights to x!")
-
-            result = opt.minimize(GB1_ll, x0,
-                                  args=(x_weighted, b),
-                                  method='SLSQP',
-                                  jac=opts['jac'],
-                                  bounds=(a_bnd, bnds, bnds,),
-                                  constraints=constr,
-                                  tol=opts['tol'],
-                                  callback=opts['callback'],
-                                  options=({'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
-                                            'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']}))
-
-            if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
-
-            a_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2)
-            a_fit_bs.append(a_fit)
-            p_fit_bs.append(p_fit)
-            q_fit_bs.append(q_fit)
-            bar.update(bootstrapping)
             bootstrapping += 1
 
         bar.finish()
@@ -1302,30 +1319,40 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=None
 
     # convert to numpy.array for easier data handling
     x = np.array(x)
-    weights = np.array(weights)
     x0 = np.array(x0)
 
-    """ Weights """
+    # help flag
     weights_applied = False
 
-    # if default, assign weight of ones if no W specified
-    if len(weights) == 1:
-        weights = np.ones(len(x))
+    # handle nans (Note: length of x, w must be same)
+    if omit_missings:
+        if np.isnan(x).any():
+            if verbose: print('data contains NaNs and will be omitted')
+            x_nan_index = np.where(~np.isnan(x))[0]
+            # x = x[~np.isnan(x)]
+            x = np.array(x)[x_nan_index]
+            weights = np.array(weights)[x_nan_index]
+
+        if np.isnan(weights).any():
+            if verbose: print('weights contain NaNs and will be omitted')
+            w_nan_index = np.where(~np.isnan(weights))[0]
+            # weights = weights[~np.isnan(weights)]
+            x = np.array(x)[w_nan_index]
+            weights = np.array(weights)[w_nan_index]
 
     # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
-    if len(weights) == len(x):
+    if len(weights)>1:
         N = int(np.sum(weights))
+        weights = np.array(weights)
         weights_applied = True
 
         # check whether there are weights=0, if True, drop w, x
         if np.any(weights == 0):
-            zeroweights_index = np.where(weights == 0)[0]
-            weights = [weights[i] for i in zeroweights_index]
-            x = [x[i] for i in zeroweights_index]
-            weights = np.array(weights)
-            x = np.array(x)
+            nonzero_index = np.where(weights != 0)[0]
+            weights = np.array(weights)[nonzero_index]
+            x = np.array(x)[nonzero_index]
 
-    else:
+    if len(weights) != len(x):
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # round weights
@@ -1333,17 +1360,12 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=None
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
     x = x[x>b]
-    if len(weights) > 1:
-        weights = weights[x>b]
+    if weights_applied is True:
+        xlargerb_index = np.where(x > b)[0]
+        weights = np.array(weights)[xlargerb_index]
+    else:
+        weights = np.ones(len(x))
     k = len(x[x>b])
-
-    if omit_missings:
-        if np.isnan(x).any():
-            if verbose: print('data contain NaNs and will be omitted')
-            x = x[~np.isnan(x)]
-        if np.isnan(weights).any():
-            if verbose: print('weights contain NaNs and will be omitted')
-            weights = weights[~np.isnan(weights)]
 
     # create list with indexes of x
     x_index = np.arange(0, k, 1)
@@ -1372,6 +1394,86 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=None
 
     a_bnd, c_bnd, bnds = (-10, -1e-10), (0, 1), (10**-14, np.inf)
     bootstrapping, a_fit_bs, c_fit_bs, p_fit_bs, q_fit_bs = 1, [], [], [], []
+
+    if method == 'SLSQP':
+
+        # shorter variable name
+        opts = slsqp_options
+
+        # defaults
+        if 'jac' not in opts.keys():
+            opts['jac'] = None
+        if 'tol' not in opts.keys():
+            opts['tol'] = None
+        if 'callback' not in opts.keys():
+            opts['callback'] = None
+        if 'func' not in opts.keys():
+            opts['func'] = None
+        if 'maxiter' not in opts.keys():
+            opts['maxiter'] = 300
+        if 'ftol' not in opts.keys():
+            opts['ftol'] = 1e-14
+        if 'iprint' not in opts.keys():
+            opts['iprint'] = 1
+        if 'disp' not in opts.keys():
+            opts['disp'] = False
+        if 'eps' not in opts.keys():
+            opts['eps'] = 1.4901161193847656e-08
+
+        while bootstrapping <= bootstraps:
+
+            # first, bootstrap indexes of sample x: x_index
+            boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
+
+            # second, select x of sample based on bootstrapped idx
+            boot_sample = [x[i] for i in boot_sample_idx]
+
+            # third, if weights were applied, also select W of weights based on bootstrapped idx
+            if weights_applied is True:
+                boot_sample_weights = [weights[i] for i in boot_sample_idx]
+
+            # fourth, expand/multiply x_inflated by weight
+            if weighting == 'expand':
+                try:
+                    x_inflated = []
+                    for idx, i in enumerate(boot_sample):
+                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
+                        x_inflated.extend(x_extendby)
+                    x_weighted = x_inflated
+                except MemoryError:
+                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
+                except:
+                    print("error - something went wrong while inflating x by its weights!")
+
+            if weighting == 'multiply':
+                try:
+                    xw = np.multiply(boot_sample, boot_sample_weights)
+                    x_weighted = xw
+                except:
+                    print("error - something went wrong while when trying to apply weights to x!")
+
+            result = opt.minimize(GB_ll, x0,
+                                  args=(x_weighted, b),
+                                  method='SLSQP',
+                                  jac=opts['jac'],
+                                  bounds=(a_bnd, c_bnd, bnds, bnds,),
+                                  constraints=constr,
+                                  tol=opts['tol'],
+                                  callback=opts['callback'],
+                                  options=({'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
+                                            'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']}))
+
+            if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
+            a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
+            a_fit_bs.append(a_fit)
+            c_fit_bs.append(c_fit)
+            p_fit_bs.append(p_fit)
+            q_fit_bs.append(q_fit)
+            bar.update(bootstrapping)
+            bootstrapping += 1
+
+        bar.finish()
 
     if method == 'basinhopping':
 
@@ -1457,86 +1559,6 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=None
             q_fit_bs.append(q_fit)
             bar.update(bootstrapping)
 
-            bootstrapping += 1
-
-        bar.finish()
-
-    if method == 'SLSQP':
-
-        # shorter variable name
-        opts = slsqp_options
-
-        # defaults
-        if 'jac' not in opts.keys():
-            opts['jac'] = None
-        if 'tol' not in opts.keys():
-            opts['tol'] = None
-        if 'callback' not in opts.keys():
-            opts['callback'] = None
-        if 'func' not in opts.keys():
-            opts['func'] = None
-        if 'maxiter' not in opts.keys():
-            opts['maxiter'] = 300
-        if 'ftol' not in opts.keys():
-            opts['ftol'] = 1e-14
-        if 'iprint' not in opts.keys():
-            opts['iprint'] = 1
-        if 'disp' not in opts.keys():
-            opts['disp'] = False
-        if 'eps' not in opts.keys():
-            opts['eps'] = 1.4901161193847656e-08
-
-        while bootstrapping <= bootstraps:
-
-            # first, bootstrap indexes of sample x: x_index
-            boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
-
-            # second, select x of sample based on bootstrapped idx
-            boot_sample = [x[i] for i in boot_sample_idx]
-
-            # third, if weights were applied, also select W of weights based on bootstrapped idx
-            if weights_applied is True:
-                boot_sample_weights = [weights[i] for i in boot_sample_idx]
-
-            # fourth, expand/multiply x_inflated by weight
-            if weighting == 'expand':
-                try:
-                    x_inflated = []
-                    for idx, i in enumerate(boot_sample):
-                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                        x_inflated.extend(x_extendby)
-                    x_weighted = x_inflated
-                except MemoryError:
-                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                except:
-                    print("error - something went wrong while inflating x by its weights!")
-
-            if weighting == 'multiply':
-                try:
-                    xw = np.multiply(boot_sample, boot_sample_weights)
-                    x_weighted = xw
-                except:
-                    print("error - something went wrong while when trying to apply weights to x!")
-
-            result = opt.minimize(GB_ll, x0,
-                                  args=(x_weighted, b),
-                                  method='SLSQP',
-                                  jac=opts['jac'],
-                                  bounds=(a_bnd, c_bnd, bnds, bnds,),
-                                  constraints=constr,
-                                  tol=opts['tol'],
-                                  callback=opts['callback'],
-                                  options=({'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
-                                            'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']}))
-
-            if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
-
-            a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
-            a_fit_bs.append(a_fit)
-            c_fit_bs.append(c_fit)
-            p_fit_bs.append(p_fit)
-            q_fit_bs.append(q_fit)
-            bar.update(bootstrapping)
             bootstrapping += 1
 
         bar.finish()
@@ -1722,43 +1744,84 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
         warnings.filterwarnings("default", message="divide by zero encountered")
         warnings.filterwarnings("default", message="invalid value encountered")
 
+    #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
+    if suppress_warnings:
+        warnings.filterwarnings("ignore", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("ignore", message="divide by zero encountered in divide")
+        warnings.filterwarnings("ignore", message="divide by zero encountered")
+        warnings.filterwarnings("ignore", message="invalid value encountered")
+    else:
+        warnings.filterwarnings("default", message="divide by zero encountered in double_scalars")
+        warnings.filterwarnings("default", message="divide by zero encountered in divide")
+        warnings.filterwarnings("default", message="divide by zero encountered")
+        warnings.filterwarnings("default", message="invalid value encountered")
+
     # convert to numpy.array for easier data handling
     x = np.array(x)
-    weights = np.array(weights)
     x0 = np.array(x0)
 
-    # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
-    if len(weights) > 1:
-        weights = weights[x>b]
-    x = x[x>b]
-    k = len(x[x>b])
+    # help flag
+    weights_applied = False
 
+    # handle nans (Note: length of x, w must be same)
     if omit_missings:
         if np.isnan(x).any():
-            if verbose: print('data contain NaNs and will be omitted')
-            x = x[~np.isnan(x)]
+            if verbose: print('data contains NaNs and will be omitted')
+            x_nan_index = np.where(~np.isnan(x))[0]
+            # x = x[~np.isnan(x)]
+            x = np.array(x)[x_nan_index]
+            weights = np.array(weights)[x_nan_index]
+
         if np.isnan(weights).any():
             if verbose: print('weights contain NaNs and will be omitted')
-            weights = weights[~np.isnan(weights)]
-
-    """ Weights """
-    weights_applied = False
-    # if default, assign weight of ones if no W specified
-    if len(weights) == 1:
-        weights = np.ones(len(x))
+            w_nan_index = np.where(~np.isnan(weights))[0]
+            # weights = weights[~np.isnan(weights)]
+            x = np.array(x)[w_nan_index]
+            weights = np.array(weights)[w_nan_index]
 
     # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
-    if len(weights) == len(x):
+    if len(weights)>1:
         N = int(np.sum(weights))
+        weights = np.array(weights)
         weights_applied = True
-    else:
+
+        # check whether there are weights=0, if True, drop w, x
+        if np.any(weights == 0):
+            nonzero_index = np.where(weights != 0)[0]
+            weights = np.array(weights)[nonzero_index]
+            x = np.array(x)[nonzero_index]
+
+    if len(weights) != len(x):
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # round weights
     weights = np.around(weights, 0).astype(float)
 
+    # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
+    x = x[x>b]
+    if weights_applied is True:
+        xlargerb_index = np.where(x > b)[0]
+        weights = np.array(weights)[xlargerb_index]
+    else:
+        weights = np.ones(len(x))
+    k = len(x[x>b])
+
     # create list with indexes of x
     x_index = np.arange(0, k, 1)
+
+    # bootstraps (default: size k)
+    if bootstraps is None:
+        bootstraps = k
+    try:
+        if int(bootstraps):
+            Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps, bootstraps, bootstraps, bootstraps
+    except TypeError:
+        if len(bootstraps) == 4:
+            Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps[0], bootstraps[1], bootstraps[2], bootstraps[3]
+        elif len(bootstraps) == 2:
+            Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps[0], bootstraps[0], bootstraps[1], bootstraps[1]
+        else:
+            raise Exception("error - bootstrap not correctly specified")
 
     ### Prepare args for passing to below fitting functions
     # x0
@@ -1774,20 +1837,6 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
             GB_x0 = x0
         else:
             raise Exception("error - x0 not correctly specified")
-
-    # bootstraps (default: size k)
-    if bootstraps is None:
-        bootstraps = k
-    try:
-        if int(bootstraps):
-            Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps, bootstraps, bootstraps, bootstraps
-    except TypeError:
-        if len(bootstraps) == 4:
-            Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps[0], bootstraps[1], bootstraps[2], bootstraps[3]
-        elif len(bootstraps) == 2:
-            Pareto_bs, IB1_bs, GB1_bs, GB_bs = bootstraps[0], bootstraps[0], bootstraps[1], bootstraps[1]
-        else:
-            raise Exception("error - bootstrap not correctly specified")
 
     # plot_options
     plt_cosm = {'bins': plot_cosmetics['bins'], 'col_data': plot_cosmetics['col_data'], 'col_fit': plot_cosmetics['col_fit']}
