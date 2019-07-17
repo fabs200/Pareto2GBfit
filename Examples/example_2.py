@@ -34,10 +34,10 @@ LRtest(Pareto(x=netwealth, b=b, p=p_fit1).LL, GB1(x=netwealth, b=b, a=a_fit3, p=
 LRtest(IB1(x=netwealth, b=b, p=p_fit2, q=q_fit2).LL, GB1(x=netwealth, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL, df=1)
 
 # fit each distribution
-Pareto_fit = Paretofit(x=netwealth, b=100000, x0=1, bootstraps=100, method='L-BFGS-B', verbose=False, return_parameters=True, return_gofs=True)
-IB1_fit = IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=50, method='L-BFGS-B', verbose=False, return_parameters=True, return_gofs=True)
-GB1_fit = GB1fit(x=netwealth, b=100000, x0=(-.1,1,1), bootstraps=10, method='L-BFGS-B', verbose=False, return_parameters=True, return_gofs=True)
-GB_fit = GBfit(x=netwealth, b=100000, x0=(-.1,.1,1,1), bootstraps=4, method='L-BFGS-B', verbose=False, return_parameters=True, return_gofs=True)
+Pareto_fit = Paretofit(x=netwealth, b=100000, x0=1, bootstraps=100, method='basinhopping', verbose=False, return_parameters=True, return_gofs=True)
+IB1_fit = IB1fit(x=netwealth, b=100000, x0=(1,1), bootstraps=50, method='basinhopping', verbose=False, return_parameters=True, return_gofs=True)
+GB1_fit = GB1fit(x=netwealth, b=100000, x0=(-.1,1,1), bootstraps=10, method='basinhopping', verbose=False, return_parameters=True, return_gofs=True)
+GB_fit = GBfit(x=netwealth, b=100000, x0=(-.1,.1,1,1), bootstraps=4, method='basinhopping', verbose=False, return_parameters=True, return_gofs=True)
 
 # unpack parameters
 p_fit1, p_se1 = Pareto_fit[:2]
@@ -59,6 +59,6 @@ LRtest3v4 = LRtest(GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
                    df=4, verbose=False)
 
 # Run Paretobranchfit on netwealth
-Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='LRtest', method='L-BFGS-B', alpha=.025)
-Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='AIC', method='SLSQP')
+Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='LRtest', method='basinhopping', alpha=.025)
+Paretobranchfit(x=netwealth, b=100000, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='AIC', method='SLSQP')
 

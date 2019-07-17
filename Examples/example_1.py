@@ -37,23 +37,23 @@ Pareto_data = Pareto_icdf(u, b, p)
 Pareto_data_noise = Pareto_icdf(u, b, p) + noise
 
 # test fits with Pareto_data plots
-Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=10, verbose=True, method='L-BFGS-B', plot=True)
+Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=10, verbose=True, method='basinhopping', plot=True)
 Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=10, verbose=True, method='SLSQP', plot=True)
-IB1fit(x=Pareto_data, b=500, x0=(2,1), bootstraps=10, verbose=True, method='L-BFGS-B', plot=True)
+IB1fit(x=Pareto_data, b=500, x0=(2,1), bootstraps=10, verbose=True, method='basinhopping', plot=True)
 IB1fit(x=Pareto_data, b=500, x0=(2,1), bootstraps=10, verbose=True, method='SLSQP', plot=True)
-GB1fit(x=Pareto_data, b=500, x0=(-.1,2,1), bootstraps=10, verbose=True, method='L-BFGS-B', plot=True)
+GB1fit(x=Pareto_data, b=500, x0=(-.1,2,1), bootstraps=10, verbose=True, method='basinhopping', plot=True)
 GB1fit(x=Pareto_data, b=500, x0=(-.1,2,1), bootstraps=10, verbose=True, method='SLSQP', plot=True)
-GBfit(x=Pareto_data, b=500, x0=(-.1,0,2,1), bootstraps=10, verbose=True, method='L-BFGS-B', plot=True)
+GBfit(x=Pareto_data, b=500, x0=(-.1,0,2,1), bootstraps=10, verbose=True, method='basinhopping', plot=True)
 GBfit(x=Pareto_data, b=500, x0=(-.1,0,2,1), bootstraps=10, verbose=True, method='SLSQP', plot=True)
 
 # test fits with Pareto_data_noise
-Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=100, method='L-BFGS-B', plot=True, weighting='multiply')
+Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=100, method='basinhopping', plot=True, weighting='multiply')
 Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=100, method='SLSQP', plot=True)
-IB1fit(x=Pareto_data_noise, b=500, x0=(2,1), bootstraps=10, method='L-BFGS-B', plot=True)
+IB1fit(x=Pareto_data_noise, b=500, x0=(2,1), bootstraps=10, method='basinhopping', plot=True)
 IB1fit(x=Pareto_data_noise, b=500, x0=(2,1), bootstraps=10, method='SLSQP', plot=True)
-GB1fit(x=Pareto_data_noise, b=500, x0=(-.1,2,1), bootstraps=10, method='L-BFGS-B', plot=True)
+GB1fit(x=Pareto_data_noise, b=500, x0=(-.1,2,1), bootstraps=10, method='basinhopping', plot=True)
 GB1fit(x=Pareto_data_noise, b=500, x0=(-.1,2,1), bootstraps=10, method='SLSQP', plot=True)
-GBfit(x=Pareto_data_noise, b=500, x0=(-.1,0,2,1), bootstraps=10, method='L-BFGS-B', plot=True)
+GBfit(x=Pareto_data_noise, b=500, x0=(-.1,0,2,1), bootstraps=10, method='basinhopping', plot=True)
 GBfit(x=Pareto_data_noise, b=500, x0=(-.1,0,2,1), bootstraps=10, method='SLSQP', plot=True)
 
 # Run Paretobranchfit on simulated Pareto_data with LRtest
