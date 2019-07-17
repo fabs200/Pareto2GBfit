@@ -27,7 +27,7 @@ Goddness of fit measures
 """
 class gof:
     """ Goodness of fit measures and descriptive statistics data vs fit """
-    def __init__(self, x, x_hat, parms, b):
+    def __init__(self, x, x_hat, W, parms, b):
         """
         :param x: model with same shape as data
         :param x_hat: fitted data
@@ -50,7 +50,7 @@ class gof:
         self.mape = (100/n) * np.sum(np.abs(e/x))
         self.rrmse = np.sqrt(1/n * np.sum((e/x)**2))
         if len(parms) == 1:
-            self.ll = ll = (-10000)*Pareto_ll(parms=parms, x=x, b=b) #normalization
+            self.ll = ll = (-10000)*Pareto_ll(parms=parms, x=x, W=W, b=b) #normalization
             self.aic = -2*ll + 2
             self.bic = -2*ll + np.log(n)
         if len(parms) == 2:
@@ -71,16 +71,17 @@ class gof:
 Neg. Log-Likelihoods
 ---------------------------------------------------
 """
-def Pareto_ll(parms, x, b):
+def Pareto_ll(parms, x, W, b):
     """
     :param parms: np.array [p], optimized
     :param x: linspace, fixed
+    :param W: weights, either np.ones() if no weights have been applied OR weighting='expand', or iweights Σw=1, fixed
     :param b: location parameter, fixed
     :return: neg. logliklihood of Pareto
     """
     p = parms[0]
     n = len(x)
-    sum = np.sum(np.log(x))
+    sum = np.sum(np.log(np.multiply(x, W)))
     ll = n*np.log(p) + p*n*np.log(b) - (p+1)*sum
     ll = -ll/10000
     return ll
@@ -200,27 +201,26 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     # help flag
     weights_applied = False
 
+    # check whether weights are applied
+    if len(weights)>1:
+        weights = np.array(weights)
+        weights_applied = True
+    else:
+        weights = np.ones(len(x))
+
     # handle nans (Note: length of x, w must be same)
     if omit_missings:
         if np.isnan(x).any():
             if verbose: print('data contains NaNs and will be omitted')
             x_nan_index = np.where(~np.isnan(x))[0]
-            # x = x[~np.isnan(x)]
             x = np.array(x)[x_nan_index]
             weights = np.array(weights)[x_nan_index]
 
         if np.isnan(weights).any():
             if verbose: print('weights contain NaNs and will be omitted')
             w_nan_index = np.where(~np.isnan(weights))[0]
-            # weights = weights[~np.isnan(weights)]
             x = np.array(x)[w_nan_index]
             weights = np.array(weights)[w_nan_index]
-
-    # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
-    if len(weights)>1:
-        N = int(np.sum(weights))
-        weights = np.array(weights)
-        weights_applied = True
 
         # check whether there are weights=0, if True, drop w, x
         if np.any(weights == 0):
@@ -232,18 +232,28 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # round weights
-    weights = np.around(weights, 0).astype(float)
+    if weighting == 'expand' and weights_applied is True:
+        weights = np.around(weights, 0).astype(float)
+
+    # normalize weights: Σw=1
+    # if weighting == 'multiply' and weights_applied is True:
+    #     weights = np.multiply(weights, 1/np.sum(weights))
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
     x = x[x>b]
     if weights_applied is True:
         xlargerb_index = np.where(x > b)[0]
         weights = np.array(weights)[xlargerb_index]
+        N = int(np.sum(weights))
     else:
         weights = np.ones(len(x))
+        N = int(np.sum(weights))
+        # As no weights are specified, are not needed anymore -> set vector W to 0
+        W = 1 #np.multiply(weights, 0)
+
     k = len(x[x>b])
 
-    # create list with indexes of x
+    # create list with indexes of x (needed for bootstrapping)
     x_index = np.arange(0, k, 1)
 
     # bootstraps (default: size k)
@@ -295,32 +305,34 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
             # second, select x of sample based on bootstrapped idx
             boot_sample = [x[i] for i in boot_sample_idx]
 
-            # third, if weights were applied, also select W of weights based on bootstrapped idx
+            # third, if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
                 boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
             # fourth, expand/multiply x_inflated by weight
-            if weighting == 'expand':
+            if weighting == 'expand' and weights_applied is True:
                 try:
                     x_inflated = []
                     for idx, i in enumerate(boot_sample):
                         x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
                         x_inflated.extend(x_extendby)
-                    x_weighted = x_inflated
+                    x = x_inflated
+                    # As we inflated x now, weights are not needed anymore -> set to 0
+                    W = 1 #np.multiply(np.ones(x_inflated), 0)
+
                 except MemoryError:
                     print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
                 except:
                     print("error - something went wrong while inflating x by its weights!")
 
             if weighting == 'multiply':
-                try:
-                    xw = np.multiply(boot_sample, boot_sample_weights)
-                    x_weighted = xw
-                except:
-                    print("error - something went wrong while when trying to apply weights to x!")
+                W = weights
+                # check
+                # if np.sum(W) > 1:
+                #     raise Exception("error - ΣW=1 not valid, instead: ΣW={} (length of W vector: {})".format(np.sum(W), len(W)))
 
             result = opt.minimize(Pareto_ll, x0,
-                                  args=(x_weighted, b),
+                                  args=(x, W, b),
                                   method='SLSQP',
                                   jac=opts['jac'],
                                   bounds=(bnd,),
@@ -479,22 +491,22 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     if fit:
         u = np.array(np.random.uniform(.0, 1., len(x)))
         model = Pareto_icdf(u=u, b=b, p=np.mean(p_fit_bs))
-        soe = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).soe
-        # ssr = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).ssr
-        # sse = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).sse
-        # sst = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).sst
-        emp_mean = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).emp_mean
-        emp_var = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).emp_var
-        pred_mean = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).pred_mean
-        pred_var = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).pred_var
-        mae = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).mae
-        mse = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).mse
-        rmse = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).rmse
-        rrmse = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).rrmse
-        aic = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).aic
-        bic = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).bic
-        n = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).n
-        ll = gof(x=x, x_hat=model, b=b, parms=[np.mean(p_fit_bs)]).ll
+        soe = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).soe
+        # ssr = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).ssr
+        # sse = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).sse
+        # sst = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).sst
+        emp_mean = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).emp_mean
+        emp_var = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).emp_var
+        pred_mean = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).pred_mean
+        pred_var = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).pred_var
+        mae = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).mae
+        mse = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).mse
+        rmse = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).rmse
+        rrmse = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).rrmse
+        aic = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).aic
+        bic = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).bic
+        n = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).n
+        ll = gof(x=x, x_hat=model, W=W, b=b, parms=[np.mean(p_fit_bs)]).ll
         if verbose:
             tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n', 'N']
             tbl_gof.add_row(['GOF', '{:.3f}'.format(aic), '{:.3f}'.format(bic), '{:.3f}'.format(mae), '{:.3f}'.format(mse),
@@ -591,7 +603,12 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='multiply', bootstraps=Non
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # round weights
-    weights = np.around(weights, 0).astype(float)
+    if weighting == 'expand':
+        weights = np.around(weights, 0).astype(float)
+
+    # normalize weights: Σw=1
+    if weighting == 'multiply':
+        weights = np.multiply(weights, 1/sum(weights))
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
     x = x[x>b]
