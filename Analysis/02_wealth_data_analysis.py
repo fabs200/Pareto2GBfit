@@ -328,7 +328,7 @@ Plot fit vs data
 
 b = 1500000
 x0 = (-1, .5, 1, 1)
-bootstraps = (400, 400, 400, 400)
+bootstraps = (100, 100, 100, 100)
 
 ## PSID 2017
 

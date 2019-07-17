@@ -47,8 +47,8 @@ GBfit(x=Pareto_data, b=500, x0=(-.1,0,2,1), bootstraps=10, verbose=True, method=
 GBfit(x=Pareto_data, b=500, x0=(-.1,0,2,1), bootstraps=10, verbose=True, method='SLSQP', plot=True)
 
 # test fits with Pareto_data_noise
-Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=10, method='L-BFGS-B', plot=True)
-Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=1000, method='SLSQP', plot=True)
+Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=100, method='L-BFGS-B', plot=True, weighting='multiply')
+Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=100, method='SLSQP', plot=True)
 IB1fit(x=Pareto_data_noise, b=500, x0=(2,1), bootstraps=10, method='L-BFGS-B', plot=True)
 IB1fit(x=Pareto_data_noise, b=500, x0=(2,1), bootstraps=10, method='SLSQP', plot=True)
 GB1fit(x=Pareto_data_noise, b=500, x0=(-.1,2,1), bootstraps=10, method='L-BFGS-B', plot=True)
@@ -56,6 +56,10 @@ GB1fit(x=Pareto_data_noise, b=500, x0=(-.1,2,1), bootstraps=10, method='SLSQP', 
 GBfit(x=Pareto_data_noise, b=500, x0=(-.1,0,2,1), bootstraps=10, method='L-BFGS-B', plot=True)
 GBfit(x=Pareto_data_noise, b=500, x0=(-.1,0,2,1), bootstraps=10, method='SLSQP', plot=True)
 
-# Run Paretobranchfit on simulated Pareto_data
-Paretobranchfit(x=Pareto_data, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='LRtest', verbose=True)
-Paretobranchfit(x=Pareto_data_noise, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criteria='LRtest', verbose=True)
+# Run Paretobranchfit on simulated Pareto_data with LRtest
+Paretobranchfit(x=Pareto_data, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='LRtest', verbose=True)
+Paretobranchfit(x=Pareto_data_noise, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='LRtest', verbose=True)
+
+# Run Paretobranchfit on simulated Pareto_data with AIC
+Paretobranchfit(x=Pareto_data, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='AIC', verbose=True)
+Paretobranchfit(x=Pareto_data_noise, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='AIC', verbose=True)

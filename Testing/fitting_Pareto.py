@@ -115,7 +115,7 @@ if run_optimize is True:
     p_fit = result.x
     p_fit_se = Pareto_extract_se(x=Pareto_data, b=b, p_fitted=p_fit)
     p_fit_bs, p_fit_se_bs = Paretofit(x=x, b=250, x0=x0, bootstraps=500, verbose=False, method='L-BFGS-B',
-                                      return_parameters=True, save_plot=True, plot=True)
+                                      return_parameters=True, plot=True)
 
     ### minimize -ll with Pareto_data_noise
     x = Pareto_data_noise
@@ -128,7 +128,7 @@ if run_optimize is True:
     # save results
     p_fit_noise = result.x
     p_fit_noise_bs, p_fit_noise_se_bs = Paretofit(x=x, b=250, x0=x0, bootstraps=1000, verbose=False,
-                                                  return_parameters=True, save_plot=True, plot=True)
+                                                  return_parameters=True, plot=True)
 
 
 """ 5. Plot simulated data + fit """
@@ -237,9 +237,11 @@ if plot_ll is True:
 
 """ 9. 3d contour plot """
 if plot_ll is True:
-    k=25
+    from mpl_toolkits.mplot3d import axes3d, Axes3D
+    import matplotlib.cm as cm
+    k=50
     bmin, bmax = 0.1, np.min(Pareto_data) # Note: y>=b should be always valid. Also, b>0. Thus, we can only simulate LL between these 2 bounds.
-    pmin, pmax = .1, 10
+    pmin, pmax = .01, 10
     b_data = np.linspace(bmin, bmax, k)
     p_data = np.linspace(pmin, pmax, k)
     B, P, LL = [], [], []
@@ -265,12 +267,13 @@ if plot_ll is True:
     ax = fig.gca(projection='3d')
     # Plot the surface.
     ax.scatter(b, p, LL_true, s=100, c="r", alpha=1, label='True Parameter')
-    surf = ax.plot_surface(B_plot, P_plot, LL_plot, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    #surf = ax.plot_wireframe(B_plot, P_plot, LL_plot, color='blue')
+    surf = ax.plot_surface(B_plot, P_plot, LL_plot, cmap='summer', linewidth=.1, antialiased=False)
     # title, label, legend
     plt.title("Grid search of Pareto Distribution\nfor Parameters b, p"); ax.set_xlabel("b Parameter");
     ax.set_ylabel("p Parameter"); ax.set_zlabel("LL"); plt.legend(loc='upper right', bbox_to_anchor=(1.35, 1))
     # Add a color bar which maps values to colors.
-    fig.colorbar(surf, shrink=.55, aspect=7)
+    fig.colorbar(surf, shrink=.5, aspect=7)
     # perspective
     ax.view_init(elev=0, azim=40)
     #plt.savefig('graphs/pareto_gridsearch_LL_b_p.png', dpi=300)
