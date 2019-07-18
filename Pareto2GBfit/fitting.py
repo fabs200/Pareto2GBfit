@@ -11,14 +11,54 @@ from .distributions import Pareto_pdf, IB1_pdf, GB1_pdf, GB_pdf, Pareto_icdf, IB
 from .testing import *
 import warnings, sys, os
 
+"""
+-------------------------
+Define functions
+-------------------------
+"""
+
 def namestr(obj, namespace):
     """
-    retrieve variable name of a list
+    retrieve variable name of a list (can be used for example to retrieve variable and use it later)
     :param obj: e.g. Pareto_data which is an numpy.array
     :param namespace: globals()
     :return: ['Pareto_data']
     """
     return [name for name in namespace if namespace[name] is obj]
+
+def weighted_quantile(values, quantiles, sample_weight=None, values_sorted=False, old_style=False):
+    """ source: https://stackoverflow.com/questions/21844024/weighted-percentile-using-numpy
+    NOTE: quantiles should be in [0, 1]
+    :param values: numpy.array with data
+    :param quantiles: array-like with many quantiles needed
+    :param sample_weight: array-like of the same length as `array`
+    :param values_sorted: bool, if True, then will avoid sorting of
+        initial array
+    :param old_style: if True, will correct output to be consistent
+        with numpy.percentile.
+    :return: numpy.array with computed quantiles.
+    """
+    values = np.array(values)
+    quantiles = np.array(quantiles)
+    if sample_weight is None:
+        sample_weight = np.ones(len(values))
+    sample_weight = np.array(sample_weight)
+    assert np.all(quantiles >= 0) and np.all(quantiles <= 1), \
+        'quantiles should be in [0, 1]'
+
+    if not values_sorted:
+        sorter = np.argsort(values)
+        values = values[sorter]
+        sample_weight = sample_weight[sorter]
+
+    weighted_quantiles = np.cumsum(sample_weight) - 0.5 * sample_weight
+    if old_style:
+        # To be convenient with numpy.percentile
+        weighted_quantiles -= weighted_quantiles[0]
+        weighted_quantiles /= weighted_quantiles[-1]
+    else:
+        weighted_quantiles /= np.sum(sample_weight)
+    return np.interp(quantiles, weighted_quantiles, values)
 
 """ 
 ---------------------------------------------------
@@ -34,9 +74,16 @@ class gof:
         :param parms: np.array []
         :param b: location parameter, fixed
         """
-        self.n = n = len(x)
-        self.emp_mean = np.mean(x, dtype=np.float64)
-        self.emp_var = np.var(x, dtype=np.float64)
+        # if no weights or weighting=='expanded' (np.ones-array)
+        if len(W) == np.sum(W):
+            self.n = n = len(x)
+            self.emp_mean = np.mean(x, dtype=np.float64)
+            self.emp_var = np.var(x, dtype=np.float64)
+        # if weighting=='multiply'
+        else:
+            self.n = n = np.sum(W)
+            self.emp_mean = np.average(a=x, weights=W)
+            self.emp_var = np.sqrt(np.cov(x, aweights=W))**2
         self.pred_mean = np.mean(x_hat, dtype=np.float64)
         self.pred_var = np.var(x_hat, dtype=np.float64)
         self.e = e = np.array(x) - np.array(x_hat)
@@ -49,6 +96,7 @@ class gof:
         self.mae = 1/n * np.sum(np.abs(e))
         self.mape = (100/n) * np.sum(np.abs(e/x))
         self.rrmse = np.sqrt(1/n * np.sum((e/x)**2))
+
         if len(parms) == 1:
             self.ll = ll = (-10000)*Pareto_ll(parms=parms, x=x, W=W, b=b) #normalization
             self.aic = -2*ll + 2
@@ -81,7 +129,7 @@ def Pareto_ll(parms, x, W, b):
     """
     p = parms[0]
     n = len(x)
-    sum = np.sum(np.log(np.multiply(x, W)))
+    sum = np.sum(np.log(x)*W)
     ll = n*np.log(p) + p*n*np.log(b) - (p+1)*sum
     ll = -ll/10000
     return ll
@@ -208,6 +256,10 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     else:
         weights = np.ones(len(x))
 
+    # round weights
+    if weighting == 'expand' and weights_applied is True:
+        weights = np.around(weights, 0).astype(float)
+
     # handle nans (Note: length of x, w must be same)
     if omit_missings:
         if np.isnan(x).any():
@@ -231,27 +283,22 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     if len(weights) != len(x):
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
-    # round weights
-    if weighting == 'expand' and weights_applied is True:
-        weights = np.around(weights, 0).astype(float)
-
     # normalize weights: Σw=1
-    # if weighting == 'multiply' and weights_applied is True:
-    #     weights = np.multiply(weights, 1/np.sum(weights))
+    if weighting == 'multiply' and weights_applied is True:
+        weights = np.multiply(weights, 1/np.sum(weights))
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
-    x = x[x>b]
+    k = len(x[x>b])
     if weights_applied is True:
         xlargerb_index = np.where(x > b)[0]
         weights = np.array(weights)[xlargerb_index]
         N = int(np.sum(weights))
     else:
-        weights = np.ones(len(x))
+        # As no weights are specified, are not needed anymore -> set vector W to 1
+        weights = np.ones(k)
         N = int(np.sum(weights))
-        # As no weights are specified, are not needed anymore -> set vector W to 0
-        W = 1 #np.multiply(weights, 0)
-
-    k = len(x[x>b])
+    x = x_backup = x[x>b]
+    weights_backup = weights
 
     # create list with indexes of x (needed for bootstrapping)
     x_index = np.arange(0, k, 1)
@@ -284,8 +331,8 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
             opts['tol'] = None
         if 'callback' not in opts.keys():
             opts['callback'] = None
-        # if 'func' not in opts.keys():
-        #     opts['func'] = None
+        if 'func' not in opts.keys():
+            opts['func'] = None
         if 'maxiter' not in opts.keys():
             opts['maxiter'] = 100
         if 'ftol' not in opts.keys():
@@ -301,35 +348,39 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
 
             # first, bootstrap indexes of sample x: x_index
             boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
+            boot_sample_idx = boot_sample_idx.astype(int)
 
             # second, select x of sample based on bootstrapped idx
-            boot_sample = [x[i] for i in boot_sample_idx]
+            try:
+                boot_sample = x[boot_sample_idx]
+            except:
+                boot_sample = [x[i] for i in boot_sample_idx]
 
             # third, if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
-                boot_sample_weights = [weights[i] for i in boot_sample_idx]
+                boot_sample_weights = weights[boot_sample_idx] #[weights[i] for i in boot_sample_idx]
+                # boot_sample_weights = np.sort(boot_sample_weights)
 
-            # fourth, expand/multiply x_inflated by weight
-            if weighting == 'expand' and weights_applied is True:
-                try:
-                    x_inflated = []
-                    for idx, i in enumerate(boot_sample):
-                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                        x_inflated.extend(x_extendby)
-                    x = x_inflated
-                    # As we inflated x now, weights are not needed anymore -> set to 0
-                    W = 1 #np.multiply(np.ones(x_inflated), 0)
+                # fourth, expand boot_sample by weight
+                if weighting == 'expand':
+                    try:
+                        x_inflated = []
+                        for idx, i in enumerate(boot_sample):
+                            x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
+                            x_inflated.extend(x_extendby)
+                        boot_sample = x_inflated
+                        # As we inflated x now, weights are not needed anymore -> set to 1
+                        boot_sample_weights = np.ones(len(x_inflated))
+                    except MemoryError:
+                        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
+                    except:
+                        print("error - something went wrong while inflating x by its weights!")
+            else:
+                boot_sample_weights = np.ones(len(boot_sample))
 
-                except MemoryError:
-                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                except:
-                    print("error - something went wrong while inflating x by its weights!")
-
-            if weighting == 'multiply':
-                W = weights
-                # check
-                # if np.sum(W) > 1:
-                #     raise Exception("error - ΣW=1 not valid, instead: ΣW={} (length of W vector: {})".format(np.sum(W), len(W)))
+            # prepare vars for optimization
+            x = boot_sample
+            W = boot_sample_weights
 
             result = opt.minimize(Pareto_ll, x0,
                                   args=(x, W, b),
@@ -348,88 +399,92 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
             bootstrapping += 1
         bar.finish()
 
-    if method == 'basinhopping':
+    # if method == 'basinhopping':
+    #
+    #     # shorter variable name
+    #     opts = basinhopping_options
+    #
+    #     # defaults
+    #     if 'niter' not in opts.keys():
+    #         opts['niter'] = 20
+    #     if 'T' not in opts.keys():
+    #         opts['T'] = 1.0
+    #     if 'stepsize' not in opts.keys():
+    #         opts['stepsize'] = 0.5
+    #     if 'take_step' not in opts.keys():
+    #         opts['take_step'] = None
+    #     if 'accept_test' not in opts.keys():
+    #         opts['accept_test'] = None
+    #     if 'callback' not in opts.keys():
+    #         opts['callback'] = None
+    #     if 'interval' not in opts.keys():
+    #         opts['interval'] = 50
+    #     if 'disp' not in opts.keys():
+    #         opts['disp'] = False
+    #     if 'niter_success' not in opts.keys():
+    #         opts['niter_success'] = None
+    #     if 'seed' not in opts.keys():
+    #         opts['seed'] = 123
+    #
+    #     while bootstrapping <= bootstraps:
+    #
+    #         # first, bootstrap indexes of sample x: x_index
+    #         boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
+    #
+    #         # second, select x of sample based on bootstrapped idx
+    #         boot_sample = [x[i] for i in boot_sample_idx]
+    #
+    #         # third, if weights were applied, also select W of weights based on bootstrapped idx
+    #         if weights_applied is True:
+    #             boot_sample_weights = [weights[i] for i in boot_sample_idx]
+    #
+    #         # fourth, expand/multiply x_inflated by weight
+    #         if weighting == 'expand':
+    #             try:
+    #                 x_inflated = []
+    #                 for idx, i in enumerate(boot_sample):
+    #                     x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
+    #                     x_inflated.extend(x_extendby)
+    #                 x_weighted = x_inflated
+    #             except MemoryError:
+    #                 print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
+    #             except:
+    #                 print("error - something went wrong while inflating x by its weights!")
+    #
+    #         if weighting == 'multiply':
+    #             try:
+    #                 xw = np.multiply(boot_sample, boot_sample_weights)
+    #                 x_weighted = xw
+    #             except:
+    #                 print("error - something went wrong when trying to apply weights to x!")
+    #
+    #         minimizer_kwargs = {"method": "SLSQP", "args": (x_weighted, b),
+    #                             "bounds": (bnd,)} #, "constraints": constr} constraint not needed, because b not optimized
+    #
+    #         result = opt.basinhopping(Pareto_ll, x0,
+    #                                   minimizer_kwargs=minimizer_kwargs,
+    #                                   niter=opts['niter'],
+    #                                   T=opts['T'],
+    #                                   stepsize=opts['stepsize'],
+    #                                   take_step=opts['take_step'],
+    #                                   accept_test=opts['accept_test'],
+    #                                   callback=opts['callback'],
+    #                                   interval=opts['interval'],
+    #                                   disp=opts['disp'],
+    #                                   niter_success=opts['niter_success'],
+    #                                   seed=opts['seed'])
+    #
+    #         if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+    #         p_fit = result.x.item(0)
+    #         p_fit_bs.append(p_fit)
+    #         bar.update(bootstrapping)
+    #         bootstrapping += 1
+    #
+    #     bar.finish()
 
-        # shorter variable name
-        opts = basinhopping_options
-
-        # defaults
-        if 'niter' not in opts.keys():
-            opts['niter'] = 20
-        if 'T' not in opts.keys():
-            opts['T'] = 1.0
-        if 'stepsize' not in opts.keys():
-            opts['stepsize'] = 0.5
-        if 'take_step' not in opts.keys():
-            opts['take_step'] = None
-        if 'accept_test' not in opts.keys():
-            opts['accept_test'] = None
-        if 'callback' not in opts.keys():
-            opts['callback'] = None
-        if 'interval' not in opts.keys():
-            opts['interval'] = 50
-        if 'disp' not in opts.keys():
-            opts['disp'] = False
-        if 'niter_success' not in opts.keys():
-            opts['niter_success'] = None
-        if 'seed' not in opts.keys():
-            opts['seed'] = 123
-
-        while bootstrapping <= bootstraps:
-
-            # first, bootstrap indexes of sample x: x_index
-            boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
-
-            # second, select x of sample based on bootstrapped idx
-            boot_sample = [x[i] for i in boot_sample_idx]
-
-            # third, if weights were applied, also select W of weights based on bootstrapped idx
-            if weights_applied is True:
-                boot_sample_weights = [weights[i] for i in boot_sample_idx]
-
-            # fourth, expand/multiply x_inflated by weight
-            if weighting == 'expand':
-                try:
-                    x_inflated = []
-                    for idx, i in enumerate(boot_sample):
-                        x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                        x_inflated.extend(x_extendby)
-                    x_weighted = x_inflated
-                except MemoryError:
-                    print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                except:
-                    print("error - something went wrong while inflating x by its weights!")
-
-            if weighting == 'multiply':
-                try:
-                    xw = np.multiply(boot_sample, boot_sample_weights)
-                    x_weighted = xw
-                except:
-                    print("error - something went wrong when trying to apply weights to x!")
-
-            minimizer_kwargs = {"method": "SLSQP", "args": (x_weighted, b),
-                                "bounds": (bnd,)} #, "constraints": constr} constraint not needed, because b not optimized
-
-            result = opt.basinhopping(Pareto_ll, x0,
-                                      minimizer_kwargs=minimizer_kwargs,
-                                      niter=opts['niter'],
-                                      T=opts['T'],
-                                      stepsize=opts['stepsize'],
-                                      take_step=opts['take_step'],
-                                      accept_test=opts['accept_test'],
-                                      callback=opts['callback'],
-                                      interval=opts['interval'],
-                                      disp=opts['disp'],
-                                      niter_success=opts['niter_success'],
-                                      seed=opts['seed'])
-
-            if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
-            p_fit = result.x.item(0)
-            p_fit_bs.append(p_fit)
-            bar.update(bootstrapping)
-            bootstrapping += 1
-
-        bar.finish()
+    # set back x, weights
+    x = x_backup
+    weights = weights_backup
 
     if ci is False and verbose:
         tbl.field_names = ['parameter', 'value', 'se']
@@ -442,19 +497,18 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
         p_pval = 2*norm.cdf(-np.abs((np.mean(p_fit_bs)/np.std(p_fit_bs))))
         p_cilo = np.percentile(p_fit_bs, 2.5) #CS
         p_cihi = np.percentile(p_fit_bs, 97.5)
-        tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'CI(2.5)', 'CI(97.5)', 'n']
+        tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'CI(2.5)', 'CI(97.5)', 'n', 'N']
         tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), '{:.3f}'.format(np.std(p_fit_bs)),
                      '{:.3f}'.format(p_zscore), '{:.3f}'.format(p_pval),
-                     '{:.3f}'.format(p_cilo), #'{:.3f}'.format(np.mean(p_fit_bs)-np.std(p_fit_bs)*1.96), #CS
-                     '{:.3f}'.format(p_cihi), #'{:.3f}'.format(np.mean(p_fit_bs)+np.std(p_fit_bs)*1.96),
-                     k])
+                     '{:.3f}'.format(p_cilo), '{:.3f}'.format(p_cihi), k, N])
         print(tbl)
 
-    if verbose:
-        print(locals())
+    # if verbose:
+    #     print(locals())
 
     if plot:
-        fit = True # if plot is True, also display tbl_gof so set fit==True
+        # TEMP
+        # fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
         if 'bins' not in plot_cosmetics.keys():
             num_bins = 50
