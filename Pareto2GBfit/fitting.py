@@ -283,11 +283,10 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     if len(weights) != len(x):
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
-    # normalize weights: Σw=1
-    if weighting == 'multiply' and weights_applied is True:
-        weights = np.multiply(weights, 1/np.sum(weights))
-
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
+    # expand:
+    # multiply:
+    # non-weights:
     k = len(x[x>b])
     if weights_applied is True:
         xlargerb_index = np.where(x > b)[0]
@@ -350,16 +349,18 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
             boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
             boot_sample_idx = boot_sample_idx.astype(int)
 
-            # second, select x of sample based on bootstrapped idx
+            # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
                 boot_sample = x[boot_sample_idx]
             except:
                 boot_sample = [x[i] for i in boot_sample_idx]
 
-            # third, if weights were applied, also select weights based on bootstrapped idx
+            # third, prepare weights: if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
-                boot_sample_weights = weights[boot_sample_idx] #[weights[i] for i in boot_sample_idx]
-                # boot_sample_weights = np.sort(boot_sample_weights)
+                try:
+                    boot_sample_weights = weights[boot_sample_idx]
+                except:
+                    boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
                 # fourth, expand boot_sample by weight
                 if weighting == 'expand':
@@ -375,6 +376,11 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
                         print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
                     except:
                         print("error - something went wrong while inflating x by its weights!")
+                # normalize in each bootstrap
+                if weighting == 'multiply':
+                    # normalize weights: Σw=1
+                    boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+            # if no weights applied, fill weights with ones
             else:
                 boot_sample_weights = np.ones(len(boot_sample))
 
