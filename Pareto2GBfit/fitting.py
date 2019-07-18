@@ -400,7 +400,14 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
                                            'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']})
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
             p_fit = result.x.item(0)
-            p_fit_bs.append(p_fit)
+            if weighting == 'multiply':
+                if p_fit==1.0:
+                    p_fit_bs.append(p_fit_bs[-1])
+                else:
+                    p_fit = p_fit/1000000
+                p_fit_bs.append(p_fit)
+            else:
+                p_fit_bs.append(p_fit)
             bar.update(bootstrapping)
             bootstrapping += 1
         bar.finish()
@@ -513,8 +520,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     #     print(locals())
 
     if plot:
-        # TEMP
-        # fit = True # if plot is True, also display tbl_gof so set fit==True
+        fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
         if 'bins' not in plot_cosmetics.keys():
             num_bins = 50
