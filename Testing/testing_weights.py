@@ -2,8 +2,8 @@
 # weights=np.array([1])
 
 b=2000000
-x0=(-.1,.1,1,1)
 x0=(-.1,1,1)
+x0=(-.1,.1,1,1)
 bootstraps=10
 method='SLSQP'
 omit_missings=True
@@ -68,10 +68,10 @@ GB1fit(x=dfSOEP['wealth_17'], b=500000, x0=(-.1,1,1), bootstraps=100, plot=True,
 ###########################################
 
 # GBfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=500000, x0=(-.1,.1,1,1), bootstraps=100, plot=True, weighting='expand')
-GBfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=500000, x0=(-.1,.1,1,1), bootstraps=10, plot=True, weighting='multiply')
+GBfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=500000, x0=(-.1,.1,1,1), bootstraps=1000, plot=True, weighting='multiply')
 
 #GBfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=500000, x0=(1,.1,1,-.1), bootstraps=5, plot=True, weighting='expand')
-GBfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=500000, x0=(-1,.1,1,1), bootstraps=10, plot=True, weighting='multiply')  # BAD
+GBfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=500000, x0=(-.1,.1,1,1), bootstraps=100, plot=True, weighting='multiply')  # BAD
 
-GBfit(x=dfPSID['wealth_17'], b=500000, x0=(-.1,.1,1,1), bootstraps=50, plot=True)  # OK!!
-GBfit(x=dfSOEP['wealth_17'], b=500000, x0=(-.1,.1,1,1), bootstraps=100, plot=True, method='basinhopping')
+GBfit(x=dfPSID['wealth_17'], b=1000000, x0=(-.1,.1,1,1), bootstraps=50, plot=True, weighting='multiply')  # OK!!
+GBfit(x=dfSOEP['wealth_17'], b=500000, x0=(-.1,.1,1,1), bootstraps=10, plot=True, method='basinhopping')

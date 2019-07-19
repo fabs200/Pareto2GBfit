@@ -1583,22 +1583,22 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
 
-    def GB_constraint1(parms):
-        a = parms[0]
-        c = parms[1]
-        # TODO: return (b**a)/(1-c) - np.min(x*W)**a
-        # TODO: return (b**a)/(1-c) - np.min(x)**a
-        return (b**a)/(1-c) - np.min(x)**a
-
-    def GB_constraint2(parms):
-        a = parms[0]
-        c = parms[1]
-        # TODO: return (b**a)/(1-c) - np.max(x*W)**a
-        # TODO: return (b**a)/(1-c) - np.max(x)**a
-        return (b**a)/(1-c) - np.max(x)**a
-
-    constr = ({'type': 'ineq', 'fun': GB_constraint1},
-              {'type': 'ineq', 'fun': GB_constraint2})
+    # def GB_constraint1(parms):
+    #     a = parms[0]
+    #     c = parms[1]
+    #     # TODO: return (b**a)/(1-c) - np.min(x*W)**a
+    #     # TODO: return (b**a)/(1-c) - np.min(x)**a
+    #     return (b**a)/(1-c) - np.min(x)**a
+    #
+    # def GB_constraint2(parms):
+    #     a = parms[0]
+    #     c = parms[1]
+    #     # TODO: return (b**a)/(1-c) - np.max(x*W)**a
+    #     # TODO: return (b**a)/(1-c) - np.max(x)**a
+    #     return (b**a)/(1-c) - np.max(x)**a
+    #
+    # constr = ({'type': 'ineq', 'fun': GB_constraint1},
+    #           {'type': 'ineq', 'fun': GB_constraint2})
 
     a_bnd, c_bnd, bnds = (-10, -1e-10), (0, 1), (10**-14, np.inf)
     bootstrapping, a_fit_bs, c_fit_bs, p_fit_bs, q_fit_bs = 1, [], [], [], []
@@ -1678,7 +1678,7 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
                                   method='SLSQP',
                                   jac=opts['jac'],
                                   bounds=(a_bnd, c_bnd, bnds, bnds,),
-                                  constraints=constr,
+                                  #constraints=constr,
                                   tol=opts['tol'],
                                   callback=opts['callback'],
                                   options=({'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
@@ -1687,11 +1687,30 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
 
             a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
-            a_fit_bs.append(a_fit)
-            c_fit_bs.append(c_fit)
-            p_fit_bs.append(p_fit)
-            q_fit_bs.append(q_fit)
+
+            # re-normalize if weights 'multiply'
+            if weighting == 'multiply' and weights_applied is True:
+                a_fit = a_fit/10
+                a_fit_bs.append(a_fit)
+
+                c_fit = c_fit
+                c_fit_bs.append(c_fit)
+
+                p_fit = p_fit/1000
+                if p_fit < 50:
+                    p_fit_bs.append(p_fit)
+
+                q_fit = q_fit/1000
+                if q_fit < 10:
+                    q_fit_bs.append(q_fit)
+            else:
+                a_fit_bs.append(a_fit)
+                c_fit_bs.append(c_fit)
+                p_fit_bs.append(p_fit)
+                q_fit_bs.append(q_fit)
+
             bar.update(bootstrapping)
+
             bootstrapping += 1
 
         bar.finish()
@@ -1789,15 +1808,20 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
             a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
 
             # re-normalize if weights 'multiply'
-            if weighting == 'multiply':
+            if weighting == 'multiply' and weights_applied is True:
                 a_fit = a_fit/10
                 a_fit_bs.append(a_fit)
+
                 c_fit = c_fit
                 c_fit_bs.append(c_fit)
-                p_fit = p_fit/1000
-                p_fit_bs.append(p_fit)
-                q_fit = q_fit/1000
-                q_fit_bs.append(q_fit)
+
+                p_fit = p_fit/100000
+                if p_fit < 50:
+                    p_fit_bs.append(p_fit)
+
+                q_fit = q_fit/100000
+                if q_fit < 10:
+                    q_fit_bs.append(q_fit)
             else:
                 a_fit_bs.append(a_fit)
                 c_fit_bs.append(c_fit)
