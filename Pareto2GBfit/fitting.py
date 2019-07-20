@@ -151,7 +151,7 @@ def IB1_ll(parms, x, W, b):
     sum1 = np.sum(np.log(1-b/x)*W)
     sum2 = np.sum(np.log(x)*W)
     ll = p*n*np.log(b) - n*lnb + (q-1)*sum1 - (p+1)*sum2
-    ll = -ll#/10000
+    ll = -ll #/10000
     return ll
 
 # log-likelihood
@@ -316,8 +316,6 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     tbl, tbl_gof = PrettyTable(), PrettyTable()
 
     def Pareto_constraint(b):
-        # TODO: return np.min(x*W) - b
-        # TODO: return np.min(x) - b
         return np.min(x) - b
 
     bnd = (10**-14, np.inf)
@@ -357,9 +355,9 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
 
             # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
-                boot_sample = x[boot_sample_idx]
+                boot_sample = x_backup[boot_sample_idx]
             except:
-                boot_sample = [x[i] for i in boot_sample_idx]
+                boot_sample = [x_backup[i] for i in boot_sample_idx]
 
             # third, prepare weights: if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
@@ -457,9 +455,9 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
 
             # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
-                boot_sample = x[boot_sample_idx]
+                boot_sample = x_backup[boot_sample_idx]
             except:
-                boot_sample = [x[i] for i in boot_sample_idx]
+                boot_sample = [x_backup[i] for i in boot_sample_idx]
 
             # third, prepare weights: if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
@@ -554,7 +552,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
         fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
         if 'bins' not in plot_cosmetics.keys():
-            num_bins = 50
+            num_bins = 100
         else:
             num_bins = plot_cosmetics['bins']
         if 'col_data' not in plot_cosmetics.keys():
@@ -728,8 +726,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
     def IB1_constraint(parms):
         # TODO: return (np.min(x*W)/b)
-        # return (np.min(x)/b)
-        return (np.min(x*W)/b)
+        return (np.min(x)/b)
 
     constr = {'type': 'ineq', 'fun': IB1_constraint}
     bnds = (10**-14, np.inf)
@@ -768,9 +765,9 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
-                boot_sample = x[boot_sample_idx]
+                boot_sample = x_backup[boot_sample_idx]
             except:
-                boot_sample = [x[i] for i in boot_sample_idx]
+                boot_sample = [x_backup[i] for i in boot_sample_idx]
 
             # third, prepare weights: if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
@@ -823,8 +820,10 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
             # re-normalize if weights 'multiply'
             if weighting == 'multiply':
                 p_fit = p_fit/100000000
+                # p_fit = p_fit
                 p_fit_bs.append(p_fit)
                 q_fit = q_fit/100000000
+                # q_fit = q_fit
                 q_fit_bs.append(q_fit)
             else:
                 p_fit_bs.append(p_fit)
@@ -869,9 +868,9 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
-                boot_sample = x[boot_sample_idx]
+                boot_sample = x_backup[boot_sample_idx]
             except:
-                boot_sample = [x[i] for i in boot_sample_idx]
+                boot_sample = [x_backup[i] for i in boot_sample_idx]
 
             # third, prepare weights: if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
@@ -928,9 +927,9 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             # re-normalize if weights 'multiply'
             if weighting == 'multiply':
-                p_fit = p_fit/100000000
+                p_fit = p_fit/10000000
                 p_fit_bs.append(p_fit)
-                q_fit = q_fit/100000000
+                q_fit = q_fit/10000000
                 q_fit_bs.append(q_fit)
             else:
                 p_fit_bs.append(p_fit)
@@ -977,7 +976,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
         fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
         if 'bins' not in plot_cosmetics.keys():
-            num_bins = 50
+            num_bins = 100
         else:
             num_bins = plot_cosmetics['bins']
         if 'col_data' not in plot_cosmetics.keys():
@@ -1133,11 +1132,17 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
         # As no weights are specified, are not needed anymore -> set vector W to 1
         weights = np.ones(k)
         N = int(np.sum(weights))
+
+    # backup
     x = x_backup = x[x>b]
     weights_backup = weights
 
     # create list with indexes of x (needed for bootstrapping)
     x_index = np.arange(0, k, 1)
+    # x_index_bottom = x_index[:int(np.percentile(x_index, 10))]
+    # x_index_top = x_index[int(np.percentile(x_index, 90)):]
+    # x_index = x_index[int(np.percentile(x_index, 10)):int(np.percentile(x_index, 90))]
+    # m = len(x_index)
 
     # bootstraps (default: size k)
     if bootstraps is None:
@@ -1152,10 +1157,10 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
         a = parms[0]
         # TODO: return (np.min(x*W)/b)**a
         # TODO: return (np.min(x)/b)**a
-        return (np.min(x*W)/b)**a
+        return (np.min(x)/b)**a
 
     constr = {'type': 'ineq', 'fun': GB1_constraint}
-    a_bnd, bnds = (-10, -1e-10), (10**-14, np.inf)
+    a_bnd, bnds = (-np.inf, -1e-10), (10**-14, np.inf)
     bootstrapping, a_fit_bs, p_fit_bs, q_fit_bs = 1, [], [], []
 
     if method == 'SLSQP':
@@ -1188,12 +1193,15 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
             # first, bootstrap indexes of sample x: x_index
             boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
             boot_sample_idx = boot_sample_idx.astype(int)
+            # # put together
+            # boot_sample_idx = np.concatenate((x_index_bottom, boot_sample_idx, x_index_top), axis=None)
+            # boot_sample_idx = np.sort(boot_sample_idx)
 
             # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
-                boot_sample = x[boot_sample_idx]
+                boot_sample = x_backup[boot_sample_idx]
             except:
-                boot_sample = [x[i] for i in boot_sample_idx]
+                boot_sample = [x_backup[i] for i in boot_sample_idx]
 
             # third, prepare weights: if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
@@ -1233,7 +1241,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
                                   method='SLSQP',
                                   jac=opts['jac'],
                                   bounds=(a_bnd, bnds, bnds,),
-                                  constraints=constr,
+                                  #constraints=constr,
                                   tol=opts['tol'],
                                   callback=opts['callback'],
                                   options=({'maxiter': opts['maxiter'], 'ftol': opts['ftol'], #'func': opts['func'],
@@ -1245,16 +1253,31 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             # re-normalize if weights 'multiply'
             if weighting == 'multiply':
-                a_fit = a_fit
+                a_fit = a_fit/10e+8
                 a_fit_bs.append(a_fit)
-                p_fit = p_fit/10000000000000
+                p_fit = p_fit/10e+8
                 p_fit_bs.append(p_fit)
-                q_fit = q_fit/10000000
+                q_fit = q_fit/10e+8
                 q_fit_bs.append(q_fit)
             else:
                 a_fit_bs.append(a_fit)
                 p_fit_bs.append(p_fit)
                 q_fit_bs.append(q_fit)
+
+            ##########
+            # col_fit, col_model, num_bins = 'red', 'blue', 250
+            # fig, ax = plt.subplots()
+            # n, bins, patches = ax.hist(x, num_bins, density=1, label='GB1 fit', color=col_fit)
+            # # x2: model with fitted parameters
+            # x2 = GB1_pdf(np.linspace(np.min(x), np.max(x), np.size(x)), b=b, a=np.mean(a_fit), p=np.mean(p_fit), q=np.mean(q_fit))
+            # ax.plot(np.linspace(np.min(x), np.max(x), np.size(x)), x2, '--', label='model', color=col_model)
+            # ax.set_xlabel('x')
+            # ax.set_ylabel('Probability density')
+            # ax.set_title('fit vs. data')
+            # ax.legend(['GB1 fit', 'data'])
+            # plt.show()
+            # print("a: {}, p: {}, q: {}".format(a_fit, p_fit, q_fit))
+            ##########
 
             bar.update(bootstrapping)
             bootstrapping += 1
@@ -1296,9 +1319,9 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
-                boot_sample = x[boot_sample_idx]
+                boot_sample = x_backup[boot_sample_idx]
             except:
-                boot_sample = [x[i] for i in boot_sample_idx]
+                boot_sample = [x_backup[i] for i in boot_sample_idx]
 
             # third, prepare weights: if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
@@ -1355,11 +1378,11 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             # re-normalize if weights 'multiply'
             if weighting == 'multiply':
-                a_fit = a_fit/10
+                a_fit = a_fit/10e+8
                 a_fit_bs.append(a_fit)
-                p_fit = p_fit/1000
+                p_fit = p_fit/10e+8
                 p_fit_bs.append(p_fit)
-                q_fit = q_fit/1000
+                q_fit = q_fit/10e+8
                 q_fit_bs.append(q_fit)
             else:
                 a_fit_bs.append(a_fit)
@@ -1371,6 +1394,10 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
             bootstrapping += 1
 
         bar.finish()
+
+    # set back x, weights
+    x = x_backup
+    weights = weights_backup
 
     if ci is False and verbose is True:
         tbl.field_names = ['parameter', 'value', 'se']
@@ -1411,7 +1438,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
         fit = True # if plot is True, also display tbl_gof so set fit==True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
         if 'bins' not in plot_cosmetics.keys():
-            num_bins = 50
+            num_bins = 100
         else:
             num_bins = plot_cosmetics['bins']
         if 'col_data' not in plot_cosmetics.keys():
@@ -1636,9 +1663,9 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
 
             # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
-                boot_sample = x[boot_sample_idx]
+                boot_sample = x_backup[boot_sample_idx]
             except:
-                boot_sample = [x[i] for i in boot_sample_idx]
+                boot_sample = [x_backup[i] for i in boot_sample_idx]
 
             # third, prepare weights: if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
@@ -1690,19 +1717,14 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
 
             # re-normalize if weights 'multiply'
             if weighting == 'multiply' and weights_applied is True:
-                a_fit = a_fit/10
+                a_fit=a_fit/10e+8
                 a_fit_bs.append(a_fit)
-
-                c_fit = c_fit
+                c_fit=c_fit/10e+8
                 c_fit_bs.append(c_fit)
-
-                p_fit = p_fit/1000
-                if p_fit < 50:
-                    p_fit_bs.append(p_fit)
-
-                q_fit = q_fit/1000
-                if q_fit < 10:
-                    q_fit_bs.append(q_fit)
+                p_fit=p_fit/10e+8
+                p_fit_bs.append(p_fit)
+                q_fit=q_fit/10e+8
+                q_fit_bs.append(q_fit)
             else:
                 a_fit_bs.append(a_fit)
                 c_fit_bs.append(c_fit)
@@ -1750,9 +1772,9 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
 
             # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
-                boot_sample = x[boot_sample_idx]
+                boot_sample = x_backup[boot_sample_idx]
             except:
-                boot_sample = [x[i] for i in boot_sample_idx]
+                boot_sample = [x_backup[i] for i in boot_sample_idx]
 
             # third, prepare weights: if weights were applied, also select weights based on bootstrapped idx
             if weights_applied is True:
@@ -1809,19 +1831,14 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
 
             # re-normalize if weights 'multiply'
             if weighting == 'multiply' and weights_applied is True:
-                a_fit = a_fit/10
+                a_fit=a_fit/10e+8
                 a_fit_bs.append(a_fit)
-
-                c_fit = c_fit
+                c_fit=c_fit/10e+8
                 c_fit_bs.append(c_fit)
-
-                p_fit = p_fit/100000
-                if p_fit < 50:
-                    p_fit_bs.append(p_fit)
-
-                q_fit = q_fit/100000
-                if q_fit < 10:
-                    q_fit_bs.append(q_fit)
+                p_fit=p_fit/10e+8
+                p_fit_bs.append(p_fit)
+                q_fit=q_fit/10e+8
+                q_fit_bs.append(q_fit)
             else:
                 a_fit_bs.append(a_fit)
                 c_fit_bs.append(c_fit)
@@ -1833,6 +1850,10 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
             bootstrapping += 1
 
         bar.finish()
+
+    # set back x, weights
+    x = x_backup
+    weights = weights_backup
 
     if ci is False and verbose is True:
 
@@ -1882,7 +1903,7 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
         fit = True # if plot is True, also display tbl_gof so set fit=True
         # Set defaults of plot_cosmetics in case plot_cosmetics-dictionary as arg has an empty key
         if 'bins' not in plot_cosmetics.keys():
-            num_bins = 50
+            num_bins = 100
         else:
             num_bins = plot_cosmetics['bins']
         if 'col_data' not in plot_cosmetics.keys():
@@ -1953,12 +1974,12 @@ Pareto branch fitting
 ---------------------------------------------------
 """
 
-def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), weighting='multiply', bootstraps=None,
+def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), weighting='expand', bootstraps=None,
                     method='SLSQP', rejection_criterion='LRtest', alpha=.05,
                     verbose_bootstrap=False, verbose_single=False, verbose=True,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
                     suppress_warnings=True, omit_missings=True,
-          plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
+          plot_cosmetics={'bins': 250, 'col_data': 'blue', 'col_fit': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
           slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
@@ -2003,18 +2024,6 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
         warnings.filterwarnings("default", message="divide by zero encountered")
         warnings.filterwarnings("default", message="invalid value encountered")
 
-    #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
-    if suppress_warnings:
-        warnings.filterwarnings("ignore", message="divide by zero encountered in double_scalars")
-        warnings.filterwarnings("ignore", message="divide by zero encountered in divide")
-        warnings.filterwarnings("ignore", message="divide by zero encountered")
-        warnings.filterwarnings("ignore", message="invalid value encountered")
-    else:
-        warnings.filterwarnings("default", message="divide by zero encountered in double_scalars")
-        warnings.filterwarnings("default", message="divide by zero encountered in divide")
-        warnings.filterwarnings("default", message="divide by zero encountered")
-        warnings.filterwarnings("default", message="invalid value encountered")
-
     # convert to numpy.array for easier data handling
     x = np.array(x)
     x0 = np.array(x0)
@@ -2022,27 +2031,30 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
     # help flag
     weights_applied = False
 
+    # check whether weights are applied
+    if len(weights)>1:
+        weights = np.array(weights)
+        weights_applied = True
+    else:
+        weights = np.ones(len(x))
+
+    # round weights
+    if weighting == 'expand' and weights_applied is True:
+        weights = np.around(weights, 0).astype(float)
+
     # handle nans (Note: length of x, w must be same)
     if omit_missings:
         if np.isnan(x).any():
             if verbose: print('data contains NaNs and will be omitted')
             x_nan_index = np.where(~np.isnan(x))[0]
-            # x = x[~np.isnan(x)]
             x = np.array(x)[x_nan_index]
             weights = np.array(weights)[x_nan_index]
 
         if np.isnan(weights).any():
             if verbose: print('weights contain NaNs and will be omitted')
             w_nan_index = np.where(~np.isnan(weights))[0]
-            # weights = weights[~np.isnan(weights)]
             x = np.array(x)[w_nan_index]
             weights = np.array(weights)[w_nan_index]
-
-    # check whether user specified both x and W with same shape, if True, calculate population (=N) above b
-    if len(weights)>1:
-        N = int(np.sum(weights))
-        weights = np.array(weights)
-        weights_applied = True
 
         # check whether there are weights=0, if True, drop w, x
         if np.any(weights == 0):

@@ -208,7 +208,7 @@ def GB1_icdf_ne(x, a, b, p, q):
         x = x[x>b]
     elif a>0:
         x = x[x<=b]
-    k = len(x) # TODO: check, right position or 4 lines above?
+    k = len(x)
     u = np.array(np.random.uniform(.0, 1., k)) # (1xn)
     u = np.sort(u)
     widgets = ['GB1_icdf_ne\t', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
