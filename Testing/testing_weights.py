@@ -2,8 +2,8 @@
 # weights=np.array([1])
 
 b=1000000
-# x0=(-.1,1,1)
-x0=(-.1,.1,1,1)
+x0=(-.1,1,1)
+# x0=(-.1,.1,1,1)
 bootstraps=20
 method='SLSQP'
 omit_missings=True
@@ -25,11 +25,11 @@ col_fit='blue'
 col_model='red'
 weighting = 'expand'
 
-x=dfPSID['wealth_17']
-weights=dfPSID['weight_17']
+x=dfPSID['wealth_15']
+weights=dfPSID['weight_15']
 
-x=dfSOEP['wealth_17']
-weights=dfSOEP['weight_17']
+x=dfSOEP['wealth_12']
+weights=dfSOEP['weight_12']
 weighting = 'multiply'
 
 
@@ -89,11 +89,12 @@ GBfit(x=dfSOEP['wealth_17'], b=1000000, x0=(-.1,.1,1,1), bootstraps=100, plot=Tr
 
 ###########################################
 
-Paretobranchfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=2000000, x0=(-.1,.1,1,1),
-                bootstraps=10, return_bestmodel=True, plot=True,
+Paretobranchfit(x=dfSOEP['wealth_17'], b=500000, x0=(-.1,.1,1,1),
+                bootstraps=100, return_bestmodel=True, plot=True,
                 rejection_criterion='LRtest',
-                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                plot_cosmetics={'bins': 200, 'col_data': 'blue', 'col_fit': 'red'})
 
-fit = Paretobranchfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=2000000, x0=(-.1,.1,1,1), bootstraps=10, return_bestmodel=True, plot=True,
-                rejection_criterion='LRtest', plot_cosmetics={'bins': 250, 'col_data': 'blue', 'col_fit': 'red'})
+fit = Paretobranchfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], weighting='multiply', b=2000000,
+                      x0=(-.1,.1,1,1), bootstraps=100, return_bestmodel=True, plot=True, verbose_parms=True,
+                      rejection_criterion='LRtest', plot_cosmetics={'bins': 250, 'col_data': 'blue', 'col_fit': 'red'})
 

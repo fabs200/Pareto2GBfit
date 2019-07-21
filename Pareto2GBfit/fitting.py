@@ -1160,7 +1160,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
         return (np.min(x)/b)**a
 
     constr = {'type': 'ineq', 'fun': GB1_constraint}
-    a_bnd, bnds = (-np.inf, -1e-10), (10**-14, np.inf)
+    a_bnd, bnds = (-5, -1e-10), (10**-14, np.inf)
     bootstrapping, a_fit_bs, p_fit_bs, q_fit_bs = 1, [], [], []
 
     if method == 'SLSQP':
@@ -1627,7 +1627,7 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
     # constr = ({'type': 'ineq', 'fun': GB_constraint1},
     #           {'type': 'ineq', 'fun': GB_constraint2})
 
-    a_bnd, c_bnd, bnds = (-10, -1e-10), (0, 1), (10**-14, np.inf)
+    a_bnd, c_bnd, bnds = (-5, -1e-10), (0, 1), (10**-14, np.inf)
     bootstrapping, a_fit_bs, c_fit_bs, p_fit_bs, q_fit_bs = 1, [], [], [], []
 
     if method == 'SLSQP':
@@ -1976,7 +1976,7 @@ Pareto branch fitting
 
 def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), weighting='expand', bootstraps=None,
                     method='SLSQP', rejection_criterion='LRtest', alpha=.05,
-                    verbose_bootstrap=False, verbose_single=False, verbose=True,
+                    verbose_bootstrap=False, verbose_single=False, verbose=True, verbose_parms=False,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
                     suppress_warnings=True, omit_missings=True,
           plot_cosmetics={'bins': 250, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -2130,20 +2130,28 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
                            verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                            plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
 
+    if verbose_parms: print(Pareto_fit)
+
     IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=weights, weighting=weighting, bootstraps=IB1_bs, method=method,
                      return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                      verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                      plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
+
+    if verbose_parms: print(IB1_fit)
 
     GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=weights, weighting=weighting, bootstraps=GB1_bs, method=method,
                      return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                      verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                      plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
 
+    if verbose_parms: print(GB1_fit)
+
     GB_fit = GBfit(x=x, b=b, x0=GB_x0, weights=weights, weighting=weighting, bootstraps=GB_bs, method=method,
                    return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                    verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                    plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
+
+    if verbose_parms: print(GB_fit)
 
     # unpack parameters
     p_fit1, p_se1 = Pareto_fit[:2]
