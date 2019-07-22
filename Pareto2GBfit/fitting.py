@@ -88,7 +88,7 @@ class gof:
         self.mape = (100/n) * np.sum(np.abs(e/x))
         self.rrmse = np.sqrt(1/n * np.sum((e/x)**2))
 
-        W = np.multiply(weights, 1/np.sum(weights))
+        W = np.multiply(W, 1/np.sum(W))
 
         if len(parms) == 1:
             self.ll = ll = Pareto_ll(parms=parms, x=x, W=W, b=b)
