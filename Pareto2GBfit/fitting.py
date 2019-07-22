@@ -1299,20 +1299,19 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omi
         fit = True
     if fit:
         model, u = GB1_icdf_ne(x=x, b=b, a=np.mean(a_fit_bs), p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
-
-        soe = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
-        emp_mean = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_mean
-        emp_var = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_var
-        pred_mean = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_mean
-        pred_var = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_var
-        mae = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mae
-        mse = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mse
-        rmse = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rmse
-        rrmse = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rrmse
-        aic = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).aic
-        bic = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).bic
-        n = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
-        ll = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
+        soe = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
+        emp_mean = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_mean
+        emp_var = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_var
+        pred_mean = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_mean
+        pred_var = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_var
+        mae = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mae
+        mse = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mse
+        rmse = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rmse
+        rrmse = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rrmse
+        aic = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).aic
+        bic = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).bic
+        n = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
+        ll = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
             tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n', 'N']
             tbl_gof.add_row(['GOF', '{:.3f}'.format(aic), '{:.3f}'.format(bic), '{:.3f}'.format(mae), '{:.3f}'.format(mse),
@@ -1707,19 +1706,19 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit
         fit = True
     if fit:
         model, u = GB_icdf_ne(x=x, b=b, a=np.mean(a_fit_bs), c=np.mean(c_fit_bs), p=np.mean(p_fit_bs), q=np.mean(q_fit_bs))
-        soe = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
-        emp_mean = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_mean
-        emp_var = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_var
-        pred_mean = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_mean
-        pred_var = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_var
-        mae = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mae
-        mse = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mse
-        rmse = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rmse
-        rrmse = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rrmse
-        aic = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).aic
-        bic = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).bic
-        n = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
-        ll = gof(x=x, x_hat=model, b=b, W=W, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
+        soe = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).soe
+        emp_mean = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_mean
+        emp_var = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).emp_var
+        pred_mean = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_mean
+        pred_var = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).pred_var
+        mae = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mae
+        mse = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).mse
+        rmse = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rmse
+        rrmse = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).rrmse
+        aic = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).aic
+        bic = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).bic
+        n = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).n
+        ll = gof(x=x, x_hat=model, b=b, W=weights, parms=[np.mean(a_fit_bs), np.mean(c_fit_bs), np.mean(p_fit_bs), np.mean(q_fit_bs)]).ll
         if verbose:
             tbl_gof.field_names = ['', 'AIC', 'BIC', 'MAE', 'MSE', 'RMSE', 'RRMSE', 'LL', 'sum of errors', 'emp. mean', 'emp. var.', 'pred. mean', 'pred. var.', 'n', 'N']
             tbl_gof.add_row(['GOF', '{:.3f}'.format(aic), '{:.3f}'.format(bic), '{:.3f}'.format(mae), '{:.3f}'.format(mse),
