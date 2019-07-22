@@ -329,9 +329,9 @@ Plot fit vs data
 -----------------------------
 """
 
-b = 1500000
+b = 500000
 x0 = (-1, .5, 1, 1)
-bootstraps = (100, 100, 100, 100)
+bootstraps = (400, 400, 400, 400)
 
 ## PSID 2017
 
@@ -341,9 +341,9 @@ print(plt.rcParams.get('figure.figsize'))
 plt.rcParams['figure.figsize'] = 10, 8
 
 # LRtest
-Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], weighting='multiply', b=b, x0=x0,
+Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=False, plot=True,
-                rejection_criterion='AIC',
+                rejection_criterion='LRtest',
                 plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 # AIC
 Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,

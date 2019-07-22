@@ -385,6 +385,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', 
 
             bar.update(bootstrapping)
             bootstrapping += 1
+
         bar.finish()
 
     if method == 'basinhopping':
@@ -470,6 +471,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', 
 
             bar.update(bootstrapping)
             bootstrapping += 1
+
         bar.finish()
 
     # set back x, weights
@@ -485,7 +487,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', 
         # calculation of zscores, p-values related to Stata's regression outputs
         p_zscore = np.mean(p_fit_bs)/np.std(p_fit_bs)
         p_pval = 2*norm.cdf(-np.abs((np.mean(p_fit_bs)/np.std(p_fit_bs))))
-        p_cilo = np.percentile(p_fit_bs, 2.5) #CS
+        p_cilo = np.percentile(p_fit_bs, 2.5)
         p_cihi = np.percentile(p_fit_bs, 97.5)
         tbl.field_names = ['parameter', 'value', 'se', 'z', 'P>|z|', 'CI(2.5)', 'CI(97.5)', 'n', 'N']
         tbl.add_row(['p', '{:.3f}'.format(np.mean(p_fit_bs)), '{:.3f}'.format(np.std(p_fit_bs)),
@@ -749,6 +751,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omi
 
             bar.update(bootstrapping)
             bootstrapping += 1
+
         bar.finish()
 
     if method == 'basinhopping':
@@ -835,6 +838,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omi
 
             bar.update(bootstrapping)
             bootstrapping += 1
+
         bar.finish()
 
     # set back x, weights
@@ -1041,11 +1045,12 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omi
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
 
-    def GB1_constraint(parms):
-        a = parms[0]
-        return (np.min(x)/b)**a
-
-    constr = {'type': 'ineq', 'fun': GB1_constraint}
+    # Note: constraints not binding, SLSQP finds Minimum without
+    # def GB1_constraint(parms):
+    #     a = parms[0]
+    #     return (np.min(x)/b)**a
+    #
+    # constr = {'type': 'ineq', 'fun': GB1_constraint}
     a_bnd, bnds = (-5, -1e-10), (10**-14, np.inf)
     bootstrapping, a_fit_bs, p_fit_bs, q_fit_bs = 1, [], [], []
 
@@ -1522,7 +1527,6 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit
             q_fit_bs.append(q_fit)
 
             bar.update(bootstrapping)
-
             bootstrapping += 1
 
         bar.finish()
@@ -1612,7 +1616,6 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit
             q_fit_bs.append(q_fit)
 
             bar.update(bootstrapping)
-
             bootstrapping += 1
 
         bar.finish()
@@ -1639,9 +1642,9 @@ def GBfit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit
         c_pval = 2*norm.cdf(-np.abs((np.mean(c_fit_bs)/np.std(c_fit_bs))))
         p_pval = 2*norm.cdf(-np.abs((np.mean(p_fit_bs)/np.std(p_fit_bs))))
         q_pval = 2*norm.cdf(-np.abs((np.mean(q_fit_bs)/np.std(q_fit_bs))))
-        a_cilo = np.percentile(a_fit_bs, 2.5) #CS
+        a_cilo = np.percentile(a_fit_bs, 2.5)
         a_cihi = np.percentile(a_fit_bs, 97.5)
-        c_cilo = np.percentile(c_fit_bs, 2.5) #CS
+        c_cilo = np.percentile(c_fit_bs, 2.5)
         c_cihi = np.percentile(c_fit_bs, 97.5)
         p_cilo = np.percentile(p_fit_bs, 2.5)
         p_cihi = np.percentile(p_fit_bs, 97.5)
@@ -2187,18 +2190,18 @@ def IB1_extract_se(x, fitted_parms, method, dx, display, display_hessian):
         print("Hessian Matrix:", hess)
     return b_se, p_se, q_se
 
-⣿⠄⡇⢸⣟⠄⠁⢸⡽⠖⠛⠈⡉⣉⠉⠋⣁⢘⠉⢉⠛⡿⢿⣿⣿⣿⣿⣿⣿⣿
-⣷⣶⣷⣤⠄⣠⠖⠁⠄⠂⠁⠄⠄⠉⠄⠄⠎⠄⠠⠎⢐⠄⢑⣛⠻⣿⣿⣿⣿⣿
-⣿⣿⣿⠓⠨⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠈⠐⠅⠄⠉⠄⠗⠆⣸⣿⣿⣿⣿⣿
-⣿⣿⣿⡣⠁⠄⠄⠄⠄⠄⠄⠄⠄⠄⢰⣤⣦⠄⠄⠄⠄⠄⠄⠄⡀⡙⣿⣿⣿⣿
-⣿⣿⡛⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠔⠿⡿⠿⠒⠄⠠⢤⡀⡀⠄⠁⠄⢻⣿⣿⣿
-⣿⣿⠄⠄⠄⠄⠄⠄⣠⡖⠄⠁⠁⠄⠄⠄⠄⠄⠄⠄⣽⠟⡖⠄⠄⠄⣼⣿⣿⣿
-⣿⣿⠄⠄⠄⠄⠄⠄⢠⣠⣀⠄⠄⠄⠄⢀⣾⣧⠄⠂⠸⣈⡏⠄⠄⠄⣿⣿⣿⣿
-⣿⣿⡞⠄⠄⠄⠄⠄⢸⣿⣶⣶⣶⣶⣶⡿⢻⡿⣻⣶⣿⣿⡇⠄⠄⠄⣿⣿⣿⣿
-⣿⣿⡷⡂⠄⠄⠁⠄⠸⣿⣿⣿⣿⣿⠟⠛⠉⠉⠙⠛⢿⣿⡇⠄⠄⢀⣿⣿⣿⣿
-⣶⣶⠃⠄⠄⠄⠄⠄⠄⣾⣿⣿⡿⠁⣀⣀⣤⣤⣤⣄⢈⣿⡇⠄⠄⢸⣿⣿⣿⣿
-⣿⣯⠄⠄⠄⠄⠄⠄⠄⢻⣿⣿⣷⣶⣿⣿⣥⣬⣿⣿⣟⣿⠃⠄⠨⠺⢿⣿⣿⣿
-⠱⠂⠄⠄⠄⠄⠄⠄⠄⣬⣸⡝⠿⢿⣿⡿⣿⠻⠟⠻⢫⡁⠄⠄⠄⡐⣾⣿⣿⣿
-⡜⠄⠄⠄⠄⠄⠆⡐⡇⢿⣽⣻⣷⣦⣧⡀⡀⠄⠄⣴⣺⡇⠄⠁⠄⢣⣿⣿⣿⣿
-⠡⠱⠄⠄⠡⠄⢠⣷⠆⢸⣿⣿⣿⣿⣿⣿⣷⣿⣾⣿⣿⡇⠄⠄⠠⠁⠿⣿⣿⣿
-⢀⣲⣧⣷⣿⢂⣄⡉⠄⠘⠿⣿⣿⣿⡟⣻⣯⠿⠟⠋⠉⢰⢦⠄⠊⢾⣷⣮⣽⣛
+# ⣿⠄⡇⢸⣟⠄⠁⢸⡽⠖⠛⠈⡉⣉⠉⠋⣁⢘⠉⢉⠛⡿⢿⣿⣿⣿⣿⣿⣿⣿
+# ⣷⣶⣷⣤⠄⣠⠖⠁⠄⠂⠁⠄⠄⠉⠄⠄⠎⠄⠠⠎⢐⠄⢑⣛⠻⣿⣿⣿⣿⣿
+# ⣿⣿⣿⠓⠨⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠈⠐⠅⠄⠉⠄⠗⠆⣸⣿⣿⣿⣿⣿
+# ⣿⣿⣿⡣⠁⠄⠄⠄⠄⠄⠄⠄⠄⠄⢰⣤⣦⠄⠄⠄⠄⠄⠄⠄⡀⡙⣿⣿⣿⣿
+# ⣿⣿⡛⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠔⠿⡿⠿⠒⠄⠠⢤⡀⡀⠄⠁⠄⢻⣿⣿⣿
+# ⣿⣿⠄⠄⠄⠄⠄⠄⣠⡖⠄⠁⠁⠄⠄⠄⠄⠄⠄⠄⣽⠟⡖⠄⠄⠄⣼⣿⣿⣿
+# ⣿⣿⠄⠄⠄⠄⠄⠄⢠⣠⣀⠄⠄⠄⠄⢀⣾⣧⠄⠂⠸⣈⡏⠄⠄⠄⣿⣿⣿⣿
+# ⣿⣿⡞⠄⠄⠄⠄⠄⢸⣿⣶⣶⣶⣶⣶⡿⢻⡿⣻⣶⣿⣿⡇⠄⠄⠄⣿⣿⣿⣿
+# ⣿⣿⡷⡂⠄⠄⠁⠄⠸⣿⣿⣿⣿⣿⠟⠛⠉⠉⠙⠛⢿⣿⡇⠄⠄⢀⣿⣿⣿⣿
+# ⣶⣶⠃⠄⠄⠄⠄⠄⠄⣾⣿⣿⡿⠁⣀⣀⣤⣤⣤⣄⢈⣿⡇⠄⠄⢸⣿⣿⣿⣿
+# ⣿⣯⠄⠄⠄⠄⠄⠄⠄⢻⣿⣿⣷⣶⣿⣿⣥⣬⣿⣿⣟⣿⠃⠄⠨⠺⢿⣿⣿⣿
+# ⠱⠂⠄⠄⠄⠄⠄⠄⠄⣬⣸⡝⠿⢿⣿⡿⣿⠻⠟⠻⢫⡁⠄⠄⠄⡐⣾⣿⣿⣿
+# ⡜⠄⠄⠄⠄⠄⠆⡐⡇⢿⣽⣻⣷⣦⣧⡀⡀⠄⠄⣴⣺⡇⠄⠁⠄⢣⣿⣿⣿⣿
+# ⠡⠱⠄⠄⠡⠄⢠⣷⠆⢸⣿⣿⣿⣿⣿⣿⣷⣿⣾⣿⣿⡇⠄⠄⠠⠁⠿⣿⣿⣿
+# ⢀⣲⣧⣷⣿⢂⣄⡉⠄⠘⠿⣿⣿⣿⡟⣻⣯⠿⠟⠋⠉⢰⢦⠄⠊⢾⣷⣮⣽⣛
