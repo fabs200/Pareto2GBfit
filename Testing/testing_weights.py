@@ -24,7 +24,6 @@ slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxite
 num_bins=200
 col_fit='blue'
 col_model='red'
-weighting = 'expand'
 
 x=dfPSID['wealth_15']
 weights=dfPSID['weight_15']
@@ -79,7 +78,6 @@ GB1fit(x=dfSOEP['wealth_17'], b=1000000, x0=(-.1,1,1), bootstraps=10, plot=True)
 
 ###########################################
 
-# GBfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=500000, x0=(-.1,.1,1,1), bootstraps=100, plot=True, weighting='expand')
 GBfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=500000, x0=(-.1,.1,1,1), bootstraps=100, plot=True, weighting='multiply')
 
 GBfit(x=dfSOEP['wealth_17'], weights=weights, b=500000, x0=(-.1,.1,1,1), bootstraps=100, plot=True, weighting='multiply')  # BAD

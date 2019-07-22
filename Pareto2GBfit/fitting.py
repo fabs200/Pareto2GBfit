@@ -74,16 +74,9 @@ class gof:
         :param parms: np.array []
         :param b: location parameter, fixed
         """
-        # if no weights or weighting=='expanded' (np.ones-array)
-        if len(W) == np.sum(W):
-            self.n = n = len(x)
-            self.emp_mean = np.mean(x, dtype=np.float64)
-            self.emp_var = np.var(x, dtype=np.float64)
-        # if weighting=='multiply'
-        else:
-            self.n = n = np.sum(W)
-            self.emp_mean = np.average(a=x, weights=W)
-            self.emp_var = np.sqrt(np.cov(x, aweights=W))**2
+        self.n = n = np.sum(W)
+        self.emp_mean = np.average(a=x, weights=W)
+        self.emp_var = np.sqrt(np.cov(x, aweights=W))**2
         self.pred_mean = np.mean(x_hat, dtype=np.float64)
         self.pred_var = np.var(x_hat, dtype=np.float64)
         self.e = e = np.array(x) - np.array(x_hat)
@@ -123,7 +116,7 @@ def Pareto_ll(parms, x, W, b):
     """
     :param parms: np.array [p], optimized
     :param x: linspace, fixed
-    :param W: weights, either np.ones() if no weights have been applied OR weighting='expand', or iweights Σw=1, fixed
+    :param W: weights, either np.ones() if no weights have been applied OR iweights Σw=1, fixed
     :param b: location parameter, fixed
     :return: neg. logliklihood of Pareto
     """
@@ -138,7 +131,7 @@ def IB1_ll(parms, x, W, b):
     """
     :param parms: np.array [p, q] optimized
     :param x: linspace or data, fixed
-    :param W: weights, either np.ones() if no weights have been applied OR weighting='expand', or iweights Σw=1, fixed
+    :param W: weights, either np.ones() if no weights have been applied OR iweights Σw=1, fixed
     :param b: location parameter, fixed
     :return: neg. log-likelihood of IB1
     """
@@ -160,7 +153,7 @@ def GB1_ll(parms, x, W, b):
     """
     :param parms: np.array [a, p, q] optimized
     :param x: linspace or data, fixed
-    :param W: weights, either np.ones() if no weights have been applied OR weighting='expand', or iweights Σw=1, fixed
+    :param W: weights, either np.ones() if no weights have been applied OR iweights Σw=1, fixed
     :param b: location parameter, fixed
     :return: neg. log-likelihood of GB1
     """
@@ -181,7 +174,7 @@ def GB_ll(parms, x, W, b):
     """
     :param parms=np.array [a, c, p, q] optimized
     :param x: linspace or data, fixed
-    :param W: weights, either np.ones() if no weights have been applied OR weighting='expand', or iweights Σw=1, fixed
+    :param W: weights, either np.ones() if no weights have been applied OR iweights Σw=1, fixed
     :param b: location parameter, fixed
     :return: neg. log-likelihood of GB1
     """
@@ -206,7 +199,7 @@ def GB_ll(parms, x, W, b):
 Fitting Functions
 ---------------------------------------------------
 """
-def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, method='SLSQP', omit_missings=True,
+def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
               verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
               return_parameters=False, return_gofs=False, #save_plot=False,
               plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -220,7 +213,6 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [p] or simply (p)
     :param weights: weight, default: numpy.ones array of same shape as x
-    :param weighting: how to apply weights, default: 'expand' x expandes w times, else: 'multiply' x*w
     :param bootstraps: amount of bootstraps, default is size k (x>b)
     :param method: # default: SLSQP (local optimization, much faster), 'basinhopping' (global optimization technique)
     :param verbose_bootstrap: display each bootstrap
@@ -261,10 +253,6 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
     else:
         weights = np.ones(len(x))
 
-    # round weights
-    if weighting == 'expand' and weights_applied is True:
-        weights = np.around(weights, 0).astype(float)
-
     # handle nans (Note: length of x, w must be same)
     if omit_missings:
         if np.isnan(x).any():
@@ -289,7 +277,6 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
-    # expand, multiply: will be cut analogously as x
     # non-weights: filled with ones
     k = len(x[x>b])
     if weights_applied is True:
@@ -366,24 +353,9 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
                 except:
                     boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
-                # fourth, expand boot_sample by weight
-                if weighting == 'expand':
-                    try:
-                        x_inflated = []
-                        for idx, i in enumerate(boot_sample):
-                            x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                            x_inflated.extend(x_extendby)
-                        boot_sample = x_inflated
-                        # As we inflated x now, weights are not needed anymore -> set to 1
-                        boot_sample_weights = np.ones(len(x_inflated))
-                    except MemoryError:
-                        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                    except:
-                        print("error - something went wrong while inflating x by its weights!")
-                # normalize in each bootstrap
-                if weighting == 'multiply':
-                    # normalize weights: Σw=1
-                    boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+                # normalize weights: Σw=1
+                boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+
             # if no weights applied, fill weights with ones
             else:
                 boot_sample_weights = np.ones(len(boot_sample))
@@ -404,16 +376,11 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
                                            'iprint': opts['iprint'], 'disp': opts['disp'], 'eps': opts['eps']})
             
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
+            # save results
             p_fit = result.x.item(0)
 
-            # re-normalize if weights 'multiply'
-            # if weighting == 'multiply':
-            #     if p_fit==1.0:
-            #         p_fit_bs.append(p_fit_bs[-1])
-            #     else:
-            #         p_fit = p_fit/1000000
-            #     p_fit_bs.append(p_fit)
-            # else:
+            # save bootstrapped parameters
             p_fit_bs.append(p_fit)
 
             bar.update(bootstrapping)
@@ -466,24 +433,9 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
                 except:
                     boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
-                # fourth, expand boot_sample by weight
-                if weighting == 'expand':
-                    try:
-                        x_inflated = []
-                        for idx, i in enumerate(boot_sample):
-                            x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                            x_inflated.extend(x_extendby)
-                        boot_sample = x_inflated
-                        # As we inflated x now, weights are not needed anymore -> set to 1
-                        boot_sample_weights = np.ones(len(x_inflated))
-                    except MemoryError:
-                        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                    except:
-                        print("error - something went wrong while inflating x by its weights!")
-                # normalize in each bootstrap
-                if weighting == 'multiply':
-                    # normalize weights: Σw=1
-                    boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+                # normalize weights: Σw=1
+                boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+
             # if no weights applied, fill weights with ones
             else:
                 boot_sample_weights = np.ones(len(boot_sample))
@@ -509,16 +461,11 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
                                       seed=opts['seed'])
 
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
+
+            # save results
             p_fit = result.x.item(0)
 
-            # re-normalize if weights 'multiply'
-            # if weighting == 'multiply':
-            #     if p_fit==1.0:
-            #         p_fit_bs.append(p_fit_bs[-1])
-            #     else:
-            #         p_fit = p_fit/1000000
-            #     p_fit_bs.append(p_fit)
-            # else:
+            # save bootstrapped parameters
             p_fit_bs.append(p_fit)
 
             bar.update(bootstrapping)
@@ -615,7 +562,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
         return np.mean(p_fit_bs), np.std(p_fit_bs)
 
 
-def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, method='SLSQP', omit_missings=True,
+def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
            plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -629,7 +576,6 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [p,q] or simply (p,q)
     :param weights: weight, default: numpy.ones array of same shape as x
-    :param weighting: how to apply weights, default: 'expand' x expandes w times, else: 'multiply' x*w
     :param bootstraps: amount of bootstraps, default is size k (x>b)
     :param method: # default: SLSQP (local optimization, much faster), 'basinhopping' (global optimization technique)
     :param verbose_bootstrap: display each bootstrap
@@ -670,10 +616,6 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
     else:
         weights = np.ones(len(x))
 
-    # round weights
-    if weighting == 'expand' and weights_applied is True:
-        weights = np.around(weights, 0).astype(float)
-
     # handle nans (Note: length of x, w must be same)
     if omit_missings:
         if np.isnan(x).any():
@@ -698,7 +640,6 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
-    # expand, multiply: will be cut analogously as x
     # non-weights: filled with ones
     k = len(x[x>b])
     if weights_applied is True:
@@ -725,7 +666,6 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
     tbl, tbl_gof = PrettyTable(), PrettyTable()
 
     def IB1_constraint(parms):
-        # TODO: return (np.min(x*W)/b)
         return (np.min(x)/b)
 
     constr = {'type': 'ineq', 'fun': IB1_constraint}
@@ -776,24 +716,9 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
                 except:
                     boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
-                # fourth, expand boot_sample by weight
-                if weighting == 'expand':
-                    try:
-                        x_inflated = []
-                        for idx, i in enumerate(boot_sample):
-                            x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                            x_inflated.extend(x_extendby)
-                        boot_sample = x_inflated
-                        # As we inflated x now, weights are not needed anymore -> set to 1
-                        boot_sample_weights = np.ones(len(x_inflated))
-                    except MemoryError:
-                        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                    except:
-                        print("error - something went wrong while inflating x by its weights!")
-                # normalize in each bootstrap
-                if weighting == 'multiply':
-                    # normalize weights: Σw=1
-                    boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+                # normalize weights: Σw=1
+                boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+
             # if no weights applied, fill weights with ones
             else:
                 boot_sample_weights = np.ones(len(boot_sample))
@@ -815,17 +740,10 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
 
+            # save results
             p_fit, q_fit = result.x.item(0), result.x.item(1)
 
-            # re-normalize if weights 'multiply'
-            # if weighting == 'multiply':
-            #     p_fit = p_fit/100000000
-            #     # p_fit = p_fit
-            #     p_fit_bs.append(p_fit)
-            #     q_fit = q_fit/100000000
-            #     # q_fit = q_fit
-            #     q_fit_bs.append(q_fit)
-            # else:
+            # save bootstrapped parameters
             p_fit_bs.append(p_fit)
             q_fit_bs.append(q_fit)
 
@@ -879,24 +797,9 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
                 except:
                     boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
-                # fourth, expand boot_sample by weight
-                if weighting == 'expand':
-                    try:
-                        x_inflated = []
-                        for idx, i in enumerate(boot_sample):
-                            x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                            x_inflated.extend(x_extendby)
-                        boot_sample = x_inflated
-                        # As we inflated x now, weights are not needed anymore -> set to 1
-                        boot_sample_weights = np.ones(len(x_inflated))
-                    except MemoryError:
-                        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                    except:
-                        print("error - something went wrong while inflating x by its weights!")
-                # normalize in each bootstrap
-                if weighting == 'multiply':
-                    # normalize weights: Σw=1
-                    boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+                # normalize weights: Σw=1
+                boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+
             # if no weights applied, fill weights with ones
             else:
                 boot_sample_weights = np.ones(len(boot_sample))
@@ -923,15 +826,10 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
 
+            # save results
             p_fit, q_fit = result.x.item(0), result.x.item(1)
 
-            # re-normalize if weights 'multiply'
-            # if weighting == 'multiply':
-            #     p_fit = p_fit/10000000
-            #     p_fit_bs.append(p_fit)
-            #     q_fit = q_fit/10000000
-            #     q_fit_bs.append(q_fit)
-            # else:
+            # save bootstrapped parameters
             p_fit_bs.append(p_fit)
             q_fit_bs.append(q_fit)
 
@@ -1038,7 +936,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, method='SLSQP', omit_missings=True,
+def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
            plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -1052,7 +950,6 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [a,p,q] or simply (a,p,q)
     :param weights: weight, default: numpy.ones array of same shape as x
-    :param weighting: how to apply weights, default: 'expand' x expandes w times, else: 'multiply' x*w
     :param bootstraps: amount of bootstraps, default is size k (x>b)
     :param method: # default: SLSQP (local optimization, much faster), 'basinhopping' (global optimization technique)
     :param verbose_bootstrap: display each bootstrap
@@ -1093,10 +990,6 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
     else:
         weights = np.ones(len(x))
 
-    # round weights
-    if weighting == 'expand' and weights_applied is True:
-        weights = np.around(weights, 0).astype(float)
-
     # handle nans (Note: length of x, w must be same)
     if omit_missings:
         if np.isnan(x).any():
@@ -1121,7 +1014,6 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
-    # expand, multiply: will be cut analogously as x
     # non-weights: filled with ones
     k = len(x[x>b])
     if weights_applied is True:
@@ -1139,10 +1031,6 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
     # create list with indexes of x (needed for bootstrapping)
     x_index = np.arange(0, k, 1)
-    # x_index_bottom = x_index[:int(np.percentile(x_index, 10))]
-    # x_index_top = x_index[int(np.percentile(x_index, 90)):]
-    # x_index = x_index[int(np.percentile(x_index, 10)):int(np.percentile(x_index, 90))]
-    # m = len(x_index)
 
     # bootstraps (default: size k)
     if bootstraps is None:
@@ -1155,8 +1043,6 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
     def GB1_constraint(parms):
         a = parms[0]
-        # TODO: return (np.min(x*W)/b)**a
-        # TODO: return (np.min(x)/b)**a
         return (np.min(x)/b)**a
 
     constr = {'type': 'ineq', 'fun': GB1_constraint}
@@ -1193,9 +1079,6 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
             # first, bootstrap indexes of sample x: x_index
             boot_sample_idx = np.random.choice(x_index, size=k, replace=True)
             boot_sample_idx = boot_sample_idx.astype(int)
-            # # put together
-            # boot_sample_idx = np.concatenate((x_index_bottom, boot_sample_idx, x_index_top), axis=None)
-            # boot_sample_idx = np.sort(boot_sample_idx)
 
             # second, select x of sample based on bootstrapped idx (sometimes first, faster call not working)
             try:
@@ -1210,24 +1093,9 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
                 except:
                     boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
-                # fourth, expand boot_sample by weight
-                if weighting == 'expand':
-                    try:
-                        x_inflated = []
-                        for idx, i in enumerate(boot_sample):
-                            x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                            x_inflated.extend(x_extendby)
-                        boot_sample = x_inflated
-                        # As we inflated x now, weights are not needed anymore -> set to 1
-                        boot_sample_weights = np.ones(len(x_inflated))
-                    except MemoryError:
-                        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                    except:
-                        print("error - something went wrong while inflating x by its weights!")
-                # normalize in each bootstrap
-                if weighting == 'multiply':
-                    # normalize weights: Σw=1
-                    boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+                # normalize weights: Σw=1
+                boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+
             # if no weights applied, fill weights with ones
             else:
                 boot_sample_weights = np.ones(len(boot_sample))
@@ -1249,35 +1117,13 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
 
+            # save results
             a_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2)
 
-            # re-normalize if weights 'multiply'
-            # if weighting == 'multiply':
-            #     a_fit = a_fit/10e+8
-            #     a_fit_bs.append(a_fit)
-            #     p_fit = p_fit/10e+8
-            #     p_fit_bs.append(p_fit)
-            #     q_fit = q_fit/10e+8
-            #     q_fit_bs.append(q_fit)
-            # else:
+            # save bootstrapped parameters
             a_fit_bs.append(a_fit)
             p_fit_bs.append(p_fit)
             q_fit_bs.append(q_fit)
-
-            ##########
-            # col_fit, col_model, num_bins = 'red', 'blue', 250
-            # fig, ax = plt.subplots()
-            # n, bins, patches = ax.hist(x, num_bins, density=1, label='GB1 fit', color=col_fit)
-            # # x2: model with fitted parameters
-            # x2 = GB1_pdf(np.linspace(np.min(x), np.max(x), np.size(x)), b=b, a=np.mean(a_fit), p=np.mean(p_fit), q=np.mean(q_fit))
-            # ax.plot(np.linspace(np.min(x), np.max(x), np.size(x)), x2, '--', label='model', color=col_model)
-            # ax.set_xlabel('x')
-            # ax.set_ylabel('Probability density')
-            # ax.set_title('fit vs. data')
-            # ax.legend(['GB1 fit', 'data'])
-            # plt.show()
-            # print("a: {}, p: {}, q: {}".format(a_fit, p_fit, q_fit))
-            ##########
 
             bar.update(bootstrapping)
             bootstrapping += 1
@@ -1330,24 +1176,9 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
                 except:
                     boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
-                # fourth, expand boot_sample by weight
-                if weighting == 'expand':
-                    try:
-                        x_inflated = []
-                        for idx, i in enumerate(boot_sample):
-                            x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                            x_inflated.extend(x_extendby)
-                        boot_sample = x_inflated
-                        # As we inflated x now, weights are not needed anymore -> set to 1
-                        boot_sample_weights = np.ones(len(x_inflated))
-                    except MemoryError:
-                        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                    except:
-                        print("error - something went wrong while inflating x by its weights!")
-                # normalize in each bootstrap
-                if weighting == 'multiply':
-                    # normalize weights: Σw=1
-                    boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+                # normalize weights: Σw=1
+                boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+
             # if no weights applied, fill weights with ones
             else:
                 boot_sample_weights = np.ones(len(boot_sample))
@@ -1374,23 +1205,15 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
 
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
 
+            # save results
             a_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2)
 
-            # re-normalize if weights 'multiply'
-            # if weighting == 'multiply':
-            #     a_fit = a_fit/10e+8
-            #     a_fit_bs.append(a_fit)
-            #     p_fit = p_fit/10e+8
-            #     p_fit_bs.append(p_fit)
-            #     q_fit = q_fit/10e+8
-            #     q_fit_bs.append(q_fit)
-            # else:
+            # save bootstrapped parameters
             a_fit_bs.append(a_fit)
             p_fit_bs.append(p_fit)
             q_fit_bs.append(q_fit)
 
             bar.update(bootstrapping)
-
             bootstrapping += 1
 
         bar.finish()
@@ -1501,7 +1324,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, method='SLSQP', omit_missings=True,
+def GBfit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
           return_parameters=False, return_gofs=False, #save_plot=False,
           plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -1515,7 +1338,6 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
     :param b: location parameter, fixed
     :param x0: initial guess, np.array [a,c,p,q] or simply (q,c,p,q)
     :param weights: weight, default: numpy.ones array of same shape as x
-    :param weighting: how to apply weights, default: 'expand' x expandes w times, else: 'multiply' x*w
     :param bootstraps: amount of bootstraps, default is size k (x>b)
     :param method: # default: SLSQP (local optimization, much faster), 'basinhopping' (global optimization technique)
     :param verbose_bootstrap: display each bootstrap
@@ -1556,10 +1378,6 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
     else:
         weights = np.ones(len(x))
 
-    # round weights
-    if weighting == 'expand' and weights_applied is True:
-        weights = np.around(weights, 0).astype(float)
-
     # handle nans (Note: length of x, w must be same)
     if omit_missings:
         if np.isnan(x).any():
@@ -1584,7 +1402,6 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
-    # expand, multiply: will be cut analogously as x
     # non-weights: filled with ones
     k = len(x[x>b])
     if weights_applied is True:
@@ -1610,18 +1427,15 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
     bar = progressbar.ProgressBar(widgets=widgets, maxval=bootstraps).start()
     tbl, tbl_gof = PrettyTable(), PrettyTable()
 
+    # Note: constraints not binding, SLSQP finds Minimum without
     # def GB_constraint1(parms):
     #     a = parms[0]
     #     c = parms[1]
-    #     # TODO: return (b**a)/(1-c) - np.min(x*W)**a
-    #     # TODO: return (b**a)/(1-c) - np.min(x)**a
     #     return (b**a)/(1-c) - np.min(x)**a
     #
     # def GB_constraint2(parms):
     #     a = parms[0]
     #     c = parms[1]
-    #     # TODO: return (b**a)/(1-c) - np.max(x*W)**a
-    #     # TODO: return (b**a)/(1-c) - np.max(x)**a
     #     return (b**a)/(1-c) - np.max(x)**a
     #
     # constr = ({'type': 'ineq', 'fun': GB_constraint1},
@@ -1674,24 +1488,9 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
                 except:
                     boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
-                # fourth, expand boot_sample by weight
-                if weighting == 'expand':
-                    try:
-                        x_inflated = []
-                        for idx, i in enumerate(boot_sample):
-                            x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                            x_inflated.extend(x_extendby)
-                        boot_sample = x_inflated
-                        # As we inflated x now, weights are not needed anymore -> set to 1
-                        boot_sample_weights = np.ones(len(x_inflated))
-                    except MemoryError:
-                        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                    except:
-                        print("error - something went wrong while inflating x by its weights!")
-                # normalize in each bootstrap
-                if weighting == 'multiply':
-                    # normalize weights: Σw=1
-                    boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+                # normalize weights: Σw=1
+                boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+
             # if no weights applied, fill weights with ones
             else:
                 boot_sample_weights = np.ones(len(boot_sample))
@@ -1713,19 +1512,10 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
 
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
 
+            # save results
             a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
 
-            # re-normalize if weights 'multiply'
-            # if weighting == 'multiply' and weights_applied is True:
-            #     a_fit=a_fit/10e+8
-            #     a_fit_bs.append(a_fit)
-            #     c_fit=c_fit/10e+8
-            #     c_fit_bs.append(c_fit)
-            #     p_fit=p_fit/10e+8
-            #     p_fit_bs.append(p_fit)
-            #     q_fit=q_fit/10e+8
-            #     q_fit_bs.append(q_fit)
-            # else:
+            # save bootstrapped parameters
             a_fit_bs.append(a_fit)
             c_fit_bs.append(c_fit)
             p_fit_bs.append(p_fit)
@@ -1783,24 +1573,9 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
                 except:
                     boot_sample_weights = [weights[i] for i in boot_sample_idx]
 
-                # fourth, expand boot_sample by weight
-                if weighting == 'expand':
-                    try:
-                        x_inflated = []
-                        for idx, i in enumerate(boot_sample):
-                            x_extendby = np.repeat(boot_sample[idx], boot_sample_weights[idx])
-                            x_inflated.extend(x_extendby)
-                        boot_sample = x_inflated
-                        # As we inflated x now, weights are not needed anymore -> set to 1
-                        boot_sample_weights = np.ones(len(x_inflated))
-                    except MemoryError:
-                        print("error - MemoryError, not enough memory! Try a higher value of lower bound b to keep the top tail sample small")
-                    except:
-                        print("error - something went wrong while inflating x by its weights!")
-                # normalize in each bootstrap
-                if weighting == 'multiply':
-                    # normalize weights: Σw=1
-                    boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+                # normalize weights: Σw=1
+                boot_sample_weights = np.multiply(boot_sample_weights, 1/np.sum(boot_sample_weights))
+
             # if no weights applied, fill weights with ones
             else:
                 boot_sample_weights = np.ones(len(boot_sample))
@@ -1827,19 +1602,10 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
 
             if verbose_bootstrap: print("\nbootstrap: {}".format(bootstrapping))
 
+            # save results
             a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
 
-            # re-normalize if weights 'multiply'
-            # if weighting == 'multiply' and weights_applied is True:
-            #     a_fit=a_fit/10e+8
-            #     a_fit_bs.append(a_fit)
-            #     c_fit=c_fit/10e+8
-            #     c_fit_bs.append(c_fit)
-            #     p_fit=p_fit/10e+8
-            #     p_fit_bs.append(p_fit)
-            #     q_fit=q_fit/10e+8
-            #     q_fit_bs.append(q_fit)
-            # else:
+            # save bootstrapped parameters
             a_fit_bs.append(a_fit)
             c_fit_bs.append(c_fit)
             p_fit_bs.append(p_fit)
@@ -1974,7 +1740,7 @@ Pareto branch fitting
 ---------------------------------------------------
 """
 
-def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), weighting='expand', bootstraps=None,
+def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bootstraps=None,
                     method='SLSQP', rejection_criterion='LRtest', alpha=.05,
                     verbose_bootstrap=False, verbose_single=False, verbose=True, verbose_parms=False,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
@@ -1994,7 +1760,6 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
     :param b: as above
     :param x0: either pass an 1x5 array (GB init guess structure) OR pass [[p_guess], [p_guess, q_guess], [a_guess, p_guess, q_guess], [a_guess, c_guess, p_guess, q_guess]]
     :param weights: as above
-    :param weighting: as above
     :param bootstraps: either 1x1 OR 1x2 array (1st arg: Pareto+IB1, 2nd arg: GB1+GB) OR pass 1x4 array [Pareto_bs, IB1_bs, GB1_bs, GB_bs]
     :param method: as above
     :param verbose_bootstrap: as above
@@ -2038,10 +1803,6 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
     else:
         weights = np.ones(len(x))
 
-    # round weights
-    if weighting == 'expand' and weights_applied is True:
-        weights = np.around(weights, 0).astype(float)
-
     # handle nans (Note: length of x, w must be same)
     if omit_missings:
         if np.isnan(x).any():
@@ -2064,9 +1825,6 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
 
     if len(weights) != len(x):
         raise Exception("error - the length of W: {} does not match the length of x: {}".format(len(weights), len(x)))
-
-    # round weights
-    weights = np.around(weights, 0).astype(float)
 
     # cut x at lower bound b, top tails condition; Note: due to MemoryError, we need to keep the x, weights small from beginning
     x = x[x>b]
@@ -2125,28 +1883,28 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
                   'iprint': slsqp_options['iprint'], 'disp': slsqp_options['disp'], 'eps': slsqp_options['eps']}
 
     # fit distributions
-    Pareto_fit = Paretofit(x=x, b=b, x0=Pareto_x0, weights=weights, weighting=weighting, bootstraps=Pareto_bs, method=method,
+    Pareto_fit = Paretofit(x=x, b=b, x0=Pareto_x0, weights=weights, bootstraps=Pareto_bs, method=method,
                            return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                            verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                            plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
 
     if verbose_parms: print(Pareto_fit)
 
-    IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=weights, weighting=weighting, bootstraps=IB1_bs, method=method,
+    IB1_fit = IB1fit(x=x, b=b, x0=IB1_x0, weights=weights, bootstraps=IB1_bs, method=method,
                      return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                      verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                      plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
 
     if verbose_parms: print(IB1_fit)
 
-    GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=weights, weighting=weighting, bootstraps=GB1_bs, method=method,
+    GB1_fit = GB1fit(x=x, b=b, x0=GB1_x0, weights=weights, bootstraps=GB1_bs, method=method,
                      return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                      verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                      plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
 
     if verbose_parms: print(GB1_fit)
 
-    GB_fit = GBfit(x=x, b=b, x0=GB_x0, weights=weights, weighting=weighting, bootstraps=GB_bs, method=method,
+    GB_fit = GBfit(x=x, b=b, x0=GB_x0, weights=weights, bootstraps=GB_bs, method=method,
                    return_parameters=True, return_gofs=True, ci=True, verbose=verbose_single, omit_missings=omit_missings,
                    verbose_bootstrap=verbose_bootstrap, fit=fit, plot=plot, suppress_warnings=suppress_warnings,
                    plot_cosmetics=plt_cosm, basinhopping_options=bh_opts, slsqp_options=slsqp_opts)
@@ -2175,7 +1933,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
                            GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
                            df=1, verbose=False) #df: # of tested parms
 
-        # LR testing procedure
+        # LR testing procedure (paper chp. 2.3)
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
         GB_remaining = False
         if LRtestIB1_restrict.pval < alpha:
@@ -2212,7 +1970,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
         print("\n")
         print(tbl)
 
-    # run rejection based on AIC
+    # run rejection based on AIC (AIC method #1: paper chp. 2.4)
     if 'AIC' in rejection_criterion or 'AIC' in rejection_criterion:
 
         # unpack aic
@@ -2251,7 +2009,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), we
 
         print('\n{}'.format(tbl))
 
-        # # recalculate AICs
+        # # recalculate AICs (AIC alternative method #2: paper Appendix)
         # Pareto_aic = -2*Pareto(x=x, b=b, p=Pareto_fit[0]).LL+2*1
         # IB1_aic = -2*IB1(x=x, b=b, p=IB1_fit[0], q=IB1_fit[2]).LL+2*2
         # GB1_aic = -2*GB1(x=x, b=b, a=GB1_fit[0], p=GB1_fit[2], q=GB1_fit[4]).LL+2*3
@@ -2429,3 +2187,18 @@ def IB1_extract_se(x, fitted_parms, method, dx, display, display_hessian):
         print("Hessian Matrix:", hess)
     return b_se, p_se, q_se
 
+⣿⠄⡇⢸⣟⠄⠁⢸⡽⠖⠛⠈⡉⣉⠉⠋⣁⢘⠉⢉⠛⡿⢿⣿⣿⣿⣿⣿⣿⣿
+⣷⣶⣷⣤⠄⣠⠖⠁⠄⠂⠁⠄⠄⠉⠄⠄⠎⠄⠠⠎⢐⠄⢑⣛⠻⣿⣿⣿⣿⣿
+⣿⣿⣿⠓⠨⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠈⠐⠅⠄⠉⠄⠗⠆⣸⣿⣿⣿⣿⣿
+⣿⣿⣿⡣⠁⠄⠄⠄⠄⠄⠄⠄⠄⠄⢰⣤⣦⠄⠄⠄⠄⠄⠄⠄⡀⡙⣿⣿⣿⣿
+⣿⣿⡛⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠔⠿⡿⠿⠒⠄⠠⢤⡀⡀⠄⠁⠄⢻⣿⣿⣿
+⣿⣿⠄⠄⠄⠄⠄⠄⣠⡖⠄⠁⠁⠄⠄⠄⠄⠄⠄⠄⣽⠟⡖⠄⠄⠄⣼⣿⣿⣿
+⣿⣿⠄⠄⠄⠄⠄⠄⢠⣠⣀⠄⠄⠄⠄⢀⣾⣧⠄⠂⠸⣈⡏⠄⠄⠄⣿⣿⣿⣿
+⣿⣿⡞⠄⠄⠄⠄⠄⢸⣿⣶⣶⣶⣶⣶⡿⢻⡿⣻⣶⣿⣿⡇⠄⠄⠄⣿⣿⣿⣿
+⣿⣿⡷⡂⠄⠄⠁⠄⠸⣿⣿⣿⣿⣿⠟⠛⠉⠉⠙⠛⢿⣿⡇⠄⠄⢀⣿⣿⣿⣿
+⣶⣶⠃⠄⠄⠄⠄⠄⠄⣾⣿⣿⡿⠁⣀⣀⣤⣤⣤⣄⢈⣿⡇⠄⠄⢸⣿⣿⣿⣿
+⣿⣯⠄⠄⠄⠄⠄⠄⠄⢻⣿⣿⣷⣶⣿⣿⣥⣬⣿⣿⣟⣿⠃⠄⠨⠺⢿⣿⣿⣿
+⠱⠂⠄⠄⠄⠄⠄⠄⠄⣬⣸⡝⠿⢿⣿⡿⣿⠻⠟⠻⢫⡁⠄⠄⠄⡐⣾⣿⣿⣿
+⡜⠄⠄⠄⠄⠄⠆⡐⡇⢿⣽⣻⣷⣦⣧⡀⡀⠄⠄⣴⣺⡇⠄⠁⠄⢣⣿⣿⣿⣿
+⠡⠱⠄⠄⠡⠄⢠⣷⠆⢸⣿⣿⣿⣿⣿⣿⣷⣿⣾⣿⣿⡇⠄⠄⠠⠁⠿⣿⣿⣿
+⢀⣲⣧⣷⣿⢂⣄⡉⠄⠘⠿⣿⣿⣿⡟⣻⣯⠿⠟⠋⠉⢰⢦⠄⠊⢾⣷⣮⣽⣛
