@@ -1924,16 +1924,16 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         # alpha = .05
         # 1. LRtest IB1 restriction q=1
         LRtestIB1_restrict = LRtest(-IB1(x=x, b=b, p=p_fit2, q=1).LL,
-                           -IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
-                           df=1, verbose=False) #df: # of tested parms
+                                    -IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
+                                    df=1, verbose=False) #df: # of tested parms
         # 2. LRtest GB1 restriction a=-1
         LRtestGB1_restrict = LRtest(-GB1(x=x, b=b, a=-1, p=p_fit3, q=q_fit3).LL,
-                           -GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
-                           df=1, verbose=False) #df: # of tested parms
+                                    -GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
+                                    df=1, verbose=False) #df: # of tested parms
         # 3. LRtest GB restriction c=0
         LRtestGB_restrict = LRtest(-GB(x=x, b=b, a=a_fit4, c=0, p=p_fit4, q=q_fit4).LL,
-                           -GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
-                           df=1, verbose=False) #df: # of tested parms
+                                   -GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
+                                   df=1, verbose=False) #df: # of tested parms
 
         # LR testing procedure (paper chp. 2.3)
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
