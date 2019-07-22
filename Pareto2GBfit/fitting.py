@@ -30,7 +30,7 @@ def weighted_quantile(values, quantiles, sample_weight=None, values_sorted=False
     """ source: https://stackoverflow.com/questions/21844024/weighted-percentile-using-numpy
     NOTE: quantiles should be in [0, 1]
     :param values: numpy.array with data
-    :param quantiles: array-like with many quantiles needed
+    :param quantiles: array-like with many quantiles needed, between 0.0 and 1.0
     :param sample_weight: array-like of the same length as `array`
     :param values_sorted: bool, if True, then will avoid sorting of
         initial array
@@ -43,8 +43,6 @@ def weighted_quantile(values, quantiles, sample_weight=None, values_sorted=False
     if sample_weight is None:
         sample_weight = np.ones(len(values))
     sample_weight = np.array(sample_weight)
-    assert np.all(quantiles >= 0) and np.all(quantiles <= 1), \
-        'quantiles should be in [0, 1]'
 
     if not values_sorted:
         sorter = np.argsort(values)
@@ -90,22 +88,24 @@ class gof:
         self.mape = (100/n) * np.sum(np.abs(e/x))
         self.rrmse = np.sqrt(1/n * np.sum((e/x)**2))
 
+        W = np.multiply(weights, 1/np.sum(weights))
+
         if len(parms) == 1:
-            self.ll = ll = Pareto_ll(parms=parms, x=x, W=W, b=b)#*(-10000) #normalization
-            self.aic = -2*ll + 2
-            self.bic = -2*ll + np.log(n)
+            self.ll = ll = Pareto_ll(parms=parms, x=x, W=W, b=b)
+            self.aic = 2*ll + 2
+            self.bic = 2*ll + np.log(n)
         if len(parms) == 2:
-            self.ll = ll = IB1_ll(parms=parms, x=x, W=W, b=b)#*(-10000) #normalization
-            self.aic = -2*ll + 2*2
-            self.bic = -2*ll + np.log(n)*2
+            self.ll = ll = IB1_ll(parms=parms, x=x, W=W, b=b)
+            self.aic = 2*ll + 2*2
+            self.bic = 2*ll + np.log(n)*2
         if len(parms) == 3:
-            self.ll = ll = GB1_ll(parms=parms, x=x, W=W, b=b)#*(-100) #normalization
-            self.aic = -2*ll + 2*3
-            self.bic = -2*ll + np.log(n)*3
+            self.ll = ll = GB1_ll(parms=parms, x=x, W=W, b=b)
+            self.aic = 2*ll + 2*3
+            self.bic = 2*ll + np.log(n)*3
         if len(parms) == 4:
-            self.ll = ll = GB_ll(parms, x=x, W=W, b=b)#*(-100) #normalization
-            self.aic = -2*ll + 2*4
-            self.bic = -2*ll + np.log(n)*4
+            self.ll = ll = GB_ll(parms, x=x, W=W, b=b)
+            self.aic = 2*ll + 2*4
+            self.bic = 2*ll + np.log(n)*4
 
 """ 
 ---------------------------------------------------
@@ -122,9 +122,10 @@ def Pareto_ll(parms, x, W, b):
     """
     p = parms[0]
     n = np.sum(W)
+    x = x[x>b]
     sum = np.sum(np.log(x)*W)
     ll = n*np.log(p) + p*n*np.log(b) - (p+1)*sum
-    ll = -ll#/10000
+    ll = -ll
     return ll
 
 def IB1_ll(parms, x, W, b):
@@ -144,7 +145,7 @@ def IB1_ll(parms, x, W, b):
     sum1 = np.sum(np.log(1-b/x)*W)
     sum2 = np.sum(np.log(x)*W)
     ll = p*n*np.log(b) - n*lnb + (q-1)*sum1 - (p+1)*sum2
-    ll = -ll #/10000
+    ll = -ll
     return ll
 
 # log-likelihood
@@ -161,13 +162,13 @@ def GB1_ll(parms, x, W, b):
     p = parms[1]
     q = parms[2]
     x = np.array(x)
-    # x = x[x>b]
+    x = x[x>b]
     n = np.sum(W)
     lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
     sum1 = np.sum(np.log(x)*W)
     sum2 = np.sum(np.log(1-(x/b)**a)*W)
     ll = n*np.log(abs(a)) + (a*p-1)*sum1 + (q-1)*sum2 - n*a*p*np.log(b) - n*lnb
-    ll = -ll#/100
+    ll = -ll
     return ll
 
 def GB_ll(parms, x, W, b):
@@ -182,16 +183,15 @@ def GB_ll(parms, x, W, b):
     c = parms[1]
     p = parms[2]
     q = parms[3]
-    n = np.sum(W)
     x = np.array(x)
     x = x[x>b]
+    n = np.sum(W)
     sum1 = np.sum(np.log(x)*W)
     sum2 = np.sum(np.log(1-(1-c)*(x/b)**a)*W)
     sum3 = np.sum(np.log(1+c*((x/b)**a))*W)
     lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
-    # lnb = np.log(beta(p,q))
     ll = n*(np.log(np.abs(a)) - a*p*np.log(b) - lnb) + (a*p-1)*sum1 + (q-1)*sum2 - (p+q)*sum3
-    ll = -ll#/100
+    ll = -ll
     return ll
 
 """ 
@@ -1924,16 +1924,16 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     if 'LRtest' in rejection_criterion or 'LRtest' in rejection_criterion:
         # alpha = .05
         # 1. LRtest IB1 restriction q=1
-        LRtestIB1_restrict = LRtest(IB1(x=x, b=b, p=p_fit2, q=1).LL,
-                           IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
+        LRtestIB1_restrict = LRtest(-IB1(x=x, b=b, p=p_fit2, q=1).LL,
+                           -IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
                            df=1, verbose=False) #df: # of tested parms
         # 2. LRtest GB1 restriction a=-1
-        LRtestGB1_restrict = LRtest(GB1(x=x, b=b, a=-1, p=p_fit3, q=q_fit3).LL,
-                           GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
+        LRtestGB1_restrict = LRtest(-GB1(x=x, b=b, a=-1, p=p_fit3, q=q_fit3).LL,
+                           -GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
                            df=1, verbose=False) #df: # of tested parms
         # 3. LRtest GB restriction c=0
-        LRtestGB_restrict = LRtest(GB(x=x, b=b, a=a_fit4, c=0, p=p_fit4, q=q_fit4).LL,
-                           GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
+        LRtestGB_restrict = LRtest(-GB(x=x, b=b, a=a_fit4, c=0, p=p_fit4, q=q_fit4).LL,
+                           -GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
                            df=1, verbose=False) #df: # of tested parms
 
         # LR testing procedure (paper chp. 2.3)
@@ -2013,15 +2013,15 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         print('\n{}'.format(tbl))
 
         # # recalculate AICs (AIC alternative method #2: paper Appendix)
-        # Pareto_aic = -2*Pareto(x=x, b=b, p=Pareto_fit[0]).LL+2*1
-        # IB1_aic = -2*IB1(x=x, b=b, p=IB1_fit[0], q=IB1_fit[2]).LL+2*2
-        # GB1_aic = -2*GB1(x=x, b=b, a=GB1_fit[0], p=GB1_fit[2], q=GB1_fit[4]).LL+2*3
-        # GB_aic  = -2*GB(x=x, b=b, a=GB_fit[0], c=GB_fit[2], p=GB_fit[4], q=GB_fit[6]).LL+2*4
+        # Pareto_aic = 2*Pareto(x=x, b=b, p=Pareto_fit[0]).LL+2*1
+        # IB1_aic = 2*IB1(x=x, b=b, p=IB1_fit[0], q=IB1_fit[2]).LL+2*2
+        # GB1_aic = 2*GB1(x=x, b=b, a=GB1_fit[0], p=GB1_fit[2], q=GB1_fit[4]).LL+2*3
+        # GB_aic  = 2*GB(x=x, b=b, a=GB_fit[0], c=GB_fit[2], p=GB_fit[4], q=GB_fit[6]).LL+2*4
         #
         # # calculate AICs of models with restriction of Pareto branch
-        # IB1_aic_restrict = -2*IB1(x=x, b=b, p=IB1_fit[0], q=1).LL+2*2
-        # GB1_aic_restrict = -2*GB1(x=x, b=b, a=-1, p=GB1_fit[2], q=GB1_fit[4]).LL+2*3
-        # GB_aic_restrict  = -2*GB(x=x, b=b, a=GB_fit[0], c=0, p=GB_fit[4], q=GB_fit[6]).LL+2*4
+        # IB1_aic_restrict = 2*IB1(x=x, b=b, p=IB1_fit[0], q=1).LL+2*2
+        # GB1_aic_restrict = 2*GB1(x=x, b=b, a=-1, p=GB1_fit[2], q=GB1_fit[4]).LL+2*3
+        # GB_aic_restrict  = 2*GB(x=x, b=b, a=GB_fit[0], c=0, p=GB_fit[4], q=GB_fit[6]).LL+2*4
         #
         # # AIC testing procedure
         # Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'

@@ -329,7 +329,7 @@ Plot fit vs data
 -----------------------------
 """
 
-b = 500000
+b = 1500000
 x0 = (-1, .5, 1, 1)
 bootstraps = (400, 400, 400, 400)
 
@@ -344,12 +344,12 @@ plt.rcParams['figure.figsize'] = 10, 8
 Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=False, plot=True,
                 rejection_criterion='LRtest',
-                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 # AIC
 Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=True, plot=True,
                 rejection_criterion='AIC',
-                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 
 ## SOEP 2017
 
@@ -357,10 +357,10 @@ Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
 Paretobranchfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=True, plot=True,
                 rejection_criterion='LRtest',
-                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 
 # AIC
 Paretobranchfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=True, plot=True,
                 rejection_criterion='AIC',
-                plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
+                plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
