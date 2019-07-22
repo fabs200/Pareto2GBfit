@@ -341,9 +341,9 @@ print(plt.rcParams.get('figure.figsize'))
 plt.rcParams['figure.figsize'] = 10, 8
 
 # LRtest
-Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
+Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], weighting='multiply', b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=False, plot=True,
-                rejection_criterion='LRtest',
+                rejection_criterion='AIC',
                 plot_cosmetics={'bins': 500, 'col_data': 'blue', 'col_fit': 'red'})
 # AIC
 Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,

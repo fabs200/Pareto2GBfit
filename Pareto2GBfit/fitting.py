@@ -128,7 +128,7 @@ def Pareto_ll(parms, x, W, b):
     :return: neg. logliklihood of Pareto
     """
     p = parms[0]
-    n = len(x)
+    n = np.sum(W)
     sum = np.sum(np.log(x)*W)
     ll = n*np.log(p) + p*n*np.log(b) - (p+1)*sum
     ll = -ll#/10000
@@ -146,7 +146,7 @@ def IB1_ll(parms, x, W, b):
     q = parms[1]
     x = np.array(x)
     x = x[x>b]
-    n = len(x)
+    n = np.sum(W)
     lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
     sum1 = np.sum(np.log(1-b/x)*W)
     sum2 = np.sum(np.log(x)*W)
@@ -169,7 +169,7 @@ def GB1_ll(parms, x, W, b):
     q = parms[2]
     x = np.array(x)
     # x = x[x>b]
-    n = len(x)
+    n = np.sum(W)
     lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
     sum1 = np.sum(np.log(x)*W)
     sum2 = np.sum(np.log(1-(x/b)**a)*W)
@@ -189,7 +189,7 @@ def GB_ll(parms, x, W, b):
     c = parms[1]
     p = parms[2]
     q = parms[3]
-    n = len(x)
+    n = np.sum(W)
     x = np.array(x)
     x = x[x>b]
     sum1 = np.sum(np.log(x)*W)
@@ -407,14 +407,14 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
             p_fit = result.x.item(0)
 
             # re-normalize if weights 'multiply'
-            if weighting == 'multiply':
-                if p_fit==1.0:
-                    p_fit_bs.append(p_fit_bs[-1])
-                else:
-                    p_fit = p_fit/1000000
-                p_fit_bs.append(p_fit)
-            else:
-                p_fit_bs.append(p_fit)
+            # if weighting == 'multiply':
+            #     if p_fit==1.0:
+            #         p_fit_bs.append(p_fit_bs[-1])
+            #     else:
+            #         p_fit = p_fit/1000000
+            #     p_fit_bs.append(p_fit)
+            # else:
+            p_fit_bs.append(p_fit)
 
             bar.update(bootstrapping)
             bootstrapping += 1
@@ -512,14 +512,14 @@ def Paretofit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=No
             p_fit = result.x.item(0)
 
             # re-normalize if weights 'multiply'
-            if weighting == 'multiply':
-                if p_fit==1.0:
-                    p_fit_bs.append(p_fit_bs[-1])
-                else:
-                    p_fit = p_fit/1000000
-                p_fit_bs.append(p_fit)
-            else:
-                p_fit_bs.append(p_fit)
+            # if weighting == 'multiply':
+            #     if p_fit==1.0:
+            #         p_fit_bs.append(p_fit_bs[-1])
+            #     else:
+            #         p_fit = p_fit/1000000
+            #     p_fit_bs.append(p_fit)
+            # else:
+            p_fit_bs.append(p_fit)
 
             bar.update(bootstrapping)
             bootstrapping += 1
@@ -818,16 +818,16 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
             p_fit, q_fit = result.x.item(0), result.x.item(1)
 
             # re-normalize if weights 'multiply'
-            if weighting == 'multiply':
-                p_fit = p_fit/100000000
-                # p_fit = p_fit
-                p_fit_bs.append(p_fit)
-                q_fit = q_fit/100000000
-                # q_fit = q_fit
-                q_fit_bs.append(q_fit)
-            else:
-                p_fit_bs.append(p_fit)
-                q_fit_bs.append(q_fit)
+            # if weighting == 'multiply':
+            #     p_fit = p_fit/100000000
+            #     # p_fit = p_fit
+            #     p_fit_bs.append(p_fit)
+            #     q_fit = q_fit/100000000
+            #     # q_fit = q_fit
+            #     q_fit_bs.append(q_fit)
+            # else:
+            p_fit_bs.append(p_fit)
+            q_fit_bs.append(q_fit)
 
             bar.update(bootstrapping)
             bootstrapping += 1
@@ -926,14 +926,14 @@ def IB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
             p_fit, q_fit = result.x.item(0), result.x.item(1)
 
             # re-normalize if weights 'multiply'
-            if weighting == 'multiply':
-                p_fit = p_fit/10000000
-                p_fit_bs.append(p_fit)
-                q_fit = q_fit/10000000
-                q_fit_bs.append(q_fit)
-            else:
-                p_fit_bs.append(p_fit)
-                q_fit_bs.append(q_fit)
+            # if weighting == 'multiply':
+            #     p_fit = p_fit/10000000
+            #     p_fit_bs.append(p_fit)
+            #     q_fit = q_fit/10000000
+            #     q_fit_bs.append(q_fit)
+            # else:
+            p_fit_bs.append(p_fit)
+            q_fit_bs.append(q_fit)
 
             bar.update(bootstrapping)
             bootstrapping += 1
@@ -1252,17 +1252,17 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
             a_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2)
 
             # re-normalize if weights 'multiply'
-            if weighting == 'multiply':
-                a_fit = a_fit/10e+8
-                a_fit_bs.append(a_fit)
-                p_fit = p_fit/10e+8
-                p_fit_bs.append(p_fit)
-                q_fit = q_fit/10e+8
-                q_fit_bs.append(q_fit)
-            else:
-                a_fit_bs.append(a_fit)
-                p_fit_bs.append(p_fit)
-                q_fit_bs.append(q_fit)
+            # if weighting == 'multiply':
+            #     a_fit = a_fit/10e+8
+            #     a_fit_bs.append(a_fit)
+            #     p_fit = p_fit/10e+8
+            #     p_fit_bs.append(p_fit)
+            #     q_fit = q_fit/10e+8
+            #     q_fit_bs.append(q_fit)
+            # else:
+            a_fit_bs.append(a_fit)
+            p_fit_bs.append(p_fit)
+            q_fit_bs.append(q_fit)
 
             ##########
             # col_fit, col_model, num_bins = 'red', 'blue', 250
@@ -1377,17 +1377,17 @@ def GB1fit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None,
             a_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2)
 
             # re-normalize if weights 'multiply'
-            if weighting == 'multiply':
-                a_fit = a_fit/10e+8
-                a_fit_bs.append(a_fit)
-                p_fit = p_fit/10e+8
-                p_fit_bs.append(p_fit)
-                q_fit = q_fit/10e+8
-                q_fit_bs.append(q_fit)
-            else:
-                a_fit_bs.append(a_fit)
-                p_fit_bs.append(p_fit)
-                q_fit_bs.append(q_fit)
+            # if weighting == 'multiply':
+            #     a_fit = a_fit/10e+8
+            #     a_fit_bs.append(a_fit)
+            #     p_fit = p_fit/10e+8
+            #     p_fit_bs.append(p_fit)
+            #     q_fit = q_fit/10e+8
+            #     q_fit_bs.append(q_fit)
+            # else:
+            a_fit_bs.append(a_fit)
+            p_fit_bs.append(p_fit)
+            q_fit_bs.append(q_fit)
 
             bar.update(bootstrapping)
 
@@ -1716,20 +1716,20 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
             a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
 
             # re-normalize if weights 'multiply'
-            if weighting == 'multiply' and weights_applied is True:
-                a_fit=a_fit/10e+8
-                a_fit_bs.append(a_fit)
-                c_fit=c_fit/10e+8
-                c_fit_bs.append(c_fit)
-                p_fit=p_fit/10e+8
-                p_fit_bs.append(p_fit)
-                q_fit=q_fit/10e+8
-                q_fit_bs.append(q_fit)
-            else:
-                a_fit_bs.append(a_fit)
-                c_fit_bs.append(c_fit)
-                p_fit_bs.append(p_fit)
-                q_fit_bs.append(q_fit)
+            # if weighting == 'multiply' and weights_applied is True:
+            #     a_fit=a_fit/10e+8
+            #     a_fit_bs.append(a_fit)
+            #     c_fit=c_fit/10e+8
+            #     c_fit_bs.append(c_fit)
+            #     p_fit=p_fit/10e+8
+            #     p_fit_bs.append(p_fit)
+            #     q_fit=q_fit/10e+8
+            #     q_fit_bs.append(q_fit)
+            # else:
+            a_fit_bs.append(a_fit)
+            c_fit_bs.append(c_fit)
+            p_fit_bs.append(p_fit)
+            q_fit_bs.append(q_fit)
 
             bar.update(bootstrapping)
 
@@ -1830,20 +1830,20 @@ def GBfit(x, b, x0, weights=np.array([1]), weighting='expand', bootstraps=None, 
             a_fit, c_fit, p_fit, q_fit = result.x.item(0), result.x.item(1), result.x.item(2), result.x.item(3)
 
             # re-normalize if weights 'multiply'
-            if weighting == 'multiply' and weights_applied is True:
-                a_fit=a_fit/10e+8
-                a_fit_bs.append(a_fit)
-                c_fit=c_fit/10e+8
-                c_fit_bs.append(c_fit)
-                p_fit=p_fit/10e+8
-                p_fit_bs.append(p_fit)
-                q_fit=q_fit/10e+8
-                q_fit_bs.append(q_fit)
-            else:
-                a_fit_bs.append(a_fit)
-                c_fit_bs.append(c_fit)
-                p_fit_bs.append(p_fit)
-                q_fit_bs.append(q_fit)
+            # if weighting == 'multiply' and weights_applied is True:
+            #     a_fit=a_fit/10e+8
+            #     a_fit_bs.append(a_fit)
+            #     c_fit=c_fit/10e+8
+            #     c_fit_bs.append(c_fit)
+            #     p_fit=p_fit/10e+8
+            #     p_fit_bs.append(p_fit)
+            #     q_fit=q_fit/10e+8
+            #     q_fit_bs.append(q_fit)
+            # else:
+            a_fit_bs.append(a_fit)
+            c_fit_bs.append(c_fit)
+            p_fit_bs.append(p_fit)
+            q_fit_bs.append(q_fit)
 
             bar.update(bootstrapping)
 

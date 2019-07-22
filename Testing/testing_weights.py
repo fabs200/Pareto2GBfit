@@ -2,7 +2,8 @@
 # weights=np.array([1])
 
 b=1000000
-x0=(-.1,1,1)
+x0=(1)
+# x0=(-.1,1,1)
 # x0=(-.1,.1,1,1)
 bootstraps=20
 method='SLSQP'
