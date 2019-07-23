@@ -2111,33 +2111,33 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
 
         if rejection_criterion == 'LRtest' or 'LRtest' in rejection_criterion:
             if bestmodel_LR == 'Pareto':
-                printout_LR = 'Pareto_best_LR', Pareto_fit_LR
+                printout_LR = 'Pareto_best', Pareto_fit_LR
             if bestmodel_LR == 'IB1':
-                printout_LR = 'IB1_best_LR', IB1_fit_LR
+                printout_LR = 'IB1_best', IB1_fit_LR
             if bestmodel_LR == 'GB1':
-                printout_LR = 'GB1_best_LR', GB1_fit_LR
+                printout_LR = 'GB1_best', GB1_fit_LR
             if bestmodel_LR == 'GB':
-                printout_LR = 'GB_best_LR', GB_fit_LR
+                printout_LR = 'GB_best', GB_fit_LR
 
         if rejection_criterion == 'AIC' or 'AIC' in rejection_criterion:
             if bestmodel_AIC == 'Pareto':
-                printout_AIC = 'Pareto_best_AIC', Pareto_fit_AIC
+                printout_AIC = 'Pareto_best', Pareto_fit_AIC
             if bestmodel_AIC == 'IB1':
-                printout_AIC = 'IB1_best_AIC', IB1_fit_AIC
+                printout_AIC = 'IB1_best', IB1_fit_AIC
             if bestmodel_AIC == 'GB1':
-                printout_AIC = 'GB1_best_AIC', GB1_fit_AIC
+                printout_AIC = 'GB1_best', GB1_fit_AIC
             if bestmodel_AIC == 'GB':
-                printout_AIC = 'GB_best_AIC', GB_fit_AIC
+                printout_AIC = 'GB_best', GB_fit_AIC
 
         if rejection_criterion == 'AIC2' or 'AIC2' in rejection_criterion:
             if bestmodel_AIC2 == 'Pareto':
-                printout_AIC2 = 'Pareto_best_AIC2', Pareto_fit_AIC2
+                printout_AIC2 = 'Pareto_best', Pareto_fit_AIC2
             if bestmodel_AIC2 == 'IB1':
-                printout_AIC2 = 'IB1_best_AIC2', IB1_fit_AIC2
+                printout_AIC2 = 'IB1_best', IB1_fit_AIC2
             if bestmodel_AIC2 == 'GB1':
-                printout_AIC2 = 'GB1_best_AIC2', GB1_fit_AIC2
+                printout_AIC2 = 'GB1_best', GB1_fit_AIC2
             if bestmodel_AIC2 == 'GB':
-                printout_AIC2 = 'GB_best_AIC2', GB_fit_AIC2
+                printout_AIC2 = 'GB_best', GB_fit_AIC2
 
             return printout_LR, printout_AIC, printout_AIC2
 

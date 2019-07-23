@@ -348,7 +348,7 @@ Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
 # AIC
 test = Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=True, plot=True,
-                rejection_criterion=['LRtest', 'AIC', 'AIC2'],
+                rejection_criterion=['LRtest', 'AIC'],
                 plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 
 ## SOEP 2017
