@@ -88,24 +88,28 @@ class gof:
         self.mape = (100/n) * np.sum(np.abs(e/x))
         self.rrmse = np.sqrt(1/n * np.sum((e/x)**2))
 
-        W = np.multiply(W, 1/np.sum(W))
+        # if weights = np.ones vector, pass, else normalize to ΣW=1
+        if len(x) == np.sum(W):
+            pass
+        else:
+            W = np.multiply(W, 1/np.sum(W))
 
         if len(parms) == 1:
-            self.ll = ll = Pareto_ll(parms=parms, x=x, W=W, b=b)
-            self.aic = 2*ll + 2
-            self.bic = 2*ll + np.log(n)
+            self.ll = ll = (-1)*Pareto_ll(parms=parms, x=x, W=W, b=b)
+            self.aic = 2*(-1)*ll + 2
+            self.bic = 2*(-1)*ll + np.log(n)
         if len(parms) == 2:
-            self.ll = ll = IB1_ll(parms=parms, x=x, W=W, b=b)
-            self.aic = 2*ll + 2*2
-            self.bic = 2*ll + np.log(n)*2
+            self.ll = ll = (-1)*IB1_ll(parms=parms, x=x, W=W, b=b)
+            self.aic = 2*(-1)*ll + 2*2
+            self.bic = 2*(-1)*ll + np.log(n)*2
         if len(parms) == 3:
-            self.ll = ll = GB1_ll(parms=parms, x=x, W=W, b=b)
-            self.aic = 2*ll + 2*3
-            self.bic = 2*ll + np.log(n)*3
+            self.ll = ll = (-1)*GB1_ll(parms=parms, x=x, W=W, b=b)
+            self.aic = 2*(-1)*ll + 2*3
+            self.bic = 2*(-1)*ll + np.log(n)*3
         if len(parms) == 4:
-            self.ll = ll = GB_ll(parms, x=x, W=W, b=b)
-            self.aic = 2*ll + 2*4
-            self.bic = 2*ll + np.log(n)*4
+            self.ll = ll = (-1)*GB_ll(parms, x=x, W=W, b=b)
+            self.aic = 2*(-1)*ll + 2*4
+            self.bic = 2*(-1)*ll + np.log(n)*4
 
 """ 
 ---------------------------------------------------
@@ -2188,19 +2192,3 @@ def IB1_extract_se(x, fitted_parms, method, dx, display, display_hessian):
     if display_hessian == True:
         print("Hessian Matrix:", hess)
     return b_se, p_se, q_se
-
-# ⣿⠄⡇⢸⣟⠄⠁⢸⡽⠖⠛⠈⡉⣉⠉⠋⣁⢘⠉⢉⠛⡿⢿⣿⣿⣿⣿⣿⣿⣿
-# ⣷⣶⣷⣤⠄⣠⠖⠁⠄⠂⠁⠄⠄⠉⠄⠄⠎⠄⠠⠎⢐⠄⢑⣛⠻⣿⣿⣿⣿⣿
-# ⣿⣿⣿⠓⠨⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠈⠐⠅⠄⠉⠄⠗⠆⣸⣿⣿⣿⣿⣿
-# ⣿⣿⣿⡣⠁⠄⠄⠄⠄⠄⠄⠄⠄⠄⢰⣤⣦⠄⠄⠄⠄⠄⠄⠄⡀⡙⣿⣿⣿⣿
-# ⣿⣿⡛⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠔⠿⡿⠿⠒⠄⠠⢤⡀⡀⠄⠁⠄⢻⣿⣿⣿
-# ⣿⣿⠄⠄⠄⠄⠄⠄⣠⡖⠄⠁⠁⠄⠄⠄⠄⠄⠄⠄⣽⠟⡖⠄⠄⠄⣼⣿⣿⣿
-# ⣿⣿⠄⠄⠄⠄⠄⠄⢠⣠⣀⠄⠄⠄⠄⢀⣾⣧⠄⠂⠸⣈⡏⠄⠄⠄⣿⣿⣿⣿
-# ⣿⣿⡞⠄⠄⠄⠄⠄⢸⣿⣶⣶⣶⣶⣶⡿⢻⡿⣻⣶⣿⣿⡇⠄⠄⠄⣿⣿⣿⣿
-# ⣿⣿⡷⡂⠄⠄⠁⠄⠸⣿⣿⣿⣿⣿⠟⠛⠉⠉⠙⠛⢿⣿⡇⠄⠄⢀⣿⣿⣿⣿
-# ⣶⣶⠃⠄⠄⠄⠄⠄⠄⣾⣿⣿⡿⠁⣀⣀⣤⣤⣤⣄⢈⣿⡇⠄⠄⢸⣿⣿⣿⣿
-# ⣿⣯⠄⠄⠄⠄⠄⠄⠄⢻⣿⣿⣷⣶⣿⣿⣥⣬⣿⣿⣟⣿⠃⠄⠨⠺⢿⣿⣿⣿
-# ⠱⠂⠄⠄⠄⠄⠄⠄⠄⣬⣸⡝⠿⢿⣿⡿⣿⠻⠟⠻⢫⡁⠄⠄⠄⡐⣾⣿⣿⣿
-# ⡜⠄⠄⠄⠄⠄⠆⡐⡇⢿⣽⣻⣷⣦⣧⡀⡀⠄⠄⣴⣺⡇⠄⠁⠄⢣⣿⣿⣿⣿
-# ⠡⠱⠄⠄⠡⠄⢠⣷⠆⢸⣿⣿⣿⣿⣿⣿⣷⣿⣾⣿⣿⡇⠄⠄⠠⠁⠿⣿⣿⣿
-# ⢀⣲⣧⣷⣿⢂⣄⡉⠄⠘⠿⣿⣿⣿⡟⣻⣯⠿⠟⠋⠉⢰⢦⠄⠊⢾⣷⣮⣽⣛

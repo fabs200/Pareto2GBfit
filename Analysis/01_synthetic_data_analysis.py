@@ -305,8 +305,6 @@ if run_optimize:
                                                return_bestmodel=True, rejection_criterion='AIC', plot=True,
                                                plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 
-
-
 """
 --------------------------------
 4. Save fitted parms to table
