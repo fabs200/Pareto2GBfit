@@ -230,7 +230,7 @@ for b in [500000, 1000000, 1500000]:
 
     for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 
-        print('PSID:', year, ', lower bound b:', b)
+        print('PSID:', year, ' lower bound b:', b)
 
         # write temp variables names
         wealth = 'wealth_' + year
@@ -256,7 +256,7 @@ for b in [500000, 1000000, 1500000]:
 
     for year in ['02', '07', '12', '17']:
 
-        print('SOEP:', year, ', lower bound b:', b)
+        print('SOEP:', year, ' lower bound b:', b)
 
         # write temp variables names
         wealth = 'wealth_' + year
@@ -274,8 +274,8 @@ for b in [500000, 1000000, 1500000]:
         globals()['fit_result_soep_{}_{}'.format(year, 'AIC')] = result[1]
         globals()['fit_soep_{}_{}'.format(year, 'AIC')] = prep_fit_results_for_table(result[1])
 
-        globals()['fit_result_soep_{}_{}'.format(year, 'AIC2')] = result[1]
-        globals()['fit_soep_{}_{}'.format(year, 'AIC2')] = prep_fit_results_for_table(result[1])
+        globals()['fit_result_soep_{}_{}'.format(year, 'AIC2')] = result[2]
+        globals()['fit_soep_{}_{}'.format(year, 'AIC2')] = prep_fit_results_for_table(result[2])
 
 
     """
