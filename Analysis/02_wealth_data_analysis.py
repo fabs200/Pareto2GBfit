@@ -228,7 +228,7 @@ bootstraps = (400, 400, 400, 400)
 
 for b in [500000, 1000000, 1500000]:
 
-    for test in ['LRtest', 'AIC']:
+    for test in ['AIC']:
 
         for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 
@@ -346,9 +346,9 @@ Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 rejection_criterion='LRtest',
                 plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 # AIC
-Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
+test = Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=True, plot=True,
-                rejection_criterion='AIC',
+                rejection_criterion=['LRtest', 'AIC', 'AIC2'],
                 plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 
 ## SOEP 2017
