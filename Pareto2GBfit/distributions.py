@@ -251,8 +251,6 @@ def GB_pdf(x, a, b, c, p, q):
         x = x[x<=b]
     ## ?? UG, LN, GG, W
     # TODO
-    # return (np.abs(a)*(x**(a*p-1))*((1-(1-c)*((x/b)**a))**(q-1))) / ((b**(a*p))*beta(b,q)*((1+c*((x/b)**a))**(p+q)))
-    # bta = (gamma(p) + gamma(q)) / (gamma(p+q))
     pdf = abs(a)*x**(a*p-1)*(1-(1-c)*(x/b)**a)**(q-1) / (b**(a*p)*beta(p,q)*(1+c*(x/b)**a)**(p+q))
     return pdf
 
@@ -262,7 +260,7 @@ def GB_cdf_ne(x, a, b, c, p, q):
     # distributions with x>b:
     # Pareto, IB1: c==0, a==1
     ## if (c==0) and (a==-1): ## Note: too rigorous restriction, ending up in empty F, thus relax restriction
-    if (0<c<.2) and (-np.inf<a<-10e-6):
+    if (0<c<1) and (-np.inf<a<-1e-10):
         x = x[x>b]
         widgets = ['GB_cdf_ne\t', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
         bar = progressbar.ProgressBar(widgets=widgets, maxval=len(x)).start()
@@ -300,6 +298,8 @@ def GB_icdf_ne(x, a, b, c, p, q):
     # UG: c==0, 0<a<1; Half Normal: c==0, a==2, p==.5; Rayleigh: c==0,p==1, a==2
     if (c==0) and ((a==1) or (0<a<1) or ((a==2) and (a==.5)) or ((a==2) and (p==1))):
         x = x[x<=b]
+    if (0<c<1):
+        x = x[x>b]
     widgets = ['GB_icdf_ne\t', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=len(x)).start()
     # Generate cdf via numeric evaluating pdf

@@ -117,11 +117,12 @@ Pareto_data_het_noise_1 = het(x=Pareto_data, sigma=sigma1, s=s)
 # 4. Large heteroscedastic Gaussian noise
 Pareto_data_het_noise_2 = het(x=Pareto_data, sigma=sigma2, s=s)
 
-# 5. Robustness Check: Generate IB1 distrib. data which are NOT Pareto (i.e. q!=1)
-IB1_data = IB1_icdf_ne(x=x, b=b, p=p, q=10)
-
-# 6. Robustness Check: Generate GB1 distrib. data which are NOT Pareto (i.e. a!=-1)
+# 5. Robustness Check: Generate GB1 distrib. data which are NOT Pareto (i.e. a!=-1)
 GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=5, a=-5)
+
+# 6. Robustness Check: Generate GB distrib. data which are NOT Pareto (i.e. q!=1)
+GB_data = GB_icdf_ne(x=x, a=-2, c=.5, b=b, p=p, q=10)
+
 
 
 
@@ -152,13 +153,13 @@ if plot_data:
     plt.show()
     plt.close()
 
-    # check NON Pareto data (IB1, GB1)
-    plt.scatter(IB1_data[1], IB1_data[0], marker="o", s=2, color='blue', alpha=.75, label='IB1 data with q=2')
-    plt.scatter(IB1_data[1], GB1_data[0], marker="o", s=2, color='orangered', alpha=.75, label='GB1 data with a=-4')
+    # check NON Pareto data (B1, GB)
+    plt.scatter(GB_data[1], GB_data[0], marker="o", s=2, color='blue', alpha=.75, label='GB data with a=-2, c=.5, q=10, p=2.5')
+    plt.scatter(GB1_data[1], GB1_data[0], marker="o", s=2, color='orangered', alpha=.75, label='GB1 data with a=-5, q=5')
     plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
-        plt.savefig(fname=graphspath + 'NON_Pareto_IB1_GB1.' + type, dpi=300, format=type)
+        plt.savefig(fname=graphspath + 'NON_Pareto_GB_GB1.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
 
@@ -198,23 +199,23 @@ if run_descriptives:
 
     # sort
     Pareto_data = np.sort(Pareto_data)
-    IB1_data = np.sort(IB1_data[0])
     GB1_data = np.sort(GB1_data[0])
+    GB_data = np.sort(GB_data[0])
 
     # write descriptives to dataframe
-    df_synthetic_non_Pareto_descriptives = pd.DataFrame(np.array([['N', '{:d}'.format(np.size(IB1_data)), '{:d}'.format(np.size(GB1_data))],
-                                                            ['mean', '{:.2f}'.format(np.mean(IB1_data)), '{:.2f}'.format(np.mean(GB1_data))],
-                                                            ['sd', '{:.2f}'.format(np.std(IB1_data)), '{:.2f}'.format(np.std(GB1_data))],
+    df_synthetic_non_Pareto_descriptives = pd.DataFrame(np.array([['N', '{:d}'.format(np.size(GB1_data)), '{:d}'.format(np.size(GB_data))],
+                                                            ['mean', '{:.2f}'.format(np.mean(GB1_data)), '{:.2f}'.format(np.mean(GB_data))],
+                                                            ['sd', '{:.2f}'.format(np.std(GB1_data)), '{:.2f}'.format(np.std(GB_data))],
                                                             ['lower bound b', b, b],
-                                                            ['min', '{:.2f}'.format(np.min(IB1_data)), '{:.2f}'.format(np.min(GB1_data))],
-                                                            ['p50', '{:.2f}'.format(np.percentile(IB1_data, q=.5)), '{:.2f}'.format(np.percentile(GB1_data, q=.5))],
-                                                            ['p75', '{:.2f}'.format(np.percentile(IB1_data, q=.75)), '{:.2f}'.format(np.percentile(GB1_data, q=.75))],
-                                                            ['p90', '{:.2f}'.format(np.percentile(IB1_data, q=.9)), '{:.2f}'.format(np.percentile(GB1_data, q=.9))],
-                                                            ['p99', '{:.2f}'.format(np.percentile(IB1_data, q=.99)), '{:.2f}'.format(np.percentile(GB1_data, q=.99))],
-                                                            ['p99.9', '{:.2f}'.format(np.percentile(IB1_data, q=.999)), '{:.2f}'.format(np.percentile(GB1_data, q=.999))],
-                                                            ['max', '{:.2f}'.format(np.max(IB1_data)), '{:.2f}'.format(np.max(GB1_data))],
+                                                            ['min', '{:.2f}'.format(np.min(GB1_data)), '{:.2f}'.format(np.min(GB_data))],
+                                                            ['p50', '{:.2f}'.format(np.percentile(GB1_data, q=.5)), '{:.2f}'.format(np.percentile(GB_data, q=.5))],
+                                                            ['p75', '{:.2f}'.format(np.percentile(GB1_data, q=.75)), '{:.2f}'.format(np.percentile(GB_data, q=.75))],
+                                                            ['p90', '{:.2f}'.format(np.percentile(GB1_data, q=.9)), '{:.2f}'.format(np.percentile(GB_data, q=.9))],
+                                                            ['p99', '{:.2f}'.format(np.percentile(GB1_data, q=.99)), '{:.2f}'.format(np.percentile(GB_data, q=.99))],
+                                                            ['p99.9', '{:.2f}'.format(np.percentile(GB1_data, q=.999)), '{:.2f}'.format(np.percentile(GB_data, q=.999))],
+                                                            ['max', '{:.2f}'.format(np.max(GB1_data)), '{:.2f}'.format(np.max(GB_data))],
                                                             ]),
-                                                 columns=['', 'IB1_data', 'GB1_data,'])
+                                                 columns=['', 'GB1_data', 'GB_data'])
 
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'synthetic_non_Pareto_descriptives.xlsx', mode='w') as writer:
@@ -237,7 +238,7 @@ if run_optimize:
                                         plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 
     Pareto_data_gauss_noise_1_parms = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1), b=250,
-                                                      bootstraps=(250, 250, 250, 250),
+                                              bootstraps=(10, 10, 10, 10),
                                                       return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
                                                       plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 
@@ -259,15 +260,15 @@ if run_optimize:
 
     # Robustness Check: NON Pareto data
 
-    IB1_non_Pareto_parms = Paretobranchfit(x=IB1_data, x0=(-1, .5, 1, 1), b=250,
-                                              bootstraps=(250, 250, 250, 250),
-                                              return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
-                                              plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
-
     GB1_non_Pareto_parms = Paretobranchfit(x=GB1_data, x0=(-1, .5, 1, 1), b=250,
-                                               bootstraps=(250, 250, 250, 250),
+                                              bootstraps=(10, 10, 10, 10),
                                                return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
                                                plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
+
+    GB_non_Pareto_parms = Paretobranchfit(x=GB_data, x0=(-1, .5, 1, 1), b=250,
+                                              bootstraps=(10, 10, 10, 10),
+                                              return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
+                                              plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 
 """
 --------------------------------
@@ -346,12 +347,12 @@ if run_optimize:
 
 
     # NON Pareto data: shorter names
-    parms15 = prep_fit_results_for_table(IB1_non_Pareto_parms[0])
-    parms16 = prep_fit_results_for_table(IB1_non_Pareto_parms[1])
+    parms15 = prep_fit_results_for_table(GB_non_Pareto_parms[0])
+    parms16 = prep_fit_results_for_table(GB_non_Pareto_parms[1])
     parms17 = prep_fit_results_for_table(GB1_non_Pareto_parms[0])
     parms18 = prep_fit_results_for_table(GB1_non_Pareto_parms[1])
 
-    df_non_Pareto_fit_results = pd.DataFrame(np.array([['best fitted model', '{}'.format(IB1_non_Pareto_parms[0][0]), '{}'.format(IB1_non_Pareto_parms[1][0]), '{}'.format(GB1_non_Pareto_parms[0][0]), '{}'.format(GB1_non_Pareto_parms[1][0])],
+    df_non_Pareto_fit_results = pd.DataFrame(np.array([['best fitted model', '{}'.format(GB_non_Pareto_parms[0][0]), '{}'.format(GB_non_Pareto_parms[1][0]), '{}'.format(GB1_non_Pareto_parms[0][0]), '{}'.format(GB1_non_Pareto_parms[1][0])],
                                            ['a',               '{}'.format(parms15[0]),     '{}'.format(parms16[0]),    '{}'.format(parms17[0]),    '{}'.format(parms18[0])],
                                            [' ',               '({})'.format(parms15[1]),     '({})'.format(parms16[1]),    '({})'.format(parms17[1]),    '({})'.format(parms18[1])],
                                            ['c',               '{}'.format(parms15[2]),     '{}'.format(parms16[2]),    '{}'.format(parms17[2]),    '{}'.format(parms18[2])],
@@ -372,7 +373,7 @@ if run_optimize:
                                            ['n',               '{}'.format(parms15[16]),    '{}'.format(parms16[16]),   '{}'.format(parms17[16]),   '{}'.format(parms18[16])],
                                            ['N',               '{}'.format(parms15[17]),    '{}'.format(parms16[17]),   '{}'.format(parms17[17]),   '{}'.format(parms18[17])],
                                            ]),
-                                 columns=['', 'IB1_non_Pareto_LR', 'IB1_non_Pareto_AIC', 'GB1_non_Pareto_LR', 'GB1_non_Pareto_AIC'])
+                                 columns=['', 'GB_non_Pareto_LR', 'GB_non_Pareto_AIC', 'GB1_non_Pareto_LR', 'GB1_non_Pareto_AIC'])
 
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'non_pareto_fit_results.xlsx', engine='openpyxl', mode='w') as writer:
@@ -398,9 +399,9 @@ if run_optimize:
     # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
 
     # data
-    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b={{{}}}, p={{{}}})$'.format(b, p))
     # fit
-    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, \hat{{p}}={{{}}})$'.format(np.around(p_fit,3)))
+    plt.plot(u, Pareto_data_fit, color='red', alpha=.75, label=r'$icdf_{{Pareto}}(b={{{}}}, \hat{{p}}={{{}}})$'.format(b, np.around(p_fit,3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
         plt.savefig(fname=graphspath + 'fit_vs_data_Pareto.' + type, dpi=300, format=type)
@@ -419,9 +420,9 @@ if run_optimize:
     # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
 
     # data
-    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b={{{}}}, p={{{}}})$'.format(b, p))
     # fit
-    plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b=250, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
+    plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b={{{}}}, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(b, np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
         plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Gauss1.' + type, dpi=300, format=type)
@@ -440,9 +441,9 @@ if run_optimize:
     # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
 
     # data
-    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b={{{}}}, p={{{}}})$'.format(b, p))
     # fit
-    plt.plot(u, GB_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB}}(b=250, \hat{{a}}={{{}}}, \hat{{c}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}}, )$'.format(np.around(a_fit,3), np.around(c_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
+    plt.plot(u, GB_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB}}(b={{{}}}, \hat{{a}}={{{}}}, \hat{{c}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}}, )$'.format(b, np.around(a_fit,3), np.around(c_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
         plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Gauss2.' + type, dpi=300, format=type)
@@ -460,8 +461,8 @@ if run_optimize:
 
     # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
 
-    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
-    plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b=250, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b={{{}}}, p={{{}}})$'.format(b, p))
+    plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b={{{}}}, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(b, np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
         plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Het1.' + type, dpi=300, format=type)
@@ -479,32 +480,13 @@ if run_optimize:
 
     # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
 
-    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b=250, p={{{}}})$'.format(p))
-    plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b=250, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
+    plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{Pareto}}(b={{{}}}, p={{{}}})$'.format(b, p))
+    plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b={{{}}}, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(b, np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
         plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Het2.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
-
-    ### nonPareto IB1 TODO
-    # print('best fit for nonPareto_data_IB1_parms:', IB1_non_Pareto_parms[0][0])
-    #
-    # # generate new data based on fitted parms and best model
-    # a_fit, p_fit, q_fit = IB1_non_Pareto_parms[0][1][0], IB1_non_Pareto_parms[0][1][2], IB1_non_Pareto_parms[0][1][4]
-    #
-    # # generate new data based on fitted parms and best model
-    # GB1_data_fit, u = GB1_icdf_ne(x=IB1_data, b=b, a=a_fit, p=p_fit, q=q_fit)
-    #
-    # # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
-    #
-    # plt.scatter(u, IB1_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{IB1}}(b=250, p={{{}}}, q={{{}}})$'.format(p, 5))
-    # plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b=250, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
-    # plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
-    # for type in ['png', 'pdf']:
-    #     plt.savefig(fname=graphspath + 'fit_vs_data_nonPareto_IB1.' + type, dpi=300, format=type)
-    # plt.show()
-    # plt.close()
 
 
     ### nonParto GB1
@@ -518,10 +500,31 @@ if run_optimize:
 
     # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
 
-    plt.scatter(u, GB1_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{GB1}}(b=250, a={{{}}}, p={{{}}}, q={{{}}})$'.format(-5, p, 5))
-    plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b=250, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
+    plt.scatter(u, GB1_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{GB1}}(b={{{}}}, a={{{}}}, p={{{}}}, q={{{}}})$'.format(b, -5, p, 5))
+    plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b={{{}}}, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(b, np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
     plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
         plt.savefig(fname=graphspath + 'fit_vs_data_nonPareto_GB1.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
+
+
+    ### nonPareto GB
+    print('best fit for nonPareto_data_GB_parms:', GB_non_Pareto_parms[0][0])
+
+    # generate new data based on fitted parms and best model
+    a_fit, c_fit, p_fit, q_fit = GB_non_Pareto_parms[0][1][0], GB_non_Pareto_parms[0][1][2], GB_non_Pareto_parms[0][1][4], GB_non_Pareto_parms[0][1][6]
+
+    # generate new data based on fitted parms and best model
+    GB_data_fit, u = GB_icdf_ne(x=GB_data, b=b, a=a_fit, c=c_fit, p=p_fit, q=q_fit)
+
+    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+
+    plt.scatter(u, GB_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{GB}}(b={{{}}}, a={{{}}}, c={{{}}}, p={{{}}}, q={{{}}})$'.format(b, -2, .5, p, 10))
+    plt.plot(u, GB_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB}}(b={{{}}}, \hat{{a}}={{{}}}, \hat{{c}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(b, np.around(a_fit,3), np.around(c_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+    for type in ['png', 'pdf']:
+        plt.savefig(fname=graphspath + 'fit_vs_data_nonPareto_GB.' + type, dpi=300, format=type)
+    plt.show()
+    plt.close()
+
