@@ -1927,16 +1927,16 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     if rejection_criterion == 'LRtest' or 'LRtest' in rejection_criterion:
         # alpha = .05
         # 1. LRtest IB1 restriction q=1
-        LRtestIB1_restrict = LRtest(-IB1(x=x, b=b, p=p_fit2, q=1).LL,
-                                    -IB1(x=x, b=b, p=p_fit2, q=q_fit2).LL,
+        LRtestIB1_restrict = LRtest(IB1(x=x, W=weights, b=b, p=p_fit2, q=1).LL,
+                                    IB1(x=x, W=weights, b=b, p=p_fit2, q=q_fit2).LL,
                                     df=1, verbose=False) #df: # of tested parms
         # 2. LRtest GB1 restriction a=-1
-        LRtestGB1_restrict = LRtest(-GB1(x=x, b=b, a=-1, p=p_fit3, q=q_fit3).LL,
-                                    -GB1(x=x, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
+        LRtestGB1_restrict = LRtest(GB1(x=x, W=weights, b=b, a=-1, p=p_fit3, q=q_fit3).LL,
+                                    GB1(x=x, W=weights, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
                                     df=1, verbose=False) #df: # of tested parms
         # 3. LRtest GB restriction c=0
-        LRtestGB_restrict = LRtest(-GB(x=x, b=b, a=a_fit4, c=0, p=p_fit4, q=q_fit4).LL,
-                                   -GB(x=x, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
+        LRtestGB_restrict = LRtest(GB(x=x, W=weights, b=b, a=a_fit4, c=0, p=p_fit4, q=q_fit4).LL,
+                                   GB(x=x, W=weights, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
                                    df=1, verbose=False) #df: # of tested parms
 
         # LR testing procedure (paper chp. 2.3)
@@ -1965,11 +1965,11 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         # save LRtest results to tbl
         tbl = PrettyTable()
         tbl.field_names = ['test restriction', 'H0', 'LR test', '', 'stop', 'best model']
-        tbl.add_row(['IB1 restriction', 'q=1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtestIB1_restrict.w), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.add_row(['IB1 restriction', 'q=1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtestIB1_restrict.LR), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
         tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtestIB1_restrict.pval), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
-        tbl.add_row(['GB1 restriction', 'a=-1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtestGB1_restrict.w), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['GB1 restriction', 'a=-1', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtestGB1_restrict.LR), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
         tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtestGB1_restrict.pval), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
-        tbl.add_row(['GB restriction', 'c=0', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtestGB_restrict.w), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+        tbl.add_row(['GB restriction', 'c=0', 'chi2({}) = '.format(1), '{:.3f}'.format(LRtestGB_restrict.LR), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
         tbl.add_row(['', '', 'Prob > chi2', '{:.3f}'.format(LRtestGB_restrict.pval), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
         if GB_remaining:
             tbl.add_row(['GB', '', '', '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
