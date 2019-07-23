@@ -2139,7 +2139,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
             if bestmodel_AIC2 == 'GB':
                 printout_AIC2 = 'GB_best', GB_fit_AIC2
 
-            return printout_LR, printout_AIC, printout_AIC2
+        return printout_LR, printout_AIC, printout_AIC2
 
     if return_all:
         return Pareto_fit, IB1_fit, GB1_fit, GB_fit

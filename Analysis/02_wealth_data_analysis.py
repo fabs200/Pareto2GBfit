@@ -346,7 +346,7 @@ Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 rejection_criterion='LRtest',
                 plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 # AIC
-test = Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
+Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=True, plot=True,
                 rejection_criterion=['LRtest', 'AIC'],
                 plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
