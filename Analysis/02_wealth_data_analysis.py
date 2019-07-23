@@ -228,41 +228,54 @@ bootstraps = (400, 400, 400, 400)
 
 for b in [500000, 1000000, 1500000]:
 
-    for test in ['AIC']:
+    for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 
-        for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
+        print('PSID:', year, ', lower bound b:', b)
 
-            print('PSID:', year, test, 'lower bound b:', b)
+        # write temp variables names
+        wealth = 'wealth_' + year
+        weight = 'weight_' + year
+        data = dfPSID[wealth]
+        # wgt = int(dfPSID[weight])
+        wgt = pd.to_numeric(dfPSID[weight], downcast='signed')
 
-            # write temp variables names
-            wealth = 'wealth_' + year
-            weight = 'weight_' + year
-            data = dfPSID[wealth]
-            # wgt = int(dfPSID[weight])
-            wgt = pd.to_numeric(dfPSID[weight], downcast='signed')
+        result = Paretobranchfit(x=data, weights=wgt, b=b, x0=x0, bootstraps=bootstraps,
+                                 return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'])
 
-            result = Paretobranchfit(x=data, weights=wgt, b=b, x0=x0, bootstraps=bootstraps,
-                                     return_bestmodel=True, rejection_criterion=test)
+        # LRtest
+        globals()['fit_result_psid_{}_{}'.format(year, 'LRtest')] = result[0]
+        globals()['fit_psid_{}_{}'.format(year, 'LRtest')] = prep_fit_results_for_table(result[0])
 
-            globals()['fit_result_psid_{}_{}'.format(year, test)] = result
-            globals()['fit_psid_{}_{}'.format(year, test)] = prep_fit_results_for_table(result)
+        # AIC
+        globals()['fit_result_psid_{}_{}'.format(year, 'AIC')] = result[1]
+        globals()['fit_psid_{}_{}'.format(year, 'AIC')] = prep_fit_results_for_table(result[1])
 
-        for year in ['02', '07', '12', '17']:
+        # AIC2
+        globals()['fit_result_psid_{}_{}'.format(year, 'AIC2')] = result[2]
+        globals()['fit_psid_{}_{}'.format(year, 'AIC2')] = prep_fit_results_for_table(result[2])
 
-            print('SOEP:', year, test, 'lower bound b:', b)
+    for year in ['02', '07', '12', '17']:
 
-            # write temp variables names
-            wealth = 'wealth_' + year
-            weight = 'weight_' + year
-            data = dfSOEP[wealth]
-            # wgt = int(dfSOEP[weight])
-            wgt = pd.to_numeric(dfSOEP[weight], downcast='signed')
+        print('SOEP:', year, ', lower bound b:', b)
 
-            result = Paretobranchfit(x=data, weights=wgt, b=b, x0=x0, bootstraps=bootstraps,
-                                     return_bestmodel=True, rejection_criterion=test)
+        # write temp variables names
+        wealth = 'wealth_' + year
+        weight = 'weight_' + year
+        data = dfSOEP[wealth]
+        # wgt = int(dfSOEP[weight])
+        wgt = pd.to_numeric(dfSOEP[weight], downcast='signed')
 
-            globals()['fit_result_soep_{}_{}'.format(year, test)] = result
-            globals()['fit_soep_{}_{}'.format(year, test)] = prep_fit_results_for_table(result)
+        result = Paretobranchfit(x=data, weights=wgt, b=b, x0=x0, bootstraps=bootstraps,
+                                 return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'])
+
+        globals()['fit_result_soep_{}_{}'.format(year, 'LRtest')] = result[0]
+        globals()['fit_soep_{}_{}'.format(year, 'LRtest')] = prep_fit_results_for_table(result[0])
+
+        globals()['fit_result_soep_{}_{}'.format(year, 'AIC')] = result[1]
+        globals()['fit_soep_{}_{}'.format(year, 'AIC')] = prep_fit_results_for_table(result[1])
+
+        globals()['fit_result_soep_{}_{}'.format(year, 'AIC2')] = result[1]
+        globals()['fit_soep_{}_{}'.format(year, 'AIC2')] = prep_fit_results_for_table(result[1])
 
 
     """
@@ -317,10 +330,34 @@ for b in [500000, 1000000, 1500000]:
                                                ]),
                                      columns=['', '01', '03', '05', '07', '09', '11', '13', '15', '17', 'SOEP02', 'SOEP07', 'SOEP12', 'SOEP17'])
 
+    df_wealth_results_AIC2 = pd.DataFrame(np.array([['best fitted model', '{}'.format(fit_result_psid_01_AIC2[0]), '{}'.format(fit_result_psid_03_AIC2[0]), '{}'.format(fit_result_psid_05_AIC2[0]), '{}'.format(fit_result_psid_07_AIC2[0]), '{}'.format(fit_result_psid_09_AIC2[0]), '{}'.format(fit_result_psid_11_AIC2[0]), '{}'.format(fit_result_psid_13_AIC2[0]), '{}'.format(fit_result_psid_15_AIC2[0]), '{}'.format(fit_result_psid_17_AIC2[0]), '{}'.format(fit_result_soep_02_AIC2[0]), '{}'.format(fit_result_soep_07_AIC2[0]), '{}'.format(fit_result_soep_12_AIC2[0]), '{}'.format(fit_result_soep_17_AIC2[0])],
+                                               ['a',               '{}'.format(fit_psid_01_AIC2[0]),  '{}'.format(fit_psid_03_AIC2[0]),  '{}'.format(fit_psid_05_AIC2[0]),  '{}'.format(fit_psid_07_AIC2[0]),  '{}'.format(fit_psid_09_AIC2[0]),  '{}'.format(fit_psid_11_AIC2[0]),  '{}'.format(fit_psid_13_AIC2[0]),  '{}'.format(fit_psid_15_AIC2[0]),  '{}'.format(fit_psid_17_AIC2[0]),  '{}'.format(fit_soep_02_AIC2[0]),  '{}'.format(fit_soep_07_AIC2[0]),  '{}'.format(fit_soep_12_AIC2[0]),  '{}'.format(fit_soep_17_AIC2[0])],
+                                               [' ',               '({})'.format(fit_psid_01_AIC2[1]),  '({})'.format(fit_psid_03_AIC2[1]),  '({})'.format(fit_psid_05_AIC2[1]),  '({})'.format(fit_psid_07_AIC2[1]),  '({})'.format(fit_psid_09_AIC2[1]),  '({})'.format(fit_psid_11_AIC2[1]),  '({})'.format(fit_psid_13_AIC2[1]),  '({})'.format(fit_psid_15_AIC2[1]),  '({})'.format(fit_psid_17_AIC2[1]),  '({})'.format(fit_soep_02_AIC2[1]),  '({})'.format(fit_soep_07_AIC2[1]),  '({})'.format(fit_soep_12_AIC2[1]),  '({})'.format(fit_soep_17_AIC2[1])],
+                                               ['c',               '{}'.format(fit_psid_01_AIC2[2]),  '{}'.format(fit_psid_03_AIC2[2]),  '{}'.format(fit_psid_05_AIC2[2]),  '{}'.format(fit_psid_07_AIC2[2]),  '{}'.format(fit_psid_09_AIC2[2]),  '{}'.format(fit_psid_11_AIC2[2]),  '{}'.format(fit_psid_13_AIC2[2]),  '{}'.format(fit_psid_15_AIC2[2]),  '{}'.format(fit_psid_17_AIC2[2]),  '{}'.format(fit_soep_02_AIC2[2]),  '{}'.format(fit_soep_07_AIC2[2]),  '{}'.format(fit_soep_12_AIC2[2]),  '{}'.format(fit_soep_17_AIC2[2])],
+                                               [' ',               '({})'.format(fit_psid_01_AIC2[3]),  '({})'.format(fit_psid_03_AIC2[3]),  '({})'.format(fit_psid_05_AIC2[3]),  '({})'.format(fit_psid_07_AIC2[3]),  '({})'.format(fit_psid_09_AIC2[3]),  '({})'.format(fit_psid_11_AIC2[3]),  '({})'.format(fit_psid_13_AIC2[3]),  '({})'.format(fit_psid_15_AIC2[3]),  '({})'.format(fit_psid_17_AIC2[3]),  '({})'.format(fit_soep_02_AIC2[3]),  '({})'.format(fit_soep_07_AIC2[3]),  '({})'.format(fit_soep_12_AIC2[3]),  '({})'.format(fit_soep_17_AIC2[3])],
+                                               ['p',               '{}'.format(fit_psid_01_AIC2[4]),  '{}'.format(fit_psid_03_AIC2[4]),  '{}'.format(fit_psid_05_AIC2[4]),  '{}'.format(fit_psid_07_AIC2[4]),  '{}'.format(fit_psid_09_AIC2[4]),  '{}'.format(fit_psid_11_AIC2[4]),  '{}'.format(fit_psid_13_AIC2[4]),  '{}'.format(fit_psid_15_AIC2[4]),  '{}'.format(fit_psid_17_AIC2[4]),  '{}'.format(fit_soep_02_AIC2[4]),  '{}'.format(fit_soep_07_AIC2[4]),  '{}'.format(fit_soep_12_AIC2[4]),  '{}'.format(fit_soep_17_AIC2[4])],
+                                               [' ',               '({})'.format(fit_psid_01_AIC2[5]),  '({})'.format(fit_psid_03_AIC2[5]),  '({})'.format(fit_psid_05_AIC2[5]),  '({})'.format(fit_psid_07_AIC2[5]),  '({})'.format(fit_psid_09_AIC2[5]),  '({})'.format(fit_psid_11_AIC2[5]),  '({})'.format(fit_psid_13_AIC2[5]),  '({})'.format(fit_psid_15_AIC2[5]),  '({})'.format(fit_psid_17_AIC2[5]),  '({})'.format(fit_soep_02_AIC2[5]),  '({})'.format(fit_soep_07_AIC2[5]),  '({})'.format(fit_soep_12_AIC2[5]),  '({})'.format(fit_soep_17_AIC2[5])],
+                                               ['q',               '{}'.format(fit_psid_01_AIC2[6]),  '{}'.format(fit_psid_03_AIC2[6]),  '{}'.format(fit_psid_05_AIC2[6]),  '{}'.format(fit_psid_07_AIC2[6]),  '{}'.format(fit_psid_09_AIC2[6]),  '{}'.format(fit_psid_11_AIC2[6]),  '{}'.format(fit_psid_13_AIC2[6]),  '{}'.format(fit_psid_15_AIC2[6]),  '{}'.format(fit_psid_17_AIC2[6]),  '{}'.format(fit_soep_02_AIC2[6]),  '{}'.format(fit_soep_07_AIC2[6]),  '{}'.format(fit_soep_12_AIC2[6]),  '{}'.format(fit_soep_17_AIC2[6])],
+                                               [' ',               '({})'.format(fit_psid_01_AIC2[7]),  '({})'.format(fit_psid_03_AIC2[7]),  '({})'.format(fit_psid_05_AIC2[7]),  '({})'.format(fit_psid_07_AIC2[7]),  '({})'.format(fit_psid_09_AIC2[7]),  '({})'.format(fit_psid_11_AIC2[7]),  '({})'.format(fit_psid_13_AIC2[7]),  '({})'.format(fit_psid_15_AIC2[7]),  '({})'.format(fit_psid_17_AIC2[7]),  '({})'.format(fit_soep_02_AIC2[7]),  '({})'.format(fit_soep_07_AIC2[7]),  '({})'.format(fit_soep_12_AIC2[7]),  '({})'.format(fit_soep_17_AIC2[7])],
+                                               ['lower bound b',   '{}'.format(b),                      '{}'.format(b),                     '{}'.format(b),                       '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b)],
+                                               ['LL',              '{}'.format(fit_psid_01_AIC2[11]) , '{}'.format(fit_psid_03_AIC2[11]) , '{}'.format(fit_psid_05_AIC2[11]) , '{}'.format(fit_psid_07_AIC2[11]) , '{}'.format(fit_psid_09_AIC2[11]) , '{}'.format(fit_psid_11_AIC2[11]) , '{}'.format(fit_psid_13_AIC2[11]) , '{}'.format(fit_psid_15_AIC2[11]) , '{}'.format(fit_psid_17_AIC2[11]) , '{}'.format(fit_soep_02_AIC2[11]) , '{}'.format(fit_soep_07_AIC2[11]) , '{}'.format(fit_soep_12_AIC2[11]) , '{}'.format(fit_soep_17_AIC2[11])],
+                                               ['AIC',             '{}'.format(fit_psid_01_AIC2[8]) , '{}'.format(fit_psid_03_AIC2[8]) , '{}'.format(fit_psid_05_AIC2[8]) , '{}'.format(fit_psid_07_AIC2[8]) , '{}'.format(fit_psid_09_AIC2[8]) , '{}'.format(fit_psid_11_AIC2[8]) , '{}'.format(fit_psid_13_AIC2[8]) , '{}'.format(fit_psid_15_AIC2[8]) , '{}'.format(fit_psid_17_AIC2[8]) , '{}'.format(fit_soep_02_AIC2[8]) , '{}'.format(fit_soep_07_AIC2[8]) , '{}'.format(fit_soep_12_AIC2[8]) , '{}'.format(fit_soep_17_AIC2[8])],
+                                               ['MSE',             '{}'.format(fit_psid_01_AIC2[9]), '{}'.format(fit_psid_03_AIC2[9]), '{}'.format(fit_psid_05_AIC2[9]), '{}'.format(fit_psid_07_AIC2[9]), '{}'.format(fit_psid_09_AIC2[9]), '{}'.format(fit_psid_11_AIC2[9]), '{}'.format(fit_psid_13_AIC2[9]), '{}'.format(fit_psid_15_AIC2[9]), '{}'.format(fit_psid_17_AIC2[9]), '{}'.format(fit_soep_02_AIC2[9]), '{}'.format(fit_soep_07_AIC2[9]), '{}'.format(fit_soep_12_AIC2[9]), '{}'.format(fit_soep_17_AIC2[9])],
+                                               ['RMSE',            '{}'.format(fit_psid_01_AIC2[10]), '{}'.format(fit_psid_03_AIC2[10]), '{}'.format(fit_psid_05_AIC2[10]), '{}'.format(fit_psid_07_AIC2[10]), '{}'.format(fit_psid_09_AIC2[10]), '{}'.format(fit_psid_11_AIC2[10]), '{}'.format(fit_psid_13_AIC2[10]), '{}'.format(fit_psid_15_AIC2[10]), '{}'.format(fit_psid_17_AIC2[10]), '{}'.format(fit_soep_02_AIC2[10]), '{}'.format(fit_soep_07_AIC2[10]), '{}'.format(fit_soep_12_AIC2[10]), '{}'.format(fit_soep_17_AIC2[10])],
+                                               ['emp. mean',       '{}'.format(fit_psid_01_AIC2[12]), '{}'.format(fit_psid_03_AIC2[12]), '{}'.format(fit_psid_05_AIC2[12]), '{}'.format(fit_psid_07_AIC2[12]), '{}'.format(fit_psid_09_AIC2[12]), '{}'.format(fit_psid_11_AIC2[12]), '{}'.format(fit_psid_13_AIC2[12]), '{}'.format(fit_psid_15_AIC2[12]), '{}'.format(fit_psid_17_AIC2[12]), '{}'.format(fit_soep_02_AIC2[12]), '{}'.format(fit_soep_07_AIC2[12]), '{}'.format(fit_soep_12_AIC2[12]), '{}'.format(fit_soep_17_AIC2[12])],
+                                               ['emp. var.',       '{}'.format(fit_psid_01_AIC2[13]), '{}'.format(fit_psid_03_AIC2[13]), '{}'.format(fit_psid_05_AIC2[13]), '{}'.format(fit_psid_07_AIC2[13]), '{}'.format(fit_psid_09_AIC2[13]), '{}'.format(fit_psid_11_AIC2[13]), '{}'.format(fit_psid_13_AIC2[13]), '{}'.format(fit_psid_15_AIC2[13]), '{}'.format(fit_psid_17_AIC2[13]), '{}'.format(fit_soep_02_AIC2[13]), '{}'.format(fit_soep_07_AIC2[13]), '{}'.format(fit_soep_12_AIC2[13]), '{}'.format(fit_soep_17_AIC2[13])],
+                                               ['pred. mean',      '{}'.format(fit_psid_01_AIC2[14]), '{}'.format(fit_psid_03_AIC2[14]), '{}'.format(fit_psid_05_AIC2[14]), '{}'.format(fit_psid_07_AIC2[14]), '{}'.format(fit_psid_09_AIC2[14]), '{}'.format(fit_psid_11_AIC2[14]), '{}'.format(fit_psid_13_AIC2[14]), '{}'.format(fit_psid_15_AIC2[14]), '{}'.format(fit_psid_17_AIC2[14]), '{}'.format(fit_soep_02_AIC2[14]), '{}'.format(fit_soep_07_AIC2[14]), '{}'.format(fit_soep_12_AIC2[14]), '{}'.format(fit_soep_17_AIC2[14])],
+                                               ['pred. var.',      '{}'.format(fit_psid_01_AIC2[15]), '{}'.format(fit_psid_03_AIC2[15]), '{}'.format(fit_psid_05_AIC2[15]), '{}'.format(fit_psid_07_AIC2[15]), '{}'.format(fit_psid_09_AIC2[15]), '{}'.format(fit_psid_11_AIC2[15]), '{}'.format(fit_psid_13_AIC2[15]), '{}'.format(fit_psid_15_AIC2[15]), '{}'.format(fit_psid_17_AIC2[15]), '{}'.format(fit_soep_02_AIC2[15]), '{}'.format(fit_soep_07_AIC2[15]), '{}'.format(fit_soep_12_AIC2[15]), '{}'.format(fit_soep_17_AIC2[15])],
+                                               ['n',               '{}'.format(fit_psid_01_AIC2[16]), '{}'.format(fit_psid_03_AIC2[16]), '{}'.format(fit_psid_05_AIC2[16]), '{}'.format(fit_psid_07_AIC2[16]), '{}'.format(fit_psid_09_AIC2[16]), '{}'.format(fit_psid_11_AIC2[16]), '{}'.format(fit_psid_13_AIC2[16]), '{}'.format(fit_psid_15_AIC2[16]), '{}'.format(fit_psid_17_AIC2[16]), '{}'.format(fit_soep_02_AIC2[16]), '{}'.format(fit_soep_07_AIC2[16]), '{}'.format(fit_soep_12_AIC2[16]), '{}'.format(fit_soep_17_AIC2[16])],
+                                               ['N',               '{}'.format(fit_psid_01_AIC2[17]), '{}'.format(fit_psid_03_AIC2[17]), '{}'.format(fit_psid_05_AIC2[17]), '{}'.format(fit_psid_07_AIC2[17]), '{}'.format(fit_psid_09_AIC2[17]), '{}'.format(fit_psid_11_AIC2[17]), '{}'.format(fit_psid_13_AIC2[17]), '{}'.format(fit_psid_15_AIC2[17]), '{}'.format(fit_psid_17_AIC2[17]), '{}'.format(fit_soep_02_AIC2[17]), '{}'.format(fit_soep_07_AIC2[17]), '{}'.format(fit_soep_12_AIC2[17]), '{}'.format(fit_soep_17_AIC2[17])]
+                                               ]),
+                                     columns=['', '01', '03', '05', '07', '09', '11', '13', '15', '17', 'SOEP02', 'SOEP07', 'SOEP12', 'SOEP17'])
+
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'wealth_data_fit_results_b{}.xlsx'.format(b), engine='openpyxl', mode='w') as writer:
         df_wealth_results_LR.to_excel(writer, sheet_name='wealth_fit_results_LR_{}'.format(b), index=False)
         df_wealth_results_AIC.to_excel(writer, sheet_name='wealth_fit_results_AIC_{}'.format(b), index=False)
+        df_wealth_results_AIC2.to_excel(writer, sheet_name='wealth_fit_results_AIC2_{}'.format(b), index=False)
 
 
 """
@@ -340,27 +377,16 @@ import matplotlib.pyplot as plt
 print(plt.rcParams.get('figure.figsize'))
 plt.rcParams['figure.figsize'] = 10, 8
 
-# LRtest
+# get plots, rerun wealth 2017
 Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=False, plot=True,
                 rejection_criterion='LRtest',
                 plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
-# AIC
-Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
-                bootstraps=bootstraps, return_bestmodel=True, plot=True,
-                rejection_criterion=['LRtest', 'AIC'],
-                plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 
 ## SOEP 2017
 
-# LRtest
+# get plots, rerun wealth 2017
 Paretobranchfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=b, x0=x0,
                 bootstraps=bootstraps, return_bestmodel=True, plot=True,
                 rejection_criterion='LRtest',
-                plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
-
-# AIC
-Paretobranchfit(x=dfSOEP['wealth_17'], weights=dfSOEP['weight_17'], b=b, x0=x0,
-                bootstraps=bootstraps, return_bestmodel=True, plot=True,
-                rejection_criterion='AIC',
                 plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
