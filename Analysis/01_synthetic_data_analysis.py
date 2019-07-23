@@ -118,7 +118,7 @@ Pareto_data_het_noise_1 = het(x=Pareto_data, sigma=sigma1, s=s)
 Pareto_data_het_noise_2 = het(x=Pareto_data, sigma=sigma2, s=s)
 
 # 5. Robustness Check: Generate IB1 distrib. data which are NOT Pareto (i.e. q!=1)
-IB1_data = IB1_icdf_ne(x=x, b=b, p=p, q=5)
+IB1_data = IB1_icdf_ne(x=x, b=b, p=p, q=10)
 
 # 6. Robustness Check: Generate GB1 distrib. data which are NOT Pareto (i.e. a!=-1)
 GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=5, a=-5)
@@ -487,24 +487,24 @@ if run_optimize:
     plt.show()
     plt.close()
 
-    ### nonPareto IB1
-    print('best fit for nonPareto_data_IB1_parms:', IB1_non_Pareto_parms[0][0])
-
-    # generate new data based on fitted parms and best model
-    a_fit, p_fit, q_fit = IB1_non_Pareto_parms[0][1][0], IB1_non_Pareto_parms[0][1][2], IB1_non_Pareto_parms[0][1][4]
-
-    # generate new data based on fitted parms and best model
-    GB1_data_fit, u = GB1_icdf_ne(x=IB1_data, b=b, a=a_fit, p=p_fit, q=q_fit)
-
-    # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
-
-    plt.scatter(u, IB1_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{IB1}}(b=250, p={{{}}}, q={{{}}})$'.format(p, 5))
-    plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b=250, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
-    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
-    for type in ['png', 'pdf']:
-        plt.savefig(fname=graphspath + 'fit_vs_data_nonPareto_IB1.' + type, dpi=300, format=type)
-    plt.show()
-    plt.close()
+    ### nonPareto IB1 TODO
+    # print('best fit for nonPareto_data_IB1_parms:', IB1_non_Pareto_parms[0][0])
+    #
+    # # generate new data based on fitted parms and best model
+    # a_fit, p_fit, q_fit = IB1_non_Pareto_parms[0][1][0], IB1_non_Pareto_parms[0][1][2], IB1_non_Pareto_parms[0][1][4]
+    #
+    # # generate new data based on fitted parms and best model
+    # GB1_data_fit, u = GB1_icdf_ne(x=IB1_data, b=b, a=a_fit, p=p_fit, q=q_fit)
+    #
+    # # Note: when using latex, doubling {{}} -> latex text, tripling {{{}}} -> use variables form .format()
+    #
+    # plt.scatter(u, IB1_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{{IB1}}(b=250, p={{{}}}, q={{{}}})$'.format(p, 5))
+    # plt.plot(u, GB1_data_fit, color='red', alpha=.75, label=r'$icdf_{{GB1}}(b=250, \hat{{a}}={{{}}}, \hat{{p}}={{{}}}, \hat{{q}}={{{}}})$'.format(np.around(a_fit,3), np.around(p_fit,3), np.around(q_fit,3)))
+    # plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
+    # for type in ['png', 'pdf']:
+    #     plt.savefig(fname=graphspath + 'fit_vs_data_nonPareto_IB1.' + type, dpi=300, format=type)
+    # plt.show()
+    # plt.close()
 
 
     ### nonParto GB1

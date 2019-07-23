@@ -3,7 +3,8 @@ from .distributions import *
 from prettytable import PrettyTable
 
 class Pareto:
-    def __init__(self, x, b, p):
+    def __init__(self, x, W, b, p):
+        # TODO
         x = np.array(x)
         x = x[x>b]
         n, self.df = len(x), 1
@@ -11,7 +12,8 @@ class Pareto:
         self.LL = n*np.log(p) + p*n*np.log(b) - (p+1)*sum
 
 class IB1:
-    def __init__(self, x, b, p, q):
+    def __init__(self, x, W, b, p, q):
+        # TODO
         x = np.array(x)
         x = x[x>b]
         n, self.df = len(x), 2
@@ -19,7 +21,8 @@ class IB1:
         self.LL = p*n*np.log(b) - n*lnb + (q-1)*np.sum(np.log(1-b/x)) - (p+1)*np.sum(np.log(x))
 
 class GB1:
-    def __init__(self, x, b, a, p, q):
+    def __init__(self, x, W, b, a, p, q):
+        # TODO
         x = np.array(x)
         x = x[x>b]
         n, self.df = len(x), 3
@@ -27,7 +30,8 @@ class GB1:
         self.LL = n*np.log(abs(a)) + (a*p-1)*np.sum(np.log(x)) + (q-1)*np.sum(np.log(1-(x/b)**a)) - n*a*p*np.log(b) - n*lnb
 
 class GB:
-    def __init__(self, x, a, b, c, p, q):
+    def __init__(self, x, W, a, b, c, p, q):
+        # TODO
         x = np.array(x)
         x = x[x>b]
         n, self.df = len(x), 4
