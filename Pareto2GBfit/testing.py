@@ -43,6 +43,12 @@ class GB:
 
 class LRtest:
     def __init__(self, LL1, LL2, df, verbose=True):
+        """
+        :param LL1: log-likelihood with H0
+        :param LL2: log-likelihood with H1/fitted parameters
+        :param df: specify dfs, # of tested params
+        :param verbose: display results in table
+        """
         self.LR = LR = 2*(LL2- LL1)
         self.pval = pval = chi2.sf(LR, df=df)
         tbl = PrettyTable()

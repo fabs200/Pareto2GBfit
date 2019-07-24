@@ -298,7 +298,7 @@ def GB_icdf_ne(x, a, b, c, p, q):
     # UG: c==0, 0<a<1; Half Normal: c==0, a==2, p==.5; Rayleigh: c==0,p==1, a==2
     if (c==0) and ((a==1) or (0<a<1) or ((a==2) and (a==.5)) or ((a==2) and (p==1))):
         x = x[x<=b]
-    if (0<c<1):
+    if (0<c<1) and (-np.inf<a<-1e-10):
         x = x[x>b]
     widgets = ['GB_icdf_ne\t', progressbar.Percentage(), progressbar.Bar(marker='>'), progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets, maxval=len(x)).start()
