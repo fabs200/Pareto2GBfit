@@ -118,7 +118,7 @@ Pareto_data_het_noise_1 = het(x=Pareto_data, sigma=sigma1, s=s)
 Pareto_data_het_noise_2 = het(x=Pareto_data, sigma=sigma2, s=s)
 
 # 5. Robustness Check: Generate GB1 distrib. data which are NOT Pareto (i.e. a!=-1)
-GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=5, a=-5)
+GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=5, a=-2) #q=5, a=-5: ??? ;q=10, a=-2: ??? ; q=5, a=-2: ??? ;
 
 # 6. Robustness Check: Generate GB distrib. data which are NOT Pareto (i.e. q!=1)
 GB_data = GB_icdf_ne(x=x, a=-2, c=.5, b=b, p=p, q=10)
@@ -137,7 +137,7 @@ if plot_data:
     plt.scatter(u, Pareto_data_gauss_noise_2, marker="o", s=2, color='blue', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,200^2)$')
     plt.scatter(u, Pareto_data_gauss_noise_1, marker="o", s=2, color='orangered', alpha=.75, label=r'$x+\epsilon$ with $\epsilon=N(0,100^2)$')
     plt.scatter(u, Pareto_data, marker="o", s=2, color='black', alpha=.75, label=r'$icdf_{Pareto}(b=250, p=2.5)=x$')
-    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x');
+    plt.legend(loc='upper left'); plt.xlabel('quantiles'); plt.ylabel('x')
     for type in ['png', 'pdf']:
         plt.savefig(fname=graphspath + 'icdf_gauss_noise.' + type, dpi=300, format=type)
     plt.show()
@@ -230,45 +230,41 @@ if run_descriptives:
 
 if run_optimize:
 
+    x0=(-1, .5, 1, 1)
+    bootstraps=(250, 250, 250, 250)
+    rejection_criteria = ['LRtest', 'AIC', 'AIC2']
+    cosmetics = {'bins': 300, 'col_data': 'blue', 'col_fit': 'red'}
+    plot = True
+
     ## rejection criterion: LRtest, AIC, AIC2 (method #2)
 
-    Pareto_data_parms = Paretobranchfit(x=Pareto_data, x0=(-1, .5, 1, 1), b=250,
-                                        bootstraps=(250, 250, 250, 250),
-                                        return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
-                                        plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
+    Pareto_data_parms = Paretobranchfit(x=Pareto_data, x0=x0, b=b, bootstraps=bootstraps, return_bestmodel=True,
+                                        rejection_criterion=rejection_criteria, plot=plot, plot_cosmetics=cosmetics)
 
-    Pareto_data_gauss_noise_1_parms = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=(-1, .5, 1, 1), b=250,
-                                              bootstraps=(10, 10, 10, 10),
-                                                      return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
-                                                      plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
+    Pareto_data_gauss_noise_1_parms = Paretobranchfit(x=Pareto_data_gauss_noise_1, x0=x0, b=b, bootstraps=bootstraps,
+                                                      return_bestmodel=True, plot=plot,
+                                                      rejection_criterion=rejection_criteria, plot_cosmetics=cosmetics)
 
-    Pareto_data_gauss_noise_2_parms = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=(-1, .5, 1, 1), b=250,
-                                                      bootstraps=(250, 250, 250, 250),
-                                                      return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
-                                                      plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
+    Pareto_data_gauss_noise_2_parms = Paretobranchfit(x=Pareto_data_gauss_noise_2, x0=x0, b=b, bootstraps=bootstraps,
+                                                      return_bestmodel=True, plot=plot,
+                                                      rejection_criterion=rejection_criteria, plot_cosmetics=cosmetics)
 
-    Pareto_data_het_noise_1_parms = Paretobranchfit(x=Pareto_data_het_noise_1, x0=(-1, .5, 1, 1), b=250,
-                                                    bootstraps=(250, 250, 250, 250),
-                                                    return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
-                                                    plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
+    Pareto_data_het_noise_1_parms = Paretobranchfit(x=Pareto_data_het_noise_1, x0=x0, b=b, bootstraps=bootstraps,
+                                                    return_bestmodel=True, plot=plot,
+                                                    rejection_criterion=rejection_criteria, plot_cosmetics=cosmetics)
 
-    Pareto_data_het_noise_2_parms = Paretobranchfit(x=Pareto_data_het_noise_2, x0=(-1, .5, 1, 1), b=250,
-                                                    bootstraps=(250, 250, 250, 250),
-                                                    return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
-                                                    plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
+    Pareto_data_het_noise_2_parms = Paretobranchfit(x=Pareto_data_het_noise_2, x0=x0, b=b, bootstraps=bootstraps,
+                                                    return_bestmodel=True, plot=plot,
+                                                    rejection_criterion=rejection_criteria, plot_cosmetics=cosmetics)
 
 
     # Robustness Check: NON Pareto data
 
-    GB1_non_Pareto_parms = Paretobranchfit(x=GB1_data, x0=(-1, .5, 1, 1), b=250,
-                                              bootstraps=(10, 10, 10, 10),
-                                               return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
-                                               plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
+    GB1_non_Pareto_parms = Paretobranchfit(x=GB1_data, x0=x0, b=b, bootstraps=bootstraps, return_bestmodel=True,
+                                           plot=plot, rejection_criterion=rejection_criteria, plot_cosmetics=cosmetics)
 
-    GB_non_Pareto_parms = Paretobranchfit(x=GB_data, x0=(-1, .5, 1, 1), b=250,
-                                              bootstraps=(10, 10, 10, 10),
-                                              return_bestmodel=True, rejection_criterion=['LRtest', 'AIC', 'AIC2'], plot=True,
-                                              plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
+    GB_non_Pareto_parms = Paretobranchfit(x=GB_data, x0=x0, b=b, bootstraps=bootstraps, return_bestmodel=True,
+                                          plot=plot, rejection_criterion=rejection_criteria, plot_cosmetics=cosmetics)
 
 """
 --------------------------------
@@ -347,33 +343,35 @@ if run_optimize:
 
 
     # NON Pareto data: shorter names
-    parms15 = prep_fit_results_for_table(GB_non_Pareto_parms[0])
-    parms16 = prep_fit_results_for_table(GB_non_Pareto_parms[1])
-    parms17 = prep_fit_results_for_table(GB1_non_Pareto_parms[0])
-    parms18 = prep_fit_results_for_table(GB1_non_Pareto_parms[1])
+    parms15 = prep_fit_results_for_table(GB1_non_Pareto_parms[0])
+    parms16 = prep_fit_results_for_table(GB1_non_Pareto_parms[1])
+    parms17 = prep_fit_results_for_table(GB1_non_Pareto_parms[2])
+    parms18 = prep_fit_results_for_table(GB_non_Pareto_parms[0])
+    parms19 = prep_fit_results_for_table(GB_non_Pareto_parms[1])
+    parms20 = prep_fit_results_for_table(GB_non_Pareto_parms[2])
 
-    df_non_Pareto_fit_results = pd.DataFrame(np.array([['best fitted model', '{}'.format(GB_non_Pareto_parms[0][0]), '{}'.format(GB_non_Pareto_parms[1][0]), '{}'.format(GB1_non_Pareto_parms[0][0]), '{}'.format(GB1_non_Pareto_parms[1][0])],
-                                           ['a',               '{}'.format(parms15[0]),     '{}'.format(parms16[0]),    '{}'.format(parms17[0]),    '{}'.format(parms18[0])],
-                                           [' ',               '({})'.format(parms15[1]),     '({})'.format(parms16[1]),    '({})'.format(parms17[1]),    '({})'.format(parms18[1])],
-                                           ['c',               '{}'.format(parms15[2]),     '{}'.format(parms16[2]),    '{}'.format(parms17[2]),    '{}'.format(parms18[2])],
-                                           [' ',               '({})'.format(parms15[3]),     '({})'.format(parms16[3]),    '({})'.format(parms17[3]),    '({})'.format(parms18[3])],
-                                           ['p',               '{}'.format(parms15[4]),     '{}'.format(parms16[4]),    '{}'.format(parms17[4]),    '{}'.format(parms18[4])],
-                                           [' ',               '({})'.format(parms15[5]),     '({})'.format(parms16[5]),    '({})'.format(parms17[5]),    '({})'.format(parms18[5])],
-                                           ['q',               '{}'.format(parms15[6]),     '{}'.format(parms16[6]),    '{}'.format(parms17[6]),    '{}'.format(parms18[6])],
-                                           [' ',               '({})'.format(parms15[7]),     '({})'.format(parms16[7]),    '({})'.format(parms17[7]),    '({})'.format(parms18[7])],
-                                           ['lower bound b',   '{}'.format(b),              '{}'.format(b),             '{}'.format(b),             '{}'.format(b)],
-                                           ['LL',              '{}'.format(parms15[11]),    '{}'.format(parms16[11]),   '{}'.format(parms17[11]),   '{}'.format(parms18[11])],
-                                           ['AIC',             '{}'.format(parms15[8]),     '{}'.format(parms16[8]),    '{}'.format(parms17[8]),    '{}'.format(parms18[8])],
-                                           ['MSE',             '{}'.format(parms15[9]),     '{}'.format(parms16[9]),    '{}'.format(parms17[9]),    '{}'.format(parms18[9])],
-                                           ['RMSE',            '{}'.format(parms15[10]),    '{}'.format(parms16[10]),   '{}'.format(parms17[10]),   '{}'.format(parms18[10])],
-                                           ['emp. mean',       '{}'.format(parms15[12]),    '{}'.format(parms16[12]),   '{}'.format(parms17[12]),   '{}'.format(parms18[12])],
-                                           ['emp. var.',       '{}'.format(parms15[13]),    '{}'.format(parms16[13]),   '{}'.format(parms17[13]),   '{}'.format(parms18[13])],
-                                           ['pred. mean',      '{}'.format(parms15[14]),    '{}'.format(parms16[14]),   '{}'.format(parms17[14]),   '{}'.format(parms18[14])],
-                                           ['pred. var.',      '{}'.format(parms15[15]),    '{}'.format(parms16[15]),   '{}'.format(parms17[15]),   '{}'.format(parms18[15])],
-                                           ['n',               '{}'.format(parms15[16]),    '{}'.format(parms16[16]),   '{}'.format(parms17[16]),   '{}'.format(parms18[16])],
-                                           ['N',               '{}'.format(parms15[17]),    '{}'.format(parms16[17]),   '{}'.format(parms17[17]),   '{}'.format(parms18[17])],
+    df_non_Pareto_fit_results = pd.DataFrame(np.array([['best fitted model', '{}'.format(GB1_non_Pareto_parms[0][0]), '{}'.format(GB1_non_Pareto_parms[1][0]), '{}'.format(GB1_non_Pareto_parms[2][0]), '{}'.format(GB_non_Pareto_parms[0][0]), '{}'.format(GB_non_Pareto_parms[1][0]), '{}'.format(GB_non_Pareto_parms[2][0])],
+                                           ['a',               '{}'.format(parms15[0]),     '{}'.format(parms16[0]),    '{}'.format(parms17[0]),        '{}'.format(parms18[0]),       '{}'.format(parms19[0]),       '{}'.format(parms20[0])],
+                                           [' ',               '({})'.format(parms15[1]),     '({})'.format(parms16[1]),    '({})'.format(parms17[1]),  '({})'.format(parms18[1]),     '({})'.format(parms19[1]),     '({})'.format(parms20[1])],
+                                           ['c',               '{}'.format(parms15[2]),     '{}'.format(parms16[2]),    '{}'.format(parms17[2]),        '{}'.format(parms18[2]),       '{}'.format(parms19[2]),       '{}'.format(parms20[2])],
+                                           [' ',               '({})'.format(parms15[3]),     '({})'.format(parms16[3]),    '({})'.format(parms17[3]),  '({})'.format(parms18[3]),     '({})'.format(parms19[3]),     '({})'.format(parms20[3])],
+                                           ['p',               '{}'.format(parms15[4]),     '{}'.format(parms16[4]),    '{}'.format(parms17[4]),        '{}'.format(parms18[4]),       '{}'.format(parms19[4]),       '{}'.format(parms20[4])],
+                                           [' ',               '({})'.format(parms15[5]),     '({})'.format(parms16[5]),    '({})'.format(parms17[5]),  '({})'.format(parms18[5]),     '({})'.format(parms19[5]),     '({})'.format(parms20[5])],
+                                           ['q',               '{}'.format(parms15[6]),     '{}'.format(parms16[6]),    '{}'.format(parms17[6]),        '{}'.format(parms18[6]),       '{}'.format(parms19[6]),       '{}'.format(parms20[6])],
+                                           [' ',               '({})'.format(parms15[7]),     '({})'.format(parms16[7]),    '({})'.format(parms17[7]),  '({})'.format(parms18[7]),     '({})'.format(parms19[7]),     '({})'.format(parms20[7])],
+                                           ['lower bound b',   '{}'.format(b),              '{}'.format(b),             '{}'.format(b),                 '{}'.format(b),                '{}'.format(b),                '{}'.format(b)],
+                                           ['LL',              '{}'.format(parms15[11]),    '{}'.format(parms16[11]),   '{}'.format(parms17[11]),       '{}'.format(parms18[11]),      '{}'.format(parms19[11]),      '{}'.format(parms20[11])],
+                                           ['AIC',             '{}'.format(parms15[8]),     '{}'.format(parms16[8]),    '{}'.format(parms17[8]),        '{}'.format(parms18[8]),       '{}'.format(parms19[8]),       '{}'.format(parms20[8])],
+                                           ['MSE',             '{}'.format(parms15[9]),     '{}'.format(parms16[9]),    '{}'.format(parms17[9]),        '{}'.format(parms18[9]),       '{}'.format(parms19[9]),       '{}'.format(parms20[9])],
+                                           ['RMSE',            '{}'.format(parms15[10]),    '{}'.format(parms16[10]),   '{}'.format(parms17[10]),       '{}'.format(parms18[10]),      '{}'.format(parms19[10]),      '{}'.format(parms20[10])],
+                                           ['emp. mean',       '{}'.format(parms15[12]),    '{}'.format(parms16[12]),   '{}'.format(parms17[12]),       '{}'.format(parms18[12]),      '{}'.format(parms19[12]),      '{}'.format(parms20[12])],
+                                           ['emp. var.',       '{}'.format(parms15[13]),    '{}'.format(parms16[13]),   '{}'.format(parms17[13]),       '{}'.format(parms18[13]),      '{}'.format(parms19[13]),      '{}'.format(parms20[13])],
+                                           ['pred. mean',      '{}'.format(parms15[14]),    '{}'.format(parms16[14]),   '{}'.format(parms17[14]),       '{}'.format(parms18[14]),      '{}'.format(parms19[14]),      '{}'.format(parms20[14])],
+                                           ['pred. var.',      '{}'.format(parms15[15]),    '{}'.format(parms16[15]),   '{}'.format(parms17[15]),       '{}'.format(parms18[15]),      '{}'.format(parms19[15]),      '{}'.format(parms20[15])],
+                                           ['n',               '{}'.format(parms15[16]),    '{}'.format(parms16[16]),   '{}'.format(parms17[16]),       '{}'.format(parms18[16]),      '{}'.format(parms19[16]),      '{}'.format(parms20[16])],
+                                           ['N',               '{}'.format(parms15[17]),    '{}'.format(parms16[17]),   '{}'.format(parms17[17]),       '{}'.format(parms18[17]),      '{}'.format(parms19[17]),      '{}'.format(parms20[17])],
                                            ]),
-                                 columns=['', 'GB_non_Pareto_LR', 'GB_non_Pareto_AIC', 'GB1_non_Pareto_LR', 'GB1_non_Pareto_AIC'])
+                                 columns=['', 'GB_non_Pareto_LR', 'GB_non_Pareto_AIC', 'GB_non_Pareto_AIC2', 'GB1_non_Pareto_LR', 'GB1_non_Pareto_AIC', 'GB1_non_Pareto_AIC2'])
 
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'non_pareto_fit_results.xlsx', engine='openpyxl', mode='w') as writer:

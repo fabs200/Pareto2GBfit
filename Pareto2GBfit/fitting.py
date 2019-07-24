@@ -96,20 +96,20 @@ class gof:
 
         if len(parms) == 1:
             self.ll = ll = (-1)*Pareto_ll(parms=parms, x=x, W=W, b=b)
-            self.aic = 2*(-1)*ll + 2
-            self.bic = 2*(-1)*ll + np.log(n)
+            self.aic = -2*ll + 2
+            self.bic = -2*ll + np.log(n)
         if len(parms) == 2:
             self.ll = ll = (-1)*IB1_ll(parms=parms, x=x, W=W, b=b)
-            self.aic = 2*(-1)*ll + 2*2
-            self.bic = 2*(-1)*ll + np.log(n)*2
+            self.aic = -2*ll + 2*2
+            self.bic = -2*ll + np.log(n)*2
         if len(parms) == 3:
             self.ll = ll = (-1)*GB1_ll(parms=parms, x=x, W=W, b=b)
-            self.aic = 2*(-1)*ll + 2*3
-            self.bic = 2*(-1)*ll + np.log(n)*3
+            self.aic = -2*ll + 2*3
+            self.bic = -2*ll + np.log(n)*3
         if len(parms) == 4:
             self.ll = ll = (-1)*GB_ll(parms, x=x, W=W, b=b)
-            self.aic = 2*(-1)*ll + 2*4
-            self.bic = 2*(-1)*ll + np.log(n)*4
+            self.aic = -2*ll + 2*4
+            self.bic = -2*ll + np.log(n)*4
 
 """ 
 ---------------------------------------------------
@@ -1927,16 +1927,16 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
     if rejection_criterion == 'LRtest' or 'LRtest' in rejection_criterion:
         # alpha = .05
         # 1. LRtest IB1 restriction q=1
-        LRtestIB1_restrict = LRtest(IB1(x=x, W=weights, b=b, p=p_fit2, q=1).LL,
-                                    IB1(x=x, W=weights, b=b, p=p_fit2, q=q_fit2).LL,
+        LRtestIB1_restrict = LRtest(LL1=IB1(x=x, W=weights, b=b, p=p_fit2, q=1).LL,
+                                    LL2=IB1(x=x, W=weights, b=b, p=p_fit2, q=q_fit2).LL,
                                     df=1, verbose=False) #df: # of tested parms
         # 2. LRtest GB1 restriction a=-1
-        LRtestGB1_restrict = LRtest(GB1(x=x, W=weights, b=b, a=-1, p=p_fit3, q=q_fit3).LL,
-                                    GB1(x=x, W=weights, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
+        LRtestGB1_restrict = LRtest(LL1=GB1(x=x, W=weights, b=b, a=-1, p=p_fit3, q=q_fit3).LL,
+                                    LL2=GB1(x=x, W=weights, b=b, a=a_fit3, p=p_fit3, q=q_fit3).LL,
                                     df=1, verbose=False) #df: # of tested parms
         # 3. LRtest GB restriction c=0
-        LRtestGB_restrict = LRtest(GB(x=x, W=weights, b=b, a=a_fit4, c=0, p=p_fit4, q=q_fit4).LL,
-                                   GB(x=x, W=weights, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
+        LRtestGB_restrict = LRtest(LL1=GB(x=x, W=weights, b=b, a=a_fit4, c=0, p=p_fit4, q=q_fit4).LL,
+                                   LL2=GB(x=x, W=weights, b=b, a=a_fit4, c=c_fit4, p=p_fit4, q=q_fit4).LL,
                                    df=1, verbose=False) #df: # of tested parms
 
         # LR testing procedure (paper chp. 2.3)
@@ -2031,7 +2031,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bo
         # calculate AICs of models with restriction of Pareto branch (Note: x_hat not needed, x_hat=x placeholder)
         IB1_aic_restrict = gof(x=x, x_hat=x, b=b, W=weights, parms=[IB1_fit[0], 1]).aic
         GB1_aic_restrict = gof(x=x, x_hat=x, b=b, W=weights, parms=[-1, GB1_fit[2], GB1_fit[4]]).aic
-        GB_aic_restrict  = gof(x=x, x_hat=x, b=b, W=weights, parms=[GB1_fit[0], 0, GB1_fit[4], GB1_fit[6]]).aic
+        GB_aic_restrict  = gof(x=x, x_hat=x, b=b, W=weights, parms=[GB_fit[0], 0, GB_fit[4], GB_fit[6]]).aic
 
         # AIC testing procedure
         Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
