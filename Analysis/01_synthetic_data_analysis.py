@@ -234,7 +234,7 @@ if run_optimize:
     bootstraps=(250, 250, 250, 250)
     rejection_criteria = ['LRtest', 'AIC', 'AIC2']
     cosmetics = {'bins': 300, 'col_data': 'blue', 'col_fit': 'red'}
-    plot = True
+    plot = False
 
     ## rejection criterion: LRtest, AIC, AIC2 (method #2)
 

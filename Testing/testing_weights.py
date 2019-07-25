@@ -1,10 +1,10 @@
 # x=Pareto_data
 # weights=np.array([1])
 
-b=500000
-x0=(1)
+b=1500000
+# x0=(1)
 # x0=(-.1,1,1)
-# x0=(-.1,.1,1,1)
+x0=(-.1,.1,1,1)
 bootstraps=20
 method='SLSQP'
 omit_missings=True
@@ -21,6 +21,11 @@ basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None,
                       'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123}
 slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}
+
+
+verbose_single=False
+
+
 num_bins=200
 col_fit='blue'
 col_model='red'
@@ -28,10 +33,8 @@ col_model='red'
 x=dfPSID['wealth_15']
 weights=dfPSID['weight_15']
 
-x=dfSOEP['wealth_12']
-weights=dfSOEP['weight_12']
-weighting = 'multiply'
-
+x=dfSOEP['wealth_17']
+weights=dfSOEP['weight_17']
 
 weights=np.array([1])
 

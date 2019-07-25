@@ -1746,8 +1746,8 @@ Pareto branch fitting
 ---------------------------------------------------
 """
 
-def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,-.1]), weights=np.array([1]), bootstraps=None,
-                    method='SLSQP', rejection_criterion='LRtest', alpha=.05,
+def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), bootstraps=None,
+                    method='SLSQP', rejection_criterion=['LRtest', 'AIC', 'AIC2'], alpha=.05,
                     verbose_bootstrap=False, verbose_single=False, verbose=True, verbose_parms=False,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
                     suppress_warnings=True, omit_missings=True,
