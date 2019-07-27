@@ -562,11 +562,10 @@ def Paretofit(x, b, x0=1, weights=np.array([1]), bootstraps=None, method='SLSQP'
 
         if return_gofs:
             return_parameters = False
-            return np.mean(p_fit_bs), np.std(p_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N
+            return np.mean(p_fit_bs), np.std(p_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N, np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5)
 
     if return_parameters:
-        return np.mean(p_fit_bs), np.std(p_fit_bs)
-
+        return np.mean(p_fit_bs), np.std(p_fit_bs), np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5)
 
 def IB1fit(x, b, x0=(1,1), weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
@@ -938,10 +937,13 @@ def IB1fit(x, b, x0=(1,1), weights=np.array([1]), bootstraps=None, method='SLSQP
 
         if return_gofs:
             return_parameters = False
-            return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N
+            return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), \
+                   aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N, \
+                   np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5), np.percentile(q_fit_bs, 2.5), np.percentile(q_fit_bs, 97.5)
 
     if return_parameters:
-        return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
+        return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), \
+               np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5), np.percentile(q_fit_bs, 2.5), np.percentile(q_fit_bs, 97.5)
 
 
 def GB1fit(x, b, x0=(-.1, 1, 1), weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
@@ -1326,10 +1328,15 @@ def GB1fit(x, b, x0=(-.1, 1, 1), weights=np.array([1]), bootstraps=None, method=
 
         if return_gofs:
             return_parameters = False
-            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N
+            return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), \
+                   aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N,\
+                   np.percentile(a_fit_bs, 2.5), np.percentile(a_fit_bs, 97.5), np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5),\
+                   np.percentile(q_fit_bs, 2.5), np.percentile(q_fit_bs, 97.5)
 
     if return_parameters:
-        return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
+        return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs),
+        np.percentile(a_fit_bs, 2.5), np.percentile(a_fit_bs, 97.5), np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5), \
+        np.percentile(q_fit_bs, 2.5), np.percentile(q_fit_bs, 97.5)
 
 
 def GBfit(x, b, x0=(-.1, .1, 1, 1), weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
@@ -1734,10 +1741,15 @@ def GBfit(x, b, x0=(-.1, .1, 1, 1), weights=np.array([1]), bootstraps=None, meth
         if return_gofs:
             return_parameters = False
             return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), \
-                   np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N
+                   np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), \
+                   aic, bic, mae, mse, rmse, rrmse, ll, soe, emp_mean, emp_var, pred_mean, pred_var, k, N, \
+                   np.percentile(a_fit_bs, 2.5), np.percentile(a_fit_bs, 97.5), np.percentile(c_fit_bs, 2.5), np.percentile(c_fit_bs, 97.5), \
+                   np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5), np.percentile(q_fit_bs, 2.5), np.percentile(q_fit_bs, 97.5)
 
     if return_parameters:
-        return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
+        return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(c_fit_bs), np.std(c_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), \
+               np.percentile(a_fit_bs, 2.5), np.percentile(a_fit_bs, 97.5), np.percentile(c_fit_bs, 2.5), np.percentile(c_fit_bs, 97.5), \
+               np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5), np.percentile(q_fit_bs, 2.5), np.percentile(q_fit_bs, 97.5)
 
 
 """ 
@@ -1747,10 +1759,10 @@ Pareto branch fitting
 """
 
 def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), bootstraps=None,
-                    method='SLSQP', rejection_criterion=['LRtest', 'AIC', 'AIC_alternative'], alpha=.05,
+                    method='SLSQP', rejection_criterion=['LRtest', 'AIC'], alpha=.05,
                     verbose_bootstrap=False, verbose_single=False, verbose=True, verbose_parms=False,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
-                    suppress_warnings=True, omit_missings=True,
+                    suppress_warnings=True, omit_missings=True, verbose_ci=False,
           plot_cosmetics={'bins': 250, 'col_data': 'blue', 'col_fit': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
@@ -1923,6 +1935,12 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
     a_fit3, a_se3, p_fit3, p_se3, q_fit3, q_se3 = GB1_fit[:6]
     a_fit4, a_se4, c_fit4, c_se4, p_fit4, p_se4, q_fit4, q_se4 = GB_fit[:8]
 
+    # unpack CIs
+    p_cilo1, p_cihi1 = Pareto_fit[16:]
+    p_cilo2, p_cihi2, q_cilo2, q_cihi2 = IB1_fit[18:]
+    a_cilo3, a_cihi3, p_cilo3, p_cihi3, q_cilo3, q_cihi3 = GB1_fit[20:]
+    a_cilo4, a_cihi4, c_cilo4, c_cihi4, p_cilo4, p_cihi4, q_cilo4, q_cihi4 = GB_fit[22:]
+
     # run rejection based on LRtest
     if rejection_criterion == 'LRtest' or 'LRtest' in rejection_criterion:
         # alpha = .05
@@ -2071,12 +2089,20 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
         tbl_parms = PrettyTable()
         tbl_parms.field_names = ['parameter', 'Pareto', 'IB1', 'GB1', 'GB']
         tbl_parms.add_row(['a', '-', '-', '{:.3f}'.format(GB1_fit[0]), '{:.3f}'.format(GB_fit[0])])
+        if verbose_ci:
+            tbl_parms.add_row(['', '', '', '[{:.3f};{:.3f}]'.format(a_cilo3, a_cihi3), '[{:.3f};{:.3f}]'.format(a_cilo4, a_cihi4)])
         tbl_parms.add_row(['', '', '', '({:.3f})'.format(GB1_fit[1]), '({:.3f})'.format(GB_fit[1])])
         tbl_parms.add_row(['c', '-', '-', '-', '{:.3f}'.format(GB_fit[2])])
+        if verbose_ci:
+            tbl_parms.add_row(['', '', '', '', '[{:.3f};{:.3f}]'.format(c_cilo4, c_cihi4)])
         tbl_parms.add_row(['', '', '', '', '({:.3f})'.format(GB_fit[3])])
         tbl_parms.add_row(['p', '{:.3f}'.format(Pareto_fit[0]), '{:.3f}'.format(IB1_fit[0]), '{:.3f}'.format(GB1_fit[2]), '{:.3f}'.format(GB_fit[4])])
+        if verbose_ci:
+            tbl_parms.add_row(['', '[{:.3f},{:.3f}]'.format(p_cilo1, p_cihi1), '[{:.3f},{:.3f}]'.format(p_cilo2, p_cihi2), '[{:.3f},{:.3f}]'.format(p_cilo3, p_cihi3), '[{:.3f},{:.3f}]'.format(p_cilo4, p_cihi4)])
         tbl_parms.add_row(['', '({:.3f})'.format(Pareto_fit[1]), '({:.3f})'.format(IB1_fit[1]), '({:.3f})'.format(GB1_fit[3]), '({:.3f})'.format(GB_fit[5])])
         tbl_parms.add_row(['q', '-', '{:.3f}'.format(IB1_fit[2]), '{:.3f}'.format(GB1_fit[4]), '{:.3f}'.format(GB_fit[6])])
+        if verbose_ci:
+            tbl_parms.add_row(['', '', '[{:.3f},{:.3f}]'.format(q_cilo2, q_cihi2), '[{:.3f},{:.3f}]'.format(q_cilo3, q_cihi3), '[{:.3f},{:.3f}]'.format(q_cilo4, q_cihi4)])
         tbl_parms.add_row(['', '', '({:.3f})'.format(IB1_fit[3]), '({:.3f})'.format(GB1_fit[5]), '({:.3f})'.format(GB_fit[7])])
 
         tbl_gof = PrettyTable()
