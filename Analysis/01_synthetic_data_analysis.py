@@ -118,7 +118,7 @@ Pareto_data_het_noise_1 = het(x=Pareto_data, sigma=sigma1, s=s)
 Pareto_data_het_noise_2 = het(x=Pareto_data, sigma=sigma2, s=s)
 
 # 5. Robustness Check: Generate GB1 distrib. data which are NOT Pareto (i.e. a!=-1)
-GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=5, a=-2) #q=5, a=-5: ??? ;q=10, a=-2: ??? ; q=5, a=-2: ??? ;
+GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=5, a=-2)
 
 # 6. Robustness Check: Generate GB distrib. data which are NOT Pareto (i.e. q!=1)
 GB_data = GB_icdf_ne(x=x, a=-2, c=.5, b=b, p=p, q=10)
@@ -232,11 +232,11 @@ if run_optimize:
 
     x0=(-1, .5, 1, 1)
     bootstraps=(250, 250, 250, 250)
-    rejection_criteria = ['LRtest', 'AIC', 'AIC2']
+    rejection_criteria = ['LRtest', 'AIC', 'AIC_alternative']
     cosmetics = {'bins': 300, 'col_data': 'blue', 'col_fit': 'red'}
     plot = False
 
-    ## rejection criterion: LRtest, AIC, AIC2 (method #2)
+    ## rejection criterion: LRtest, AIC, AIC alternative (method #2)
 
     Pareto_data_parms = Paretobranchfit(x=Pareto_data, x0=x0, b=b, bootstraps=bootstraps, return_bestmodel=True,
                                         rejection_criterion=rejection_criteria, plot=plot, plot_cosmetics=cosmetics)

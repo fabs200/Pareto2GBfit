@@ -203,7 +203,7 @@ def GB_ll(parms, x, W, b):
 Fitting Functions
 ---------------------------------------------------
 """
-def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
+def Paretofit(x, b, x0=1, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
               verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
               return_parameters=False, return_gofs=False, #save_plot=False,
               plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -568,7 +568,7 @@ def Paretofit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', 
         return np.mean(p_fit_bs), np.std(p_fit_bs)
 
 
-def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
+def IB1fit(x, b, x0=(1,1), weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
            plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -944,7 +944,7 @@ def IB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omi
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
+def GB1fit(x, b, x0=(-.1, 1, 1), weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
            plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -1332,7 +1332,7 @@ def GB1fit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omi
         return np.mean(a_fit_bs), np.std(a_fit_bs), np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs)
 
 
-def GBfit(x, b, x0, weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
+def GBfit(x, b, x0=(-.1, .1, 1, 1), weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
           return_parameters=False, return_gofs=False, #save_plot=False,
           plot_cosmetics={'bins': 50, 'col_data': 'blue', 'col_fit': 'orange'},
@@ -1747,7 +1747,7 @@ Pareto branch fitting
 """
 
 def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), bootstraps=None,
-                    method='SLSQP', rejection_criterion=['LRtest', 'AIC', 'AIC2'], alpha=.05,
+                    method='SLSQP', rejection_criterion=['LRtest', 'AIC', 'AIC_alternative'], alpha=.05,
                     verbose_bootstrap=False, verbose_single=False, verbose=True, verbose_parms=False,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
                     suppress_warnings=True, omit_missings=True,
@@ -1978,50 +1978,8 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
         # save LR fit results
         Pareto_fit_LR, IB1_fit_LR, GB1_fit_LR, GB_fit_LR = Pareto_fit, IB1_fit, GB1_fit, GB_fit
 
-    # run rejection based on AIC (AIC method #1: paper chp. 2.4)
     if 'AIC' == rejection_criterion or 'AIC' in rejection_criterion:
-
-        # unpack aic
-        Pareto_aic = Pareto_fit[2]
-        IB1_aic = IB1_fit[4]
-        GB1_aic = GB1_fit[6]
-        GB_aic = GB_fit[8]
-
-        # 1v2, 2v3, 3v4
-        Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
-        GB_remaining = False
-
-        if Pareto_aic > IB1_aic:
-            if IB1_aic > GB1_aic:
-                bestmodel_AIC, Pareto_marker = '--', 'IB1'
-
-                if GB1_aic > GB_aic:
-                    GB_bm, bestmodel_AIC, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
-                    Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
-                else:
-                    GB1_bm, bestmodel_AIC, IB1_marker, GB1_marker = 'GB1', 'GB1', '--', 'XX'
-            else:
-                IB1_bm, bestmodel_AIC, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
-        else:
-            Pareto_bm, bestmodel_AIC, Pareto_marker = 'Pareto', 'Pareto', 'XX'
-
-        # save LRtest results to tbl
-        tbl = PrettyTable()
-        tbl.field_names = ['comparison', 'AIC1', 'AIC2', 'stop', 'best model']
-        tbl.add_row(['Pareto vs IB1', '{:.3f}'.format(Pareto_aic), '{:.3f}'.format(IB1_aic), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
-        tbl.add_row(['IB1 vs GB1', '{:.3f}'.format(IB1_aic), '{:.3f}'.format(GB1_aic), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
-        tbl.add_row(['GB1 vs GB', '{:.3f}'.format(GB1_aic), '{:.3f}'.format(GB_aic), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
-
-        if GB_remaining:
-            tbl.add_row(['GB', '{:.3f}'.format(GB_aic), '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
-
-        print('\n{}'.format(tbl))
-
-        # save AIC fit results
-        Pareto_fit_AIC, IB1_fit_AIC, GB1_fit_AIC, GB_fit_AIC = Pareto_fit, IB1_fit, GB1_fit, GB_fit
-
-    if 'AIC2' == rejection_criterion or 'AIC2' in rejection_criterion:
-        # AIC alternative method #2: paper Appendix
+        # AIC alternative method #2 (paper chp. 2.4)
         # unpack aic
         Pareto_aic = Pareto_fit[2]
         IB1_aic = IB1_fit[4]
@@ -2038,17 +1996,17 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
         GB_remaining = False
         if IB1_aic_restrict > IB1_aic:
             if GB1_aic_restrict > GB1_aic:
-                bestmodel_AIC2, Pareto_marker = '--', 'IB1'
+                bestmodel_AIC, Pareto_marker = '--', 'IB1'
                 if GB_aic_restrict > GB_aic:
-                    GB_bm, bestmodel_AIC2, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
+                    GB_bm, bestmodel_AIC, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
                     Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
                 else:
-                    GB1_bm, bestmodel_AIC2, GB1_marker = 'GB1', 'GB1', 'XX'
+                    GB1_bm, bestmodel_AIC, GB1_marker = 'GB1', 'GB1', 'XX'
                     IB1_marker = Pareto_marker = '--'
             else:
-                IB1_bm, bestmodel_AIC2, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
+                IB1_bm, bestmodel_AIC, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
         else:
-            Pareto_bm, bestmodel_AIC2, Pareto_marker = 'Pareto', 'Pareto', 'XX'
+            Pareto_bm, bestmodel_AIC, Pareto_marker = 'Pareto', 'Pareto', 'XX'
 
         # save LRtest results to tbl
         tbl = PrettyTable()
@@ -2064,8 +2022,50 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
 
         print('\n{}'.format(tbl))
 
-        # save AIC2 fit results
-        Pareto_fit_AIC2, IB1_fit_AIC2, GB1_fit_AIC2, GB_fit_AIC2 = Pareto_fit, IB1_fit, GB1_fit, GB_fit
+        # save AIC fit results
+        Pareto_fit_AIC, IB1_fit_AIC, GB1_fit_AIC, GB_fit_AIC = Pareto_fit, IB1_fit, GB1_fit, GB_fit
+
+    # run rejection based on AIC alternative (AIC method #1: paper Appendix)
+    if 'AIC_alternative' == rejection_criterion or 'AIC_alternative' in rejection_criterion:
+
+        # unpack aic
+        Pareto_aic = Pareto_fit[2]
+        IB1_aic = IB1_fit[4]
+        GB1_aic = GB1_fit[6]
+        GB_aic = GB_fit[8]
+
+        # 1v2, 2v3, 3v4
+        Pareto_bm = IB1_bm = GB1_bm = GB_bm = Pareto_marker = IB1_marker = GB1_marker = GB_marker = '--'
+        GB_remaining = False
+
+        if Pareto_aic > IB1_aic:
+            if IB1_aic > GB1_aic:
+                bestmodel_AIC, Pareto_marker = '--', 'IB1'
+
+                if GB1_aic > GB_aic:
+                    GB_bm, bestmodel_AIC_altern, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
+                    Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
+                else:
+                    GB1_bm, bestmodel_AIC_altern, IB1_marker, GB1_marker = 'GB1', 'GB1', '--', 'XX'
+            else:
+                IB1_bm, bestmodel_AIC_altern, Pareto_marker, IB1_marker = 'IB1', 'IB1', '--', 'XX'
+        else:
+            Pareto_bm, bestmodel_AIC_altern, Pareto_marker = 'Pareto', 'Pareto', 'XX'
+
+        # save LRtest results to tbl
+        tbl = PrettyTable()
+        tbl.field_names = ['comparison', 'AIC1', 'AIC2', 'stop', 'best model']
+        tbl.add_row(['Pareto vs IB1', '{:.3f}'.format(Pareto_aic), '{:.3f}'.format(IB1_aic), '{}'.format(Pareto_marker), '{}'.format(Pareto_bm)])
+        tbl.add_row(['IB1 vs GB1', '{:.3f}'.format(IB1_aic), '{:.3f}'.format(GB1_aic), '{}'.format(IB1_marker), '{}'.format(IB1_bm)])
+        tbl.add_row(['GB1 vs GB', '{:.3f}'.format(GB1_aic), '{:.3f}'.format(GB_aic), '{}'.format(GB1_marker), '{}'.format(GB1_bm)])
+
+        if GB_remaining:
+            tbl.add_row(['GB', '{:.3f}'.format(GB_aic), '', '{}'.format(GB_marker), '{}'.format(GB_bm)])
+
+        print('\n{}'.format(tbl))
+
+        # save AIC fit results
+        Pareto_fit_AIC_altern, IB1_fit_AIC_altern, GB1_fit_AIC_altern, GB_fit_AIC_altern = Pareto_fit, IB1_fit, GB1_fit, GB_fit
 
     if verbose:
         tbl_parms = PrettyTable()
@@ -2107,7 +2107,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
 
     if return_bestmodel:
 
-        printout_LR, printout_AIC, printout_AIC2 = list(), list(), list()
+        printout_LR, printout_AIC, printout_AIC_alternative = list(), list(), list()
 
         if rejection_criterion == 'LRtest' or 'LRtest' in rejection_criterion:
             if bestmodel_LR == 'Pareto':
@@ -2129,17 +2129,17 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
             if bestmodel_AIC == 'GB':
                 printout_AIC = 'GB_best', GB_fit_AIC
 
-        if rejection_criterion == 'AIC2' or 'AIC2' in rejection_criterion:
-            if bestmodel_AIC2 == 'Pareto':
-                printout_AIC2 = 'Pareto_best', Pareto_fit_AIC2
-            if bestmodel_AIC2 == 'IB1':
-                printout_AIC2 = 'IB1_best', IB1_fit_AIC2
-            if bestmodel_AIC2 == 'GB1':
-                printout_AIC2 = 'GB1_best', GB1_fit_AIC2
-            if bestmodel_AIC2 == 'GB':
-                printout_AIC2 = 'GB_best', GB_fit_AIC2
+        if rejection_criterion == 'AIC_alternative' or 'AIC_alternative' in rejection_criterion:
+            if bestmodel_AIC == 'Pareto':
+                printout_AIC_alternative = 'Pareto_best', Pareto_fit_AIC
+            if bestmodel_AIC == 'IB1':
+                printout_AIC_alternative = 'IB1_best', IB1_fit_AIC
+            if bestmodel_AIC == 'GB1':
+                printout_AIC_alternative = 'GB1_best', GB1_fit_AIC
+            if bestmodel_AIC == 'GB':
+                printout_AIC_alternative = 'GB_best', GB_fit_AIC
 
-        return printout_LR, printout_AIC, printout_AIC2
+        return printout_LR, printout_AIC, printout_AIC_alternative
 
     if return_all:
         return Pareto_fit, IB1_fit, GB1_fit, GB_fit

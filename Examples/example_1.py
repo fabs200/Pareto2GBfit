@@ -36,30 +36,23 @@ Pareto_data = Pareto_icdf(u, b, p)
 # Pareto simulated data + noise
 Pareto_data_noise = Pareto_icdf(u, b, p) + noise
 
-# test fits with Pareto_data plots
-Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=10, verbose=True, method='basinhopping', plot=True)
-Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=10, verbose=True, method='SLSQP', plot=True)
-IB1fit(x=Pareto_data, b=500, x0=(2,1), bootstraps=10, verbose=True, method='basinhopping', plot=True)
-IB1fit(x=Pareto_data, b=500, x0=(2,1), bootstraps=10, verbose=True, method='SLSQP', plot=True)
-GB1fit(x=Pareto_data, b=500, x0=(-.1,2,1), bootstraps=10, verbose=True, method='basinhopping', plot=True)
-GB1fit(x=Pareto_data, b=500, x0=(-.1,2,1), bootstraps=10, verbose=True, method='SLSQP', plot=True)
-GBfit(x=Pareto_data, b=500, x0=(-.1,0,2,1), bootstraps=10, verbose=True, method='basinhopping', plot=True)
-GBfit(x=Pareto_data, b=500, x0=(-.1,0,2,1), bootstraps=10, verbose=True, method='SLSQP', plot=True)
+# run optimization (size of boostraps is default: n)
+Paretofit(x=Pareto_data, x0=2, b=500, method='SLSQP')
 
-# test fits with Pareto_data_noise
-Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=100, method='basinhopping', plot=True, weighting='multiply')
-Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=100, method='SLSQP', plot=True)
-IB1fit(x=Pareto_data_noise, b=500, x0=(2,1), bootstraps=10, method='basinhopping', plot=True)
-IB1fit(x=Pareto_data_noise, b=500, x0=(2,1), bootstraps=10, method='SLSQP', plot=True)
-GB1fit(x=Pareto_data_noise, b=500, x0=(-.1,2,1), bootstraps=10, method='basinhopping', plot=True)
-GB1fit(x=Pareto_data_noise, b=500, x0=(-.1,2,1), bootstraps=10, method='SLSQP', plot=True)
-GBfit(x=Pareto_data_noise, b=500, x0=(-.1,0,2,1), bootstraps=10, method='basinhopping', plot=True)
-GBfit(x=Pareto_data_noise, b=500, x0=(-.1,0,2,1), bootstraps=10, method='SLSQP', plot=True)
+# run optimization with less bootstraps
+Paretofit(x=Pareto_data, x0=2, bootstraps=500, b=500, method='SLSQP')
 
-# Run Paretobranchfit on simulated Pareto_data with LRtest
-Paretobranchfit(x=Pareto_data, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='LRtest', verbose=True)
-Paretobranchfit(x=Pareto_data_noise, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='LRtest', verbose=True)
+# run optimization of noisy data
+Paretofit(x=Pareto_data_noise, x0=2, b=500, method='SLSQP')
 
-# Run Paretobranchfit on simulated Pareto_data with AIC
-Paretobranchfit(x=Pareto_data, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='AIC', verbose=True)
-Paretobranchfit(x=Pareto_data_noise, b=500, x0=(-.1, .1, 1, 1), bootstraps=(100, 50, 10, 4), rejection_criterion='AIC', verbose=True)
+# test fitting of Pareto_data with basinhopping method and plot fit
+Paretofit(x=Pareto_data, b=500, x0=2, bootstraps=100, verbose=True, method='basinhopping', plot=True)
+
+# test fitting of Pareto_data_noise with basinhopping method and plot fit
+Paretofit(x=Pareto_data_noise, b=500, x0=2, bootstraps=100, verbose=True, method='basinhopping', plot=True)
+
+# Run Paretobranchfit on simulated Pareto_data
+Paretobranchfit(x=Pareto_data, b=500, x0=(-.1, .1, 1, 1), bootstraps=10, rejection_criterion=['LRtest', 'AIC'])
+
+# Run Paretobranchfit on simulated Pareto_data_noise
+Paretobranchfit(x=Pareto_data_noise, b=500, bootstraps=10, rejection_criterion=['LRtest', 'AIC'])

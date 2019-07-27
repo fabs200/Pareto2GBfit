@@ -1,19 +1,30 @@
 from scipy.stats.distributions import chi2
 from .distributions import *
 from prettytable import PrettyTable
+import numpy as np
 
 class Pareto:
-    def __init__(self, x, W, b, p):
+    def __init__(self, x, b, p, W=None):
         x = np.array(x)
         x = x[x>b]
+        # if no weights have been applied, generate a vector with 1 and size of x
+        if W is None:
+            self.W = W = np.ones(len(x))
+        else:
+            self.W = W
         n, self.df = np.sum(W), 1
         sum = np.sum(np.log(x)*W)
         self.LL = n*np.log(p) + p*n*np.log(b) - (p+1)*sum
 
 class IB1:
-    def __init__(self, x, W, b, p, q):
+    def __init__(self, x, b, p, q, W=None):
         x = np.array(x)
         x = x[x>b]
+        # if no weights have been applied, generate a vector with 1 and size of x
+        if W is None:
+            self.W = W = np.ones(len(x))
+        else:
+            self.W = W
         n, self.df = np.sum(W), 2
         lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
         sum1 = np.sum(np.log(1-b/x)*W)
@@ -21,9 +32,14 @@ class IB1:
         self.LL = p*n*np.log(b) - n*lnb + (q-1)*sum1 - (p+1)*sum2
 
 class GB1:
-    def __init__(self, x, W, b, a, p, q):
+    def __init__(self, x, b, a, p, q, W=None):
         x = np.array(x)
         x = x[x>b]
+        # if no weights have been applied, generate a vector with 1 and size of x
+        if W is None:
+            self.W = W = np.ones(len(x))
+        else:
+            self.W = W
         n, self.df = np.sum(W), 3
         lnb = gammaln(p) + gammaln(q) - gammaln(p+q)
         sum1 = np.sum(np.log(x)*W)
@@ -31,9 +47,14 @@ class GB1:
         self.LL = n*np.log(abs(a)) + (a*p-1)*sum1 + (q-1)*sum2 - n*a*p*np.log(b) - n*lnb
 
 class GB:
-    def __init__(self, x, W, a, b, c, p, q):
+    def __init__(self, x, a, b, c, p, q, W=None):
         x = np.array(x)
         x = x[x>b]
+        # if no weights have been applied, generate a vector with 1 and size of x
+        if W is None:
+            self.W = np.ones(len(x))
+        else:
+            self.W = W = W
         n, self.df = np.sum(W), 4
         sum1 = np.sum(np.log(x)*W)
         sum2 = np.sum(np.log(1-(1-c)*(x/b)**a)*W)
