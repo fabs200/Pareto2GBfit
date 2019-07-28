@@ -1762,7 +1762,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
                     method='SLSQP', rejection_criterion=['LRtest', 'AIC'], alpha=.05,
                     verbose_bootstrap=False, verbose_single=False, verbose=True, verbose_parms=False,
                     fit=False, plot=False, return_bestmodel=False, return_all=False, #save_all_plots=False,
-                    suppress_warnings=True, omit_missings=True, verbose_ci=False,
+                    suppress_warnings=True, omit_missings=True, ci=False,
           plot_cosmetics={'bins': 250, 'col_data': 'blue', 'col_fit': 'orange'},
     basinhopping_options={'niter': 20, 'T': 1.0, 'stepsize': 0.5, 'take_step': None, 'accept_test': None,
                          'callback': None, 'interval': 50, 'disp': False, 'niter_success': None, 'seed': 123},
@@ -2086,19 +2086,19 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
         tbl_parms = PrettyTable()
         tbl_parms.field_names = ['parameter', 'Pareto', 'IB1', 'GB1', 'GB']
         tbl_parms.add_row(['a', '-', '-', '{:.3f}'.format(GB1_fit[0]), '{:.3f}'.format(GB_fit[0])])
-        if verbose_ci:
+        if ci:
             tbl_parms.add_row(['', '', '', '[{:.3f};{:.3f}]'.format(a_cilo3, a_cihi3), '[{:.3f};{:.3f}]'.format(a_cilo4, a_cihi4)])
         tbl_parms.add_row(['', '', '', '({:.3f})'.format(GB1_fit[1]), '({:.3f})'.format(GB_fit[1])])
         tbl_parms.add_row(['c', '-', '-', '-', '{:.3f}'.format(GB_fit[2])])
-        if verbose_ci:
+        if ci:
             tbl_parms.add_row(['', '', '', '', '[{:.3f};{:.3f}]'.format(c_cilo4, c_cihi4)])
         tbl_parms.add_row(['', '', '', '', '({:.3f})'.format(GB_fit[3])])
         tbl_parms.add_row(['p', '{:.3f}'.format(Pareto_fit[0]), '{:.3f}'.format(IB1_fit[0]), '{:.3f}'.format(GB1_fit[2]), '{:.3f}'.format(GB_fit[4])])
-        if verbose_ci:
+        if ci:
             tbl_parms.add_row(['', '[{:.3f},{:.3f}]'.format(p_cilo1, p_cihi1), '[{:.3f},{:.3f}]'.format(p_cilo2, p_cihi2), '[{:.3f},{:.3f}]'.format(p_cilo3, p_cihi3), '[{:.3f},{:.3f}]'.format(p_cilo4, p_cihi4)])
         tbl_parms.add_row(['', '({:.3f})'.format(Pareto_fit[1]), '({:.3f})'.format(IB1_fit[1]), '({:.3f})'.format(GB1_fit[3]), '({:.3f})'.format(GB_fit[5])])
         tbl_parms.add_row(['q', '-', '{:.3f}'.format(IB1_fit[2]), '{:.3f}'.format(GB1_fit[4]), '{:.3f}'.format(GB_fit[6])])
-        if verbose_ci:
+        if ci:
             tbl_parms.add_row(['', '', '[{:.3f},{:.3f}]'.format(q_cilo2, q_cihi2), '[{:.3f},{:.3f}]'.format(q_cilo3, q_cihi3), '[{:.3f},{:.3f}]'.format(q_cilo4, q_cihi4)])
         tbl_parms.add_row(['', '', '({:.3f})'.format(IB1_fit[3]), '({:.3f})'.format(GB1_fit[5]), '({:.3f})'.format(GB_fit[7])])
 
