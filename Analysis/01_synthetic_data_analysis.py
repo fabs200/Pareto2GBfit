@@ -31,6 +31,7 @@ plt.rcParams['figure.figsize'] = 10, 8
 Define Functions
 --------------------------------
 """
+
 def prep_fit_results_for_table(result):
     """
     prepares the returned vector of the optimization for a simplified exporting to dataframe/Excel
@@ -81,10 +82,10 @@ def prep_fit_results_for_table(result):
             list.append('{:.3f}'.format(el))
         out = list[0:2] + list[22:24] + list[2:4] + list[24:26] + list[4:6] + list[26:28] + list[6:8] + list[28:30] + list[8:22] #q, rest
 
-    del out[15] # remove soe
-    del out[13] # remove rrmse
-    del out[10] # remove mae
-    del out[9] # remove bic
+    del out[23] # remove soe
+    del out[21] # remove rrmse
+    del out[18] # remove mae
+    del out[17] # remove bic
     return out # returns: parameters, cis, aic, mse, rrmse, ll, ... (always same structure)
 
 
@@ -309,22 +310,26 @@ if run_optimize:
     df_synthetic_fit_parms_AIC = pd.DataFrame(np.array([['best fitted model', '{}'.format(Pareto_data_parms[1][0]),  '{}'.format(Pareto_data_gauss_noise_1_parms[1][0]),  '{}'.format(Pareto_data_gauss_noise_2_parms[1][0]),  '{}'.format(Pareto_data_het_noise_1_parms[1][0]),  '{}'.format(Pareto_data_het_noise_2_parms[1][0])],
                                                     ['a',               '{}'.format(parms1[0]),     '{}'.format(parms2[0]),     '{}'.format(parms3[0]),     '{}'.format(parms4[0]),     '{}'.format(parms5[0])],
                                                     [' ',               '({})'.format(parms1[1]),     '({})'.format(parms2[1]),     '({})'.format(parms3[1]),     '({})'.format(parms4[1]),     '({})'.format(parms5[1])],
-                                                    ['c',               '{}'.format(parms1[2]),     '{}'.format(parms2[2]),     '{}'.format(parms3[2]),     '{}'.format(parms4[2]),     '{}'.format(parms5[2])],
-                                                    [' ',               '({})'.format(parms1[3]),     '({})'.format(parms2[3]),     '({})'.format(parms3[3]),     '({})'.format(parms4[3]),     '({})'.format(parms5[3])],
-                                                    ['p',               '{}'.format(parms1[4]),     '{}'.format(parms2[4]),     '{}'.format(parms3[4]),     '{}'.format(parms4[4]),     '{}'.format(parms5[4])],
+                                                    [' ',               '[{}; {}]'.format(parms1[2], parms1[3]),     '[{}; {}]'.format(parms2[2], parms2[3]),     '[{}; {}]'.format(parms3[2], parms3[3]),     '[{}; {}]'.format(parms4[2], parms4[3]),     '[{}; {}]'.format(parms5[2], parms5[3])],
+                                                    ['c',               '{}'.format(parms1[4]),     '{}'.format(parms2[4]),     '{}'.format(parms3[4]),     '{}'.format(parms4[4]),     '{}'.format(parms5[4])],
                                                     [' ',               '({})'.format(parms1[5]),     '({})'.format(parms2[5]),     '({})'.format(parms3[5]),     '({})'.format(parms4[5]),     '({})'.format(parms5[5])],
-                                                    ['q',               '{}'.format(parms1[6]),     '{}'.format(parms2[6]),     '{}'.format(parms3[6]),     '{}'.format(parms4[6]),     '{}'.format(parms5[6])],
-                                                    [' ',               '({})'.format(parms1[7]),     '({})'.format(parms2[7]),     '({})'.format(parms3[7]),     '({})'.format(parms4[7]),     '({})'.format(parms5[7])],
+                                                    [' ',               '[{}; {}]'.format(parms1[6], parms1[7]),     '[{}; {}]'.format(parms2[6], parms2[7]),     '[{}; {}]'.format(parms3[6], parms3[7]),     '[{}; {}]'.format(parms4[6], parms4[7]),     '[{}; {}]'.format(parms5[6], parms5[7])],
+                                                    ['p',               '{}'.format(parms1[8]),     '{}'.format(parms2[8]),     '{}'.format(parms3[8]),     '{}'.format(parms4[8]),     '{}'.format(parms5[8])],
+                                                    [' ',               '({})'.format(parms1[9]),     '({})'.format(parms2[9]),     '({})'.format(parms3[9]),     '({})'.format(parms4[9]),     '({})'.format(parms5[9])],
+                                                    [' ',               '[{}; {}]'.format(parms1[10], parms1[11]),     '[{}; {}]'.format(parms2[10], parms2[11]),     '[{}; {}]'.format(parms3[10], parms3[11]),     '[{}; {}]'.format(parms4[10], parms4[11]),     '[{}; {}]'.format(parms5[10], parms5[11])],
+                                                    ['q',               '{}'.format(parms1[12]),     '{}'.format(parms2[12]),     '{}'.format(parms3[12]),     '{}'.format(parms4[12]),     '{}'.format(parms5[12])],
+                                                    [' ',               '({})'.format(parms1[13]),     '({})'.format(parms2[13]),     '({})'.format(parms3[13]),     '({})'.format(parms4[13]),     '({})'.format(parms5[13])],
+                                                    [' ',               '[{}; {}]'.format(parms1[14], parms1[15]),     '[{}; {}]'.format(parms2[14], parms2[15]),     '[{}; {}]'.format(parms3[14], parms3[15]),     '[{}; {}]'.format(parms4[14], parms4[15]),     '[{}; {}]'.format(parms5[14], parms5[15])],
                                                     ['lower bound b',   '{}'.format(b),             '{}'.format(b),             '{}'.format(b),             '{}'.format(b),             '{}'.format(b)],
-                                                    ['LL',              '{}'.format(parms1[11]),    '{}'.format(parms2[11]),    '{}'.format(parms3[11]),    '{}'.format(parms4[11]),    '{}'.format(parms5[11])],
-                                                    ['AIC',             '{}'.format(parms1[8]),     '{}'.format(parms2[8]),     '{}'.format(parms3[8]),     '{}'.format(parms4[8]),     '{}'.format(parms5[8])],
-                                                    ['MSE',             '{}'.format(parms1[9]),     '{}'.format(parms2[9]),     '{}'.format(parms3[9]),     '{}'.format(parms4[9]),     '{}'.format(parms5[9])],
-                                                    ['RMSE',            '{}'.format(parms1[10]),    '{}'.format(parms2[10]),    '{}'.format(parms3[10]),    '{}'.format(parms4[10]),    '{}'.format(parms5[10])],
-                                                    ['emp. mean',       '{}'.format(parms1[12]),    '{}'.format(parms2[12]),    '{}'.format(parms3[12]),    '{}'.format(parms4[12]),    '{}'.format(parms5[12])],
-                                                    ['emp. var.',       '{}'.format(parms1[13]),    '{}'.format(parms2[13]),    '{}'.format(parms3[13]),    '{}'.format(parms4[13]),    '{}'.format(parms5[13])],
-                                                    ['pred. mean',      '{}'.format(parms1[14]),    '{}'.format(parms2[14]),    '{}'.format(parms3[14]),    '{}'.format(parms4[14]),    '{}'.format(parms5[14])],
-                                                    ['pred. var.',      '{}'.format(parms1[15]),    '{}'.format(parms2[15]),    '{}'.format(parms3[15]),    '{}'.format(parms4[15]),    '{}'.format(parms5[15])],
-                                                    ['n',               '{}'.format(parms1[16]),    '{}'.format(parms2[16]),    '{}'.format(parms3[16]),    '{}'.format(parms4[16]),    '{}'.format(parms5[16])],
+                                                    ['LL',              '{}'.format(parms1[19]),    '{}'.format(parms2[19]),    '{}'.format(parms3[19]),    '{}'.format(parms4[19]),    '{}'.format(parms5[19])],
+                                                    ['AIC',             '{}'.format(parms1[16]),     '{}'.format(parms2[16]),     '{}'.format(parms3[16]),     '{}'.format(parms4[16]),     '{}'.format(parms5[16])],
+                                                    ['MSE',             '{}'.format(parms1[17]),     '{}'.format(parms2[17]),     '{}'.format(parms3[17]),     '{}'.format(parms4[17]),     '{}'.format(parms5[17])],
+                                                    ['RMSE',            '{}'.format(parms1[18]),    '{}'.format(parms2[18]),    '{}'.format(parms3[18]),    '{}'.format(parms4[18]),    '{}'.format(parms5[18])],
+                                                    ['emp. mean',       '{}'.format(parms1[20]),    '{}'.format(parms2[20]),    '{}'.format(parms3[20]),    '{}'.format(parms4[20]),    '{}'.format(parms5[20])],
+                                                    ['emp. var.',       '{}'.format(parms1[21]),    '{}'.format(parms2[21]),    '{}'.format(parms3[21]),    '{}'.format(parms4[21]),    '{}'.format(parms5[21])],
+                                                    ['pred. mean',      '{}'.format(parms1[22]),    '{}'.format(parms2[22]),    '{}'.format(parms3[22]),    '{}'.format(parms4[22]),    '{}'.format(parms5[22])],
+                                                    ['pred. var.',      '{}'.format(parms1[23]),    '{}'.format(parms2[23]),    '{}'.format(parms3[23]),    '{}'.format(parms4[23]),    '{}'.format(parms5[23])],
+                                                    ['n',               '{}'.format(parms1[24]),    '{}'.format(parms2[24]),    '{}'.format(parms3[24]),    '{}'.format(parms4[24]),    '{}'.format(parms5[24])],
                                                     ]),
                                                  columns=['', 'Pareto_data', 'Pareto_data_gauss_noise_1', 'Pareto_data_gauss_noise_2', 'Pareto_data_het_noise_1', 'Pareto_data_het_noise_2'])
 
@@ -342,26 +347,30 @@ parms14 = prep_fit_results_for_table(Pareto_data_het_noise_2_parms[0])
 
 if run_optimize:
     df_synthetic_fit_parms_LR = pd.DataFrame(np.array([['best fitted model', '{}'.format(Pareto_data_parms[0][0]),  '{}'.format(Pareto_data_gauss_noise_1_parms[0][0]),  '{}'.format(Pareto_data_gauss_noise_2_parms[0][0]),  '{}'.format(Pareto_data_het_noise_1_parms[0][0]),  '{}'.format(Pareto_data_het_noise_2_parms[0][0])],
-                                                    ['a',               '{}'.format(parms10[0]),     '{}'.format(parms11[0]),     '{}'.format(parms12[0]),     '{}'.format(parms13[0]),     '{}'.format(parms14[0])],
-                                                    [' ',               '({})'.format(parms10[1]),     '({})'.format(parms11[1]),     '({})'.format(parms12[1]),     '({})'.format(parms13[1]),     '({})'.format(parms14[1])],
-                                                    ['c',               '{}'.format(parms10[2]),     '{}'.format(parms11[2]),     '{}'.format(parms12[2]),     '{}'.format(parms13[2]),     '{}'.format(parms14[2])],
-                                                    [' ',               '({})'.format(parms10[3]),     '({})'.format(parms11[3]),     '({})'.format(parms12[3]),     '({})'.format(parms13[3]),     '({})'.format(parms14[3])],
-                                                    ['p',               '{}'.format(parms10[4]),     '{}'.format(parms11[4]),     '{}'.format(parms12[4]),     '{}'.format(parms13[4]),     '{}'.format(parms14[4])],
-                                                    [' ',               '({})'.format(parms10[5]),     '({})'.format(parms11[5]),     '({})'.format(parms12[5]),     '({})'.format(parms13[5]),     '({})'.format(parms14[5])],
-                                                    ['q',               '{}'.format(parms10[6]),     '{}'.format(parms11[6]),     '{}'.format(parms12[6]),     '{}'.format(parms13[6]),     '{}'.format(parms14[6])],
-                                                    [' ',               '({})'.format(parms10[7]),     '({})'.format(parms11[7]),     '({})'.format(parms12[7]),     '({})'.format(parms13[7]),     '({})'.format(parms14[7])],
-                                                    ['lower bound b',   '{}'.format(b),                 '{}'.format(b),           '{}'.format(b),              '{}'.format(b),              '{}'.format(b)],
-                                                    ['LL',              '{}'.format(parms10[11]),    '{}'.format(parms11[11]),    '{}'.format(parms12[11]),    '{}'.format(parms13[11]),    '{}'.format(parms14[11])],
-                                                    ['AIC',             '{}'.format(parms10[8]),     '{}'.format(parms11[8]),     '{}'.format(parms12[8]),     '{}'.format(parms13[8]),     '{}'.format(parms14[8])],
-                                                    ['MSE',             '{}'.format(parms10[9]),     '{}'.format(parms11[9]),     '{}'.format(parms12[9]),     '{}'.format(parms13[9]),     '{}'.format(parms14[9])],
-                                                    ['RMSE',            '{}'.format(parms10[10]),    '{}'.format(parms11[10]),    '{}'.format(parms12[10]),    '{}'.format(parms13[10]),    '{}'.format(parms14[10])],
-                                                    ['emp. mean',       '{}'.format(parms10[12]),    '{}'.format(parms11[12]),    '{}'.format(parms12[12]),    '{}'.format(parms13[12]),    '{}'.format(parms14[12])],
-                                                    ['emp. var.',       '{}'.format(parms10[13]),    '{}'.format(parms11[13]),    '{}'.format(parms12[13]),    '{}'.format(parms13[13]),    '{}'.format(parms14[13])],
-                                                    ['pred. mean',      '{}'.format(parms10[14]),    '{}'.format(parms11[14]),    '{}'.format(parms12[14]),    '{}'.format(parms13[14]),    '{}'.format(parms14[14])],
-                                                    ['pred. var.',      '{}'.format(parms10[15]),    '{}'.format(parms11[15]),    '{}'.format(parms12[15]),    '{}'.format(parms13[15]),    '{}'.format(parms14[15])],
-                                                    ['n',               '{}'.format(parms10[16]),    '{}'.format(parms11[16]),    '{}'.format(parms12[16]),    '{}'.format(parms13[16]),    '{}'.format(parms14[16])],
-                                                    ]),
-                                                 columns=['', 'Pareto_data', 'Pareto_data_gauss_noise_1', 'Pareto_data_gauss_noise_2', 'Pareto_data_het_noise_1', 'Pareto_data_het_noise_2'])
+                                            ['a',               '{}'.format(parms10[0]),     '{}'.format(parms11[0]),     '{}'.format(parms12[0]),     '{}'.format(parms13[0]),     '{}'.format(parms14[0])],
+                                            [' ',               '({})'.format(parms10[1]),     '({})'.format(parms11[1]),     '({})'.format(parms12[1]),     '({})'.format(parms13[1]),     '({})'.format(parms14[1])],
+                                            [' ',               '[{}; {}]'.format(parms10[2], parms10[3]),     '[{}; {}]'.format(parms11[2], parms11[3]),     '[{}; {}]'.format(parms12[2], parms12[3]),     '[{}; {}]'.format(parms13[2], parms13[3]),     '[{}; {}]'.format(parms14[2], parms14[3])],
+                                            ['c',               '{}'.format(parms10[4]),     '{}'.format(parms11[4]),     '{}'.format(parms12[4]),     '{}'.format(parms13[4]),     '{}'.format(parms14[4])],
+                                            [' ',               '({})'.format(parms10[5]),     '({})'.format(parms11[5]),     '({})'.format(parms12[5]),     '({})'.format(parms13[5]),     '({})'.format(parms14[5])],
+                                            [' ',               '[{}; {}]'.format(parms10[6], parms10[7]),     '[{}; {}]'.format(parms11[6], parms11[7]),     '[{}; {}]'.format(parms12[6], parms12[7]),     '[{}; {}]'.format(parms13[6], parms13[7]),     '[{}; {}]'.format(parms14[6], parms14[7])],
+                                            ['p',               '{}'.format(parms10[8]),     '{}'.format(parms11[8]),     '{}'.format(parms12[8]),     '{}'.format(parms13[8]),     '{}'.format(parms14[8])],
+                                            [' ',               '({})'.format(parms10[9]),     '({})'.format(parms11[9]),     '({})'.format(parms12[9]),     '({})'.format(parms13[9]),     '({})'.format(parms14[9])],
+                                            [' ',               '[{}; {}]'.format(parms10[10], parms10[11]),     '[{}; {}]'.format(parms11[10], parms11[11]),     '[{}; {}]'.format(parms12[10], parms12[11]),     '[{}; {}]'.format(parms13[10], parms13[11]),     '[{}; {}]'.format(parms14[10], parms14[11])],
+                                            ['q',               '{}'.format(parms10[12]),     '{}'.format(parms11[12]),     '{}'.format(parms12[12]),     '{}'.format(parms13[12]),     '{}'.format(parms14[12])],
+                                            [' ',               '({})'.format(parms10[13]),     '({})'.format(parms11[13]),     '({})'.format(parms12[13]),     '({})'.format(parms13[13]),     '({})'.format(parms14[13])],
+                                            [' ',               '[{}; {}]'.format(parms10[14], parms10[15]),     '[{}; {}]'.format(parms11[14], parms11[15]),     '[{}; {}]'.format(parms12[14], parms12[15]),     '[{}; {}]'.format(parms13[14], parms13[15]),     '[{}; {}]'.format(parms14[14], parms14[15])],
+                                            ['lower bound b',   '{}'.format(b),             '{}'.format(b),             '{}'.format(b),             '{}'.format(b),             '{}'.format(b)],
+                                            ['LL',              '{}'.format(parms10[19]),    '{}'.format(parms11[19]),    '{}'.format(parms12[19]),    '{}'.format(parms13[19]),    '{}'.format(parms14[19])],
+                                            ['AIC',             '{}'.format(parms10[16]),     '{}'.format(parms11[16]),     '{}'.format(parms12[16]),     '{}'.format(parms13[16]),     '{}'.format(parms14[16])],
+                                            ['MSE',             '{}'.format(parms10[17]),     '{}'.format(parms11[17]),     '{}'.format(parms12[17]),     '{}'.format(parms13[17]),     '{}'.format(parms14[17])],
+                                            ['RMSE',            '{}'.format(parms10[18]),    '{}'.format(parms11[18]),    '{}'.format(parms12[18]),    '{}'.format(parms13[18]),    '{}'.format(parms14[18])],
+                                            ['emp. mean',       '{}'.format(parms10[20]),    '{}'.format(parms11[20]),    '{}'.format(parms12[20]),    '{}'.format(parms13[20]),    '{}'.format(parms14[20])],
+                                            ['emp. var.',       '{}'.format(parms10[21]),    '{}'.format(parms11[21]),    '{}'.format(parms12[21]),    '{}'.format(parms13[21]),    '{}'.format(parms14[21])],
+                                            ['pred. mean',      '{}'.format(parms10[22]),    '{}'.format(parms11[22]),    '{}'.format(parms12[22]),    '{}'.format(parms13[22]),    '{}'.format(parms14[22])],
+                                            ['pred. var.',      '{}'.format(parms10[23]),    '{}'.format(parms11[23]),    '{}'.format(parms12[23]),    '{}'.format(parms13[23]),    '{}'.format(parms14[23])],
+                                            ['n',               '{}'.format(parms10[24]),    '{}'.format(parms11[24]),    '{}'.format(parms12[24]),    '{}'.format(parms13[24]),    '{}'.format(parms14[24])],
+                                            ]),
+                                     columns=['', 'Pareto_data', 'Pareto_data_gauss_noise_1', 'Pareto_data_gauss_noise_2', 'Pareto_data_het_noise_1', 'Pareto_data_het_noise_2'])
 
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'synthetic_data_fit_results.xlsx', engine='openpyxl', mode='a') as writer:
@@ -377,27 +386,30 @@ if run_optimize:
     parms20 = prep_fit_results_for_table(GB_non_Pareto_parms[2])
 
     df_non_Pareto_fit_results = pd.DataFrame(np.array([['best fitted model', '{}'.format(GB1_non_Pareto_parms[0][0]), '{}'.format(GB1_non_Pareto_parms[1][0]), '{}'.format(GB1_non_Pareto_parms[2][0]), '{}'.format(GB_non_Pareto_parms[0][0]), '{}'.format(GB_non_Pareto_parms[1][0]), '{}'.format(GB_non_Pareto_parms[2][0])],
-                                           ['a',               '{}'.format(parms15[0]),     '{}'.format(parms16[0]),    '{}'.format(parms17[0]),        '{}'.format(parms18[0]),       '{}'.format(parms19[0]),       '{}'.format(parms20[0])],
-                                           [' ',               '({})'.format(parms15[1]),     '({})'.format(parms16[1]),    '({})'.format(parms17[1]),  '({})'.format(parms18[1]),     '({})'.format(parms19[1]),     '({})'.format(parms20[1])],
-                                           ['c',               '{}'.format(parms15[2]),     '{}'.format(parms16[2]),    '{}'.format(parms17[2]),        '{}'.format(parms18[2]),       '{}'.format(parms19[2]),       '{}'.format(parms20[2])],
-                                           [' ',               '({})'.format(parms15[3]),     '({})'.format(parms16[3]),    '({})'.format(parms17[3]),  '({})'.format(parms18[3]),     '({})'.format(parms19[3]),     '({})'.format(parms20[3])],
-                                           ['p',               '{}'.format(parms15[4]),     '{}'.format(parms16[4]),    '{}'.format(parms17[4]),        '{}'.format(parms18[4]),       '{}'.format(parms19[4]),       '{}'.format(parms20[4])],
-                                           [' ',               '({})'.format(parms15[5]),     '({})'.format(parms16[5]),    '({})'.format(parms17[5]),  '({})'.format(parms18[5]),     '({})'.format(parms19[5]),     '({})'.format(parms20[5])],
-                                           ['q',               '{}'.format(parms15[6]),     '{}'.format(parms16[6]),    '{}'.format(parms17[6]),        '{}'.format(parms18[6]),       '{}'.format(parms19[6]),       '{}'.format(parms20[6])],
-                                           [' ',               '({})'.format(parms15[7]),     '({})'.format(parms16[7]),    '({})'.format(parms17[7]),  '({})'.format(parms18[7]),     '({})'.format(parms19[7]),     '({})'.format(parms20[7])],
-                                           ['lower bound b',   '{}'.format(b),              '{}'.format(b),             '{}'.format(b),                 '{}'.format(b),                '{}'.format(b),                '{}'.format(b)],
-                                           ['LL',              '{}'.format(parms15[11]),    '{}'.format(parms16[11]),   '{}'.format(parms17[11]),       '{}'.format(parms18[11]),      '{}'.format(parms19[11]),      '{}'.format(parms20[11])],
-                                           ['AIC',             '{}'.format(parms15[8]),     '{}'.format(parms16[8]),    '{}'.format(parms17[8]),        '{}'.format(parms18[8]),       '{}'.format(parms19[8]),       '{}'.format(parms20[8])],
-                                           ['MSE',             '{}'.format(parms15[9]),     '{}'.format(parms16[9]),    '{}'.format(parms17[9]),        '{}'.format(parms18[9]),       '{}'.format(parms19[9]),       '{}'.format(parms20[9])],
-                                           ['RMSE',            '{}'.format(parms15[10]),    '{}'.format(parms16[10]),   '{}'.format(parms17[10]),       '{}'.format(parms18[10]),      '{}'.format(parms19[10]),      '{}'.format(parms20[10])],
-                                           ['emp. mean',       '{}'.format(parms15[12]),    '{}'.format(parms16[12]),   '{}'.format(parms17[12]),       '{}'.format(parms18[12]),      '{}'.format(parms19[12]),      '{}'.format(parms20[12])],
-                                           ['emp. var.',       '{}'.format(parms15[13]),    '{}'.format(parms16[13]),   '{}'.format(parms17[13]),       '{}'.format(parms18[13]),      '{}'.format(parms19[13]),      '{}'.format(parms20[13])],
-                                           ['pred. mean',      '{}'.format(parms15[14]),    '{}'.format(parms16[14]),   '{}'.format(parms17[14]),       '{}'.format(parms18[14]),      '{}'.format(parms19[14]),      '{}'.format(parms20[14])],
-                                           ['pred. var.',      '{}'.format(parms15[15]),    '{}'.format(parms16[15]),   '{}'.format(parms17[15]),       '{}'.format(parms18[15]),      '{}'.format(parms19[15]),      '{}'.format(parms20[15])],
-                                           ['n',               '{}'.format(parms15[16]),    '{}'.format(parms16[16]),   '{}'.format(parms17[16]),       '{}'.format(parms18[16]),      '{}'.format(parms19[16]),      '{}'.format(parms20[16])],
-                                           ['N',               '{}'.format(parms15[17]),    '{}'.format(parms16[17]),   '{}'.format(parms17[17]),       '{}'.format(parms18[17]),      '{}'.format(parms19[17]),      '{}'.format(parms20[17])],
-                                           ]),
-                                 columns=['', 'GB_non_Pareto_LR', 'GB_non_Pareto_AIC', 'GB_non_Pareto_AIC2', 'GB1_non_Pareto_LR', 'GB1_non_Pareto_AIC', 'GB1_non_Pareto_AIC2'])
+                                            ['a',               '{}'.format(parms15[0]),     '{}'.format(parms16[0]),     '{}'.format(parms17[0]),     '{}'.format(parms18[0]),     '{}'.format(parms19[0]),     '{}'.format(parms20[0])],
+                                            [' ',               '({})'.format(parms15[1]),     '({})'.format(parms16[1]),     '({})'.format(parms17[1]),     '({})'.format(parms18[1]),     '({})'.format(parms19[1]),     '({})'.format(parms20[1])],
+                                            [' ',               '[{}; {}]'.format(parms15[2], parms15[3]),     '[{}; {}]'.format(parms16[2], parms16[3]),     '[{}; {}]'.format(parms17[2], parms17[3]),     '[{}; {}]'.format(parms18[2], parms18[3]),     '[{}; {}]'.format(parms19[2], parms19[3]),     '[{}; {}]'.format(parms20[2], parms20[3])],
+                                            ['c',               '{}'.format(parms15[4]),     '{}'.format(parms16[4]),     '{}'.format(parms17[4]),     '{}'.format(parms18[4]),     '{}'.format(parms19[4]),     '{}'.format(parms20[4])],
+                                            [' ',               '({})'.format(parms15[5]),     '({})'.format(parms16[5]),     '({})'.format(parms17[5]),     '({})'.format(parms18[5]),     '({})'.format(parms19[5]),     '({})'.format(parms20[5])],
+                                            [' ',               '[{}; {}]'.format(parms15[6], parms15[7]),     '[{}; {}]'.format(parms16[6], parms16[7]),     '[{}; {}]'.format(parms17[6], parms17[7]),     '[{}; {}]'.format(parms18[6], parms18[7]),     '[{}; {}]'.format(parms19[6], parms19[7]),     '[{}; {}]'.format(parms20[6], parms20[7])],
+                                            ['p',               '{}'.format(parms15[8]),     '{}'.format(parms16[8]),     '{}'.format(parms17[8]),     '{}'.format(parms18[8]),     '{}'.format(parms19[8]),     '{}'.format(parms20[8])],
+                                            [' ',               '({})'.format(parms15[9]),     '({})'.format(parms16[9]),     '({})'.format(parms17[9]),     '({})'.format(parms18[9]),     '({})'.format(parms19[9]),     '({})'.format(parms20[9])],
+                                            [' ',               '[{}; {}]'.format(parms15[10], parms15[11]),     '[{}; {}]'.format(parms16[10], parms16[11]),     '[{}; {}]'.format(parms17[10], parms17[11]),     '[{}; {}]'.format(parms18[10], parms18[11]),     '[{}; {}]'.format(parms19[10], parms19[11]),     '[{}; {}]'.format(parms20[10], parms20[11])],
+                                            ['q',               '{}'.format(parms15[12]),     '{}'.format(parms16[12]),     '{}'.format(parms17[12]),     '{}'.format(parms18[12]),     '{}'.format(parms19[12]),     '{}'.format(parms20[12])],
+                                            [' ',               '({})'.format(parms15[13]),     '({})'.format(parms16[13]),     '({})'.format(parms17[13]),     '({})'.format(parms18[13]),     '({})'.format(parms19[13]),     '({})'.format(parms20[13])],
+                                            [' ',               '[{}; {}]'.format(parms15[14], parms15[15]),     '[{}; {}]'.format(parms16[14], parms16[15]),     '[{}; {}]'.format(parms17[14], parms17[15]),     '[{}; {}]'.format(parms18[14], parms18[15]),     '[{}; {}]'.format(parms19[14], parms19[15]),     '[{}; {}]'.format(parms20[14], parms20[15])],
+                                            ['lower bound b',   '{}'.format(b),             '{}'.format(b),             '{}'.format(b),             '{}'.format(b),             '{}'.format(b),             '{}'.format(b)],
+                                            ['LL',              '{}'.format(parms15[19]),    '{}'.format(parms16[19]),    '{}'.format(parms17[19]),    '{}'.format(parms18[19]),    '{}'.format(parms19[19]),    '{}'.format(parms20[19])],
+                                            ['AIC',             '{}'.format(parms15[16]),     '{}'.format(parms16[16]),     '{}'.format(parms17[16]),     '{}'.format(parms18[16]),     '{}'.format(parms19[16]),     '{}'.format(parms20[16])],
+                                            ['MSE',             '{}'.format(parms15[17]),     '{}'.format(parms16[17]),     '{}'.format(parms17[17]),     '{}'.format(parms18[17]),     '{}'.format(parms19[17]),     '{}'.format(parms20[17])],
+                                            ['RMSE',            '{}'.format(parms15[18]),    '{}'.format(parms16[18]),    '{}'.format(parms17[18]),    '{}'.format(parms18[18]),    '{}'.format(parms19[18]),    '{}'.format(parms20[18])],
+                                            ['emp. mean',       '{}'.format(parms15[20]),    '{}'.format(parms16[20]),    '{}'.format(parms17[20]),    '{}'.format(parms18[20]),    '{}'.format(parms19[20]),    '{}'.format(parms20[20])],
+                                            ['emp. var.',       '{}'.format(parms15[21]),    '{}'.format(parms16[21]),    '{}'.format(parms17[21]),    '{}'.format(parms18[21]),    '{}'.format(parms19[21]),    '{}'.format(parms20[21])],
+                                            ['pred. mean',      '{}'.format(parms15[22]),    '{}'.format(parms16[22]),    '{}'.format(parms17[22]),    '{}'.format(parms18[22]),    '{}'.format(parms19[22]),    '{}'.format(parms20[22])],
+                                            ['pred. var.',      '{}'.format(parms15[23]),    '{}'.format(parms16[23]),    '{}'.format(parms17[23]),    '{}'.format(parms18[23]),    '{}'.format(parms19[23]),    '{}'.format(parms20[23])],
+                                            ['n',               '{}'.format(parms15[24]),    '{}'.format(parms16[24]),    '{}'.format(parms17[24]),    '{}'.format(parms18[24]),    '{}'.format(parms19[24]),    '{}'.format(parms20[24])],
+                                            ]),
+                                    columns=['', 'GB_non_Pareto_LR', 'GB_non_Pareto_AIC', 'GB_non_Pareto_AIC2', 'GB1_non_Pareto_LR', 'GB1_non_Pareto_AIC', 'GB1_non_Pareto_AIC2'])
 
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'non_pareto_fit_results.xlsx', engine='openpyxl', mode='w') as writer:

@@ -1,11 +1,19 @@
 # x=Pareto_data
 # weights=np.array([1])
 
-b=1500000
-# x0=(1)
-# x0=(-.1,1,1)
+b=250
+
+x=Pareto_data
+x=GB_data
+
+rejection_criterion=['LRtest', 'AIC', 'AIC_alternative']
+weights=np.array([1])
+verbose_single=False
+verbose_parms=False
+verbose_ci=True
+alpha=.05
 x0=(-.1,.1,1,1)
-bootstraps=20
+bootstraps=10
 method='SLSQP'
 omit_missings=True
 verbose_bootstrap=False
@@ -23,7 +31,8 @@ slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxite
                'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}
 
 
-verbose_single=False
+
+weights = np.ones(len(x))
 
 
 num_bins=200

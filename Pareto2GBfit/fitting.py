@@ -2014,7 +2014,6 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
         GB_remaining = False
         if IB1_aic_restrict > IB1_aic:
             if GB1_aic_restrict > GB1_aic:
-                bestmodel_AIC, Pareto_marker = '--', 'IB1'
                 if GB_aic_restrict > GB_aic:
                     GB_bm, bestmodel_AIC, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
                     Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
@@ -2058,8 +2057,6 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
 
         if Pareto_aic > IB1_aic:
             if IB1_aic > GB1_aic:
-                bestmodel_AIC_altern, Pareto_marker = '--', 'IB1'
-
                 if GB1_aic > GB_aic:
                     GB_bm, bestmodel_AIC_altern, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
                     Pareto_marker = IB1_marker = GB1_marker = GB1_marker = '--'
