@@ -31,35 +31,61 @@ plt.rcParams['figure.figsize'] = 10, 8
 Define Functions
 --------------------------------
 """
-def prep_fit_results_for_table(fit_result):
+def prep_fit_results_for_table(result):
     """
     prepares the returned vector of the optimization for a simplified exporting to dataframe/Excel
     :param fit_result: result of Paretobranchfit, needs return_bestmodel=True
     :return: returns vector with same shape, doesn't matter which model is best
     """
-    bestfit, fit_result, placeholder, list = fit_result[0], np.array(fit_result[1]).tolist(), ['--', '--'], []
-    for el in fit_result[:-2]:
-        list.append('{:.3f}'.format(el))
-    for el in fit_result[-2:]:
-        list.append('{:.3f}'.format(int(el)))
-    if bestfit == "Pareto_best" or len(list) == 16:
-        out = placeholder * 2 #a,c
-        out = out + list[0:2] + placeholder #p,q
-        out = out + list[2:] #q, rest
-    if bestfit == "IB1_best" or len(list) == 18:
-        out = placeholder * 2 #a,c
-        out = out + list #p,q, rest
-    if bestfit == "GB1_best" or len(list) == 20:
-        out = list[0:2] + placeholder #c
-        out = out + list[2:] #rest
-    if bestfit == "GB_best" or len(list) == 22:
-        out = list
+    bestfit, fit_result, placeholder, list = result[0], np.array(result[1]).tolist(), ['--', '--'], []
+
+    if bestfit == "Pareto_best":
+
+        for el in fit_result[:14]:
+            list.append('{:.3f}'.format(el))
+        for el in fit_result[14:16]:
+            list.append('{}'.format(int(el)))
+        for el in fit_result[16:18]:
+            list.append('{:.3f}'.format(el))
+        out = placeholder * 4 #a,c
+        out = out + list[0:2] + list[16:18] + placeholder * 2 + list[2:16] #p,q, rest
+
+    if bestfit == "IB1_best":
+
+        for el in fit_result[:16]:
+            list.append('{:.3f}'.format(el))
+        for el in fit_result[16:18]:
+            list.append('{}'.format(int(el)))
+        for el in fit_result[18:22]:
+            list.append('{:.3f}'.format(el))
+        out = placeholder * 4 #a,c
+        out = out + list[0:2] + list[18:20] + list[2:4] + list[20:22] + list[4:18] #p,q, rest
+
+    if bestfit == "GB1_best":
+
+        for el in fit_result[:18]:
+            list.append('{:.3f}'.format(el))
+        for el in fit_result[18:20]:
+            list.append('{}'.format(int(el)))
+        for el in fit_result[20:]:
+            list.append('{:.3f}'.format(el))
+        out = list[0:2] + list[20:22] + placeholder*2 + list[2:4] + list[22:24] + list[4:6] + list[24:26] + list[6:20] #q, rest
+
+    if bestfit == "GB_best":
+
+        for el in fit_result[:20]:
+            list.append('{:.3f}'.format(el))
+        for el in fit_result[20:22]:
+            list.append('{}'.format(int(el)))
+        for el in fit_result[22:]:
+            list.append('{:.3f}'.format(el))
+        out = list[0:2] + list[22:24] + list[2:4] + list[24:26] + list[4:6] + list[26:28] + list[6:8] + list[28:30] + list[8:22] #q, rest
+
     del out[15] # remove soe
     del out[13] # remove rrmse
     del out[10] # remove mae
     del out[9] # remove bic
-    return out # returns: parameters, aic, mse, rrmse, ll, ... (always same structure)
-
+    return out # returns: parameters, cis, aic, mse, rrmse, ll, ... (always same structure)
 
 
 """ 

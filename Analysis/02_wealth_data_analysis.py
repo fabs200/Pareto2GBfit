@@ -63,34 +63,61 @@ def weighted_quantile(values, quantiles, sample_weight=None,
         weighted_quantiles /= np.sum(sample_weight)
     return np.interp(quantiles, weighted_quantiles, values)
 
-def prep_fit_results_for_table(fit_result):
+def prep_fit_results_for_table(result):
     """
     prepares the returned vector of the optimization for a simplified exporting to dataframe/Excel
     :param fit_result: result of Paretobranchfit, needs return_bestmodel=True
     :return: returns vector with same shape, doesn't matter which model is best
     """
-    bestfit, fit_result, placeholder, list = fit_result[0], np.array(fit_result[1]).tolist(), ['--', '--'], []
-    for el in fit_result[:-2]:
-        list.append('{:.3f}'.format(el))
-    for el in fit_result[-2:]:
-        list.append('{:.3f}'.format(int(el)))
-    if bestfit == "Pareto_best" or len(list) == 16:
-        out = placeholder * 2 #a,c
-        out = out + list[0:2] + placeholder #p,q
-        out = out + list[2:] #q, rest
-    if bestfit == "IB1_best" or len(list) == 18:
-        out = placeholder * 2 #a,c
-        out = out + list #p,q, rest
-    if bestfit == "GB1_best" or len(list) == 20:
-        out = list[0:2] + placeholder #c
-        out = out + list[2:] #rest
-    if bestfit == "GB_best" or len(list) == 22:
-        out = list
+    bestfit, fit_result, placeholder, list = result[0], np.array(result[1]).tolist(), ['--', '--'], []
+
+    if bestfit == "Pareto_best":
+
+        for el in fit_result[:14]:
+            list.append('{:.3f}'.format(el))
+        for el in fit_result[14:16]:
+            list.append('{}'.format(int(el)))
+        for el in fit_result[16:18]:
+            list.append('{:.3f}'.format(el))
+        out = placeholder * 4 #a,c
+        out = out + list[0:2] + list[16:18] + placeholder * 2 + list[2:16] #p,q, rest
+
+    if bestfit == "IB1_best":
+
+        for el in fit_result[:16]:
+            list.append('{:.3f}'.format(el))
+        for el in fit_result[16:18]:
+            list.append('{}'.format(int(el)))
+        for el in fit_result[18:22]:
+            list.append('{:.3f}'.format(el))
+        out = placeholder * 4 #a,c
+        out = out + list[0:2] + list[18:20] + list[2:4] + list[20:22] + list[4:18] #p,q, rest
+
+    if bestfit == "GB1_best":
+
+        for el in fit_result[:18]:
+            list.append('{:.3f}'.format(el))
+        for el in fit_result[18:20]:
+            list.append('{}'.format(int(el)))
+        for el in fit_result[20:]:
+            list.append('{:.3f}'.format(el))
+        out = list[0:2] + list[20:22] + placeholder*2 + list[2:4] + list[22:24] + list[4:6] + list[24:26] + list[6:20] #q, rest
+
+    if bestfit == "GB_best":
+
+        for el in fit_result[:20]:
+            list.append('{:.3f}'.format(el))
+        for el in fit_result[20:22]:
+            list.append('{}'.format(int(el)))
+        for el in fit_result[22:]:
+            list.append('{:.3f}'.format(el))
+        out = list[0:2] + list[22:24] + list[2:4] + list[24:26] + list[4:6] + list[26:28] + list[6:8] + list[28:30] + list[8:22] #q, rest
+
     del out[15] # remove soe
     del out[13] # remove rrmse
     del out[10] # remove mae
     del out[9] # remove bic
-    return out # returns: parameters, aic, mse, rrmse, ll, ... (always same structure)
+    return out # returns: parameters, cis, aic, mse, rrmse, ll, ... (always same structure)
 
 """
 ------------------------
@@ -125,7 +152,7 @@ SOEP data preparation
 -----------------------
 """
 
-data_SOEPwealth = data_SOEP + 'hwealth2.dta'
+data_SOEPwealth = data_SOEP + 'hwealth.dta'
 data_SOEPHHweight = data_SOEP + 'raw/hhrf.dta'
 
 # read in data
@@ -286,11 +313,15 @@ for b in [100000, 500000, 1000000, 1500000, 2500000, 5000000]:
 
     df_wealth_results_LR = pd.DataFrame(np.array([['best fitted model', '{}'.format(fit_result_psid_01_LRtest[0]), '{}'.format(fit_result_psid_03_LRtest[0]), '{}'.format(fit_result_psid_05_LRtest[0]), '{}'.format(fit_result_psid_07_LRtest[0]), '{}'.format(fit_result_psid_09_LRtest[0]), '{}'.format(fit_result_psid_11_LRtest[0]), '{}'.format(fit_result_psid_13_LRtest[0]), '{}'.format(fit_result_psid_15_LRtest[0]), '{}'.format(fit_result_psid_17_LRtest[0]), '{}'.format(fit_result_soep_02_LRtest[0]), '{}'.format(fit_result_soep_07_LRtest[0]), '{}'.format(fit_result_soep_12_LRtest[0])],
                                                ['a',               '{}'.format(fit_psid_01_LRtest[0]),  '{}'.format(fit_psid_03_LRtest[0]),  '{}'.format(fit_psid_05_LRtest[0]),  '{}'.format(fit_psid_07_LRtest[0]),  '{}'.format(fit_psid_09_LRtest[0]),  '{}'.format(fit_psid_11_LRtest[0]),  '{}'.format(fit_psid_13_LRtest[0]),  '{}'.format(fit_psid_15_LRtest[0]),  '{}'.format(fit_psid_17_LRtest[0]),  '{}'.format(fit_soep_02_LRtest[0]),  '{}'.format(fit_soep_07_LRtest[0]),  '{}'.format(fit_soep_12_LRtest[0])],
+                                               [' ',               '[{};{}]'.format(fit_psid_01_LRtest[]; fit_psid_01_LRtest),  '[{};{}]'.format(a_cilo2, a_cihi2),  '{}'.format(a_cilo3, a_cihi3),  '{}'.format(a_cilo, a_cihi4),  '{}'.format(fit_psid_09_LRtest[0]),  '{}'.format(fit_psid_11_LRtest[0]),  '{}'.format(fit_psid_13_LRtest[0]),  '{}'.format(fit_psid_15_LRtest[0]),  '{}'.format(fit_psid_17_LRtest[0]),  '{}'.format(fit_soep_02_LRtest[0]),  '{}'.format(fit_soep_07_LRtest[0]),  '{}'.format(fit_soep_12_LRtest[0])],
                                                [' ',               '({})'.format(fit_psid_01_LRtest[1]),  '({})'.format(fit_psid_03_LRtest[1]),  '({})'.format(fit_psid_05_LRtest[1]),  '({})'.format(fit_psid_07_LRtest[1]),  '({})'.format(fit_psid_09_LRtest[1]),  '({})'.format(fit_psid_11_LRtest[1]),  '({})'.format(fit_psid_13_LRtest[1]),  '({})'.format(fit_psid_15_LRtest[1]),  '({})'.format(fit_psid_17_LRtest[1]),  '({})'.format(fit_soep_02_LRtest[1]),  '({})'.format(fit_soep_07_LRtest[1]),  '({})'.format(fit_soep_12_LRtest[1])],
+                                               ['c',               '{}'.format(fit_psid_01_LRtest[2]),  '{}'.format(fit_psid_03_LRtest[2]),  '{}'.format(fit_psid_05_LRtest[2]),  '{}'.format(fit_psid_07_LRtest[2]),  '{}'.format(fit_psid_09_LRtest[2]),  '{}'.format(fit_psid_11_LRtest[2]),  '{}'.format(fit_psid_13_LRtest[2]),  '{}'.format(fit_psid_15_LRtest[2]),  '{}'.format(fit_psid_17_LRtest[2]),  '{}'.format(fit_soep_02_LRtest[2]),  '{}'.format(fit_soep_07_LRtest[2]),  '{}'.format(fit_soep_12_LRtest[2])],
                                                ['c',               '{}'.format(fit_psid_01_LRtest[2]),  '{}'.format(fit_psid_03_LRtest[2]),  '{}'.format(fit_psid_05_LRtest[2]),  '{}'.format(fit_psid_07_LRtest[2]),  '{}'.format(fit_psid_09_LRtest[2]),  '{}'.format(fit_psid_11_LRtest[2]),  '{}'.format(fit_psid_13_LRtest[2]),  '{}'.format(fit_psid_15_LRtest[2]),  '{}'.format(fit_psid_17_LRtest[2]),  '{}'.format(fit_soep_02_LRtest[2]),  '{}'.format(fit_soep_07_LRtest[2]),  '{}'.format(fit_soep_12_LRtest[2])],
                                                [' ',               '({})'.format(fit_psid_01_LRtest[3]),  '({})'.format(fit_psid_03_LRtest[3]),  '({})'.format(fit_psid_05_LRtest[3]),  '({})'.format(fit_psid_07_LRtest[3]),  '({})'.format(fit_psid_09_LRtest[3]),  '({})'.format(fit_psid_11_LRtest[3]),  '({})'.format(fit_psid_13_LRtest[3]),  '({})'.format(fit_psid_15_LRtest[3]),  '({})'.format(fit_psid_17_LRtest[3]),  '({})'.format(fit_soep_02_LRtest[3]),  '({})'.format(fit_soep_07_LRtest[3]),  '({})'.format(fit_soep_12_LRtest[3])],
                                                ['p',               '{}'.format(fit_psid_01_LRtest[4]),  '{}'.format(fit_psid_03_LRtest[4]),  '{}'.format(fit_psid_05_LRtest[4]),  '{}'.format(fit_psid_07_LRtest[4]),  '{}'.format(fit_psid_09_LRtest[4]),  '{}'.format(fit_psid_11_LRtest[4]),  '{}'.format(fit_psid_13_LRtest[4]),  '{}'.format(fit_psid_15_LRtest[4]),  '{}'.format(fit_psid_17_LRtest[4]),  '{}'.format(fit_soep_02_LRtest[4]),  '{}'.format(fit_soep_07_LRtest[4]),  '{}'.format(fit_soep_12_LRtest[4])],
+                                               ['p',               '{}'.format(fit_psid_01_LRtest[4]),  '{}'.format(fit_psid_03_LRtest[4]),  '{}'.format(fit_psid_05_LRtest[4]),  '{}'.format(fit_psid_07_LRtest[4]),  '{}'.format(fit_psid_09_LRtest[4]),  '{}'.format(fit_psid_11_LRtest[4]),  '{}'.format(fit_psid_13_LRtest[4]),  '{}'.format(fit_psid_15_LRtest[4]),  '{}'.format(fit_psid_17_LRtest[4]),  '{}'.format(fit_soep_02_LRtest[4]),  '{}'.format(fit_soep_07_LRtest[4]),  '{}'.format(fit_soep_12_LRtest[4])],
                                                [' ',               '({})'.format(fit_psid_01_LRtest[5]),  '({})'.format(fit_psid_03_LRtest[5]),  '({})'.format(fit_psid_05_LRtest[5]),  '({})'.format(fit_psid_07_LRtest[5]),  '({})'.format(fit_psid_09_LRtest[5]),  '({})'.format(fit_psid_11_LRtest[5]),  '({})'.format(fit_psid_13_LRtest[5]),  '({})'.format(fit_psid_15_LRtest[5]),  '({})'.format(fit_psid_17_LRtest[5]),  '({})'.format(fit_soep_02_LRtest[5]),  '({})'.format(fit_soep_07_LRtest[5]),  '({})'.format(fit_soep_12_LRtest[5])],
+                                               ['q',               '{}'.format(fit_psid_01_LRtest[6]),  '{}'.format(fit_psid_03_LRtest[6]),  '{}'.format(fit_psid_05_LRtest[6]),  '{}'.format(fit_psid_07_LRtest[6]),  '{}'.format(fit_psid_09_LRtest[6]),  '{}'.format(fit_psid_11_LRtest[6]),  '{}'.format(fit_psid_13_LRtest[6]),  '{}'.format(fit_psid_15_LRtest[6]),  '{}'.format(fit_psid_17_LRtest[6]),  '{}'.format(fit_soep_02_LRtest[6]),  '{}'.format(fit_soep_07_LRtest[6]),  '{}'.format(fit_soep_12_LRtest[6])],
                                                ['q',               '{}'.format(fit_psid_01_LRtest[6]),  '{}'.format(fit_psid_03_LRtest[6]),  '{}'.format(fit_psid_05_LRtest[6]),  '{}'.format(fit_psid_07_LRtest[6]),  '{}'.format(fit_psid_09_LRtest[6]),  '{}'.format(fit_psid_11_LRtest[6]),  '{}'.format(fit_psid_13_LRtest[6]),  '{}'.format(fit_psid_15_LRtest[6]),  '{}'.format(fit_psid_17_LRtest[6]),  '{}'.format(fit_soep_02_LRtest[6]),  '{}'.format(fit_soep_07_LRtest[6]),  '{}'.format(fit_soep_12_LRtest[6])],
                                                [' ',               '({})'.format(fit_psid_01_LRtest[7]),  '({})'.format(fit_psid_03_LRtest[7]),  '({})'.format(fit_psid_05_LRtest[7]),  '({})'.format(fit_psid_07_LRtest[7]),  '({})'.format(fit_psid_09_LRtest[7]),  '({})'.format(fit_psid_11_LRtest[7]),  '({})'.format(fit_psid_13_LRtest[7]),  '({})'.format(fit_psid_15_LRtest[7]),  '({})'.format(fit_psid_17_LRtest[7]),  '({})'.format(fit_soep_02_LRtest[7]),  '({})'.format(fit_soep_07_LRtest[7]),  '({})'.format(fit_soep_12_LRtest[7])],
                                                ['lower bound b',   '{}'.format(b),                      '{}'.format(b),                     '{}'.format(b),                       '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b),                      '{}'.format(b)],
@@ -378,8 +409,8 @@ print(plt.rcParams.get('figure.figsize'))
 plt.rcParams['figure.figsize'] = 10, 8
 
 # get plots, rerun wealth 2017
-Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
-                bootstraps=bootstraps, return_bestmodel=False, plot=True,
+test = Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
+                bootstraps=bootstraps, return_bestmodel=True, plot=False, verbose_ci=True,
                 rejection_criterion=['LRtest', 'AIC', 'AIC_alternative'],
                 plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 

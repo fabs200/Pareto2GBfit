@@ -2058,7 +2058,7 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
 
         if Pareto_aic > IB1_aic:
             if IB1_aic > GB1_aic:
-                bestmodel_AIC, Pareto_marker = '--', 'IB1'
+                bestmodel_AIC_altern, Pareto_marker = '--', 'IB1'
 
                 if GB1_aic > GB_aic:
                     GB_bm, bestmodel_AIC_altern, GB_marker, GB_remaining = 'GB', 'GB', 'XX', True
@@ -2156,14 +2156,14 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
                 printout_AIC = 'GB_best', GB_fit_AIC
 
         if rejection_criterion == 'AIC_alternative' or 'AIC_alternative' in rejection_criterion:
-            if bestmodel_AIC == 'Pareto':
-                printout_AIC_alternative = 'Pareto_best', Pareto_fit_AIC
-            if bestmodel_AIC == 'IB1':
-                printout_AIC_alternative = 'IB1_best', IB1_fit_AIC
-            if bestmodel_AIC == 'GB1':
-                printout_AIC_alternative = 'GB1_best', GB1_fit_AIC
-            if bestmodel_AIC == 'GB':
-                printout_AIC_alternative = 'GB_best', GB_fit_AIC
+            if bestmodel_AIC_altern == 'Pareto':
+                printout_AIC_alternative = 'Pareto_best', Pareto_fit_AIC_altern
+            if bestmodel_AIC_altern == 'IB1':
+                printout_AIC_alternative = 'IB1_best', IB1_fit_AIC_altern
+            if bestmodel_AIC_altern == 'GB1':
+                printout_AIC_alternative = 'GB1_best', GB1_fit_AIC_altern
+            if bestmodel_AIC_altern == 'GB':
+                printout_AIC_alternative = 'GB_best', GB_fit_AIC_altern
 
         return printout_LR, printout_AIC, printout_AIC_alternative
 
