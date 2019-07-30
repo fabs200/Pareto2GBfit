@@ -32,10 +32,8 @@ def weighted_quantile(values, quantiles, sample_weight=None, values_sorted=False
     :param values: numpy.array with data
     :param quantiles: array-like with many quantiles needed, between 0.0 and 1.0
     :param sample_weight: array-like of the same length as `array`
-    :param values_sorted: bool, if True, then will avoid sorting of
-        initial array
-    :param old_style: if True, will correct output to be consistent
-        with numpy.percentile.
+    :param values_sorted: bool, if True, then will avoid sorting of initial array
+    :param old_style: if True, will correct output to be consistent with numpy.percentile.
     :return: numpy.array with computed quantiles.
     """
     values = np.array(values)
@@ -64,7 +62,7 @@ Goddness of fit measures
 ---------------------------------------------------
 """
 class gof:
-    """ Goodness of fit measures and descriptive statistics data vs fit """
+    """ Goodness of fit measures and descriptive statistics for comparison of data vs fit """
     def __init__(self, x, x_hat, W, parms, b):
         """
         :param x: model with same shape as data
@@ -115,7 +113,9 @@ class gof:
 ---------------------------------------------------
 Neg. Log-Likelihoods
 ---------------------------------------------------
+# NOTE: optimize a,c,p,q = parms (first args in below functions, must be array), fixed parameters: x, W, b
 """
+
 def Pareto_ll(parms, x, W, b):
     """
     :param parms: np.array [p], optimized
@@ -152,8 +152,6 @@ def IB1_ll(parms, x, W, b):
     ll = -ll
     return ll
 
-# log-likelihood
-# NOTE: optimize a,p,q = parms (first args here), fixed parameters: x, b
 def GB1_ll(parms, x, W, b):
     """
     :param parms: np.array [a, p, q] optimized
@@ -219,16 +217,16 @@ def Paretofit(x, b, x0=1, weights=np.array([1]), bootstraps=None, method='SLSQP'
     :param weights: weight, default: numpy.ones array of same shape as x
     :param bootstraps: amount of bootstraps, default is size k (x>b)
     :param method: # default: SLSQP (local optimization, much faster), 'basinhopping' (global optimization technique)
-    :param verbose_bootstrap: display each bootstrap
+    :param verbose_bootstrap: display each bootstrap round
     :param ci: default ci displayed
     :param verbose: default true
     :param fit: gof measurements, default false
-    :param plot: plot fit vs model
+    :param plot: plot fit vs model, default false
     :param return_parameters: default, parameters are not returned
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
     :param basinhopping_options: dictionary with optimization options
     :param slsqp_options: dictionary with optimization options
-    :return: fitted parameters, gof, plot
+    :return: fitted parameters, gof, ci
     """
 
     #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
@@ -592,7 +590,7 @@ def IB1fit(x, b, x0=(1,1), weights=np.array([1]), bootstraps=None, method='SLSQP
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
     :param basinhopping_options: dictionary with optimization options
     :param slsqp_options: dictionary with optimization options
-    :return: fitted parameters, gof, plot
+    :return: fitted parameters, gof, ci
     """
 
     #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
@@ -945,7 +943,6 @@ def IB1fit(x, b, x0=(1,1), weights=np.array([1]), bootstraps=None, method='SLSQP
         return np.mean(p_fit_bs), np.std(p_fit_bs), np.mean(q_fit_bs), np.std(q_fit_bs), \
                np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5), np.percentile(q_fit_bs, 2.5), np.percentile(q_fit_bs, 97.5)
 
-
 def GB1fit(x, b, x0=(-.1, 1, 1), weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
            verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
            return_parameters=False, return_gofs=False, #save_plot=False,
@@ -971,7 +968,7 @@ def GB1fit(x, b, x0=(-.1, 1, 1), weights=np.array([1]), bootstraps=None, method=
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
     :param basinhopping_options: dictionary with optimization options
     :param slsqp_options: dictionary with optimization options
-    :return: fitted parameters, gof, plot
+    :return: fitted parameters, gof, ci
     """
 
     #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
@@ -1338,7 +1335,6 @@ def GB1fit(x, b, x0=(-.1, 1, 1), weights=np.array([1]), bootstraps=None, method=
         np.percentile(a_fit_bs, 2.5), np.percentile(a_fit_bs, 97.5), np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5), \
         np.percentile(q_fit_bs, 2.5), np.percentile(q_fit_bs, 97.5)
 
-
 def GBfit(x, b, x0=(-.1, .1, 1, 1), weights=np.array([1]), bootstraps=None, method='SLSQP', omit_missings=True,
           verbose_bootstrap=False, ci=True, verbose=True, fit=False, plot=False, suppress_warnings=True,
           return_parameters=False, return_gofs=False, #save_plot=False,
@@ -1364,7 +1360,7 @@ def GBfit(x, b, x0=(-.1, .1, 1, 1), weights=np.array([1]), bootstraps=None, meth
     :param plot_cosmetics: dictionary, add some simple cosmetics, important for setting bins (default: bins=50)
     :param basinhopping_options: dictionary with optimization options
     :param slsqp_options: dictionary with optimization options
-    :return: fitted parameters, gof, plot
+    :return: fitted parameters, gof, ci
     """
 
     #ignore by warning message (during the optimization process following messages may occur and can be suppressed)
@@ -1751,7 +1747,6 @@ def GBfit(x, b, x0=(-.1, .1, 1, 1), weights=np.array([1]), bootstraps=None, meth
                np.percentile(a_fit_bs, 2.5), np.percentile(a_fit_bs, 97.5), np.percentile(c_fit_bs, 2.5), np.percentile(c_fit_bs, 97.5), \
                np.percentile(p_fit_bs, 2.5), np.percentile(p_fit_bs, 97.5), np.percentile(q_fit_bs, 2.5), np.percentile(q_fit_bs, 97.5)
 
-
 """ 
 ---------------------------------------------------
 Pareto branch fitting
@@ -1769,14 +1764,15 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
           slsqp_options={'jac': None, 'tol': None, 'callback': None, 'func': None, 'maxiter': 300, 'ftol': 1e-14,
                          'iprint': 1, 'disp': False, 'eps': 1.4901161193847656e-08}):
     """
-    This function fits the Pareto branch upwards, starting from the Pareto distribution. This function is a wrapper that
-    calls all above fitting functions, runs all optimizations and compares the parameters according the Pareto branch
-    restrictions. Comparing the Pareto distribution to the IB1, the LRtest (AIC) decides, whether there is a improvement.
-    If the IB1 delivers a better fit, we go one level upwards and compare the IB1 vs the GB1 and so on.
-    Following comparison structure: compare 1v2 -> 2 improvement -> compare 2v3 -> 3 improvement -> compare 3v4
+    This function fits the Pareto branch upwards, starting from the bottom with the Pareto distribution.
+    This function is a wrapper that calls all above fitting functions, runs all optimizations and compares the
+    parameters according the Pareto branch parameter restrictions.
+    Comparing the Pareto distribution to the IB1, the LRtest (AIC, AIC_alternative) decides, whether there is a
+    improvement in fit. If the IB1 delivers a better fit, we go one level upwards and compare the IB1 to GB1 and so on.
     :param x: as above
     :param b: as above
-    :param x0: either pass an 1x5 array (GB init guess structure) OR pass [[p_guess], [p_guess, q_guess], [a_guess, p_guess, q_guess], [a_guess, c_guess, p_guess, q_guess]]
+    :param x0: either pass an 1x5 array (GB init guess structure) OR pass
+               [[p_guess], [p_guess, q_guess], [a_guess, p_guess, q_guess], [a_guess, c_guess, p_guess, q_guess]]
     :param weights: as above
     :param bootstraps: either 1x1 OR 1x2 array (1st arg: Pareto+IB1, 2nd arg: GB1+GB) OR pass 1x4 array [Pareto_bs, IB1_bs, GB1_bs, GB_bs]
     :param method: as above
@@ -1784,10 +1780,11 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
     :param rejection_criterion: LRtest or AIC (as recommended by McDonald)
     :param verbose: table with parameters and another with gofs, display only final result
     :param verbose_single: display each optimization results
+    :param ci: display cis of fitted bootstrapped parameters
     :param alpha: significance level of LRtest, default: 5%
     :param fit: as above
     :param plot: as above
-    :param return_parameters: as above and parameters, se of all distributions are returned
+    :param return_parameters: as above and parameters, se, ci of all distributions are returned (see Excel file in //Testing/)
     :param return_gofs: as above
     :param plot_cosmetics: as above
     :param basinhopping_options: as above
@@ -2167,7 +2164,6 @@ def Paretobranchfit(x, b, x0=np.array([-.1,.1,1,1]), weights=np.array([1]), boot
     if return_all:
         return Pareto_fit, IB1_fit, GB1_fit, GB_fit
 
-
 """ 
 ---------------------------------------------------
 Pareto and IB1: se extracting
@@ -2176,7 +2172,7 @@ Pareto and IB1: se extracting
 
 def Pareto_extract_se(x, b, p_fitted, method=1, verbose=True, hess=False):
     """
-    NOTE: depreciated
+    NOTE: depreciated but is still provided for future improvements
     This function returns the standard errors of the fitted parameter p. Unfortunately, the analytical solution of
     the hessian only depends on n and p so varying b does not change the se. Alternatively, I tried to derive the
     Jacobian numerically with scipy's derivative fct but this resulted not in satisfactiory/plausible solutions.
@@ -2207,10 +2203,9 @@ def Pareto_extract_se(x, b, p_fitted, method=1, verbose=True, hess=False):
     # if hess: print("Hessian Matrix:", hess)
     return p_se
 
-
 def IB1_extract_se(x, fitted_parms, method, dx, display, display_hessian):
     """
-    NOTE: depreciated
+    NOTE: depreciated but is still provided for future improvements
     This function returns the standard errors of the fitted parameter p,q. Unfortunately, no plausible
     analytical solution of the hessian could be derived. Alternatively, I tried to derive the
     Jacobian numerically with scipy's derivative fct but this resulted not in satisfactiory/plausible solutions.

@@ -150,9 +150,6 @@ GB1_data = GB1_icdf_ne(x=x, b=b, p=p, q=5, a=-2)
 # 6. Robustness Check: Generate GB distrib. data which are NOT Pareto (i.e. q!=1)
 GB_data = GB_icdf_ne(x=x, a=-2, c=.5, b=b, p=p, q=10)
 
-
-
-
 """
 --------------------------------
 2. Plot data
@@ -189,7 +186,6 @@ if plot_data:
         plt.savefig(fname=graphspath + 'NON_Pareto_GB_GB1.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
-
 
 """
 --------------------------------
@@ -248,7 +244,6 @@ if run_descriptives:
     with ExcelWriter(descriptivespath + 'synthetic_non_Pareto_descriptives.xlsx', mode='w') as writer:
         df_synthetic_non_Pareto_descriptives.to_excel(writer, sheet_name='descriptives', index=False)
 
-
 """ 
 --------------------------------
 3. Fitting
@@ -283,7 +278,6 @@ if run_optimize:
     Pareto_data_het_noise_2_parms = Paretobranchfit(x=Pareto_data_het_noise_2, x0=x0, b=b, bootstraps=bootstraps,
                                                     return_bestmodel=True, plot=plot,
                                                     rejection_criterion=rejection_criteria, plot_cosmetics=cosmetics)
-
 
     # Robustness Check: NON Pareto data
 
@@ -336,7 +330,6 @@ if run_optimize:
     # save dataframes to excel sheet
     with ExcelWriter(descriptivespath + 'synthetic_data_fit_results.xlsx', engine='openpyxl', mode='w') as writer:
         df_synthetic_fit_parms_AIC.to_excel(writer, sheet_name='synthetic_data_fit_results_AIC', index=False)
-
 
 # shorter names
 parms10 = prep_fit_results_for_table(Pareto_data_parms[0])
@@ -415,16 +408,16 @@ if run_optimize:
     with ExcelWriter(descriptivespath + 'non_pareto_fit_results.xlsx', engine='openpyxl', mode='w') as writer:
         df_non_Pareto_fit_results.to_excel(writer, sheet_name='descriptives', index=False)
 
-
 """ 
 --------------------------------
 5. Plot Fit vs data
 --------------------------------
+NOTE: icdfs of above data + best fitted model are plotted
 """
 
 if run_optimize:
 
-    ### fit of Pareto_data (LRtest)
+    ### fit of Pareto_data
     print('best fit for Pareto_data:', Pareto_data_parms[0][0])
 
     p_fit = Pareto_data_parms[0][1][0]
@@ -443,7 +436,6 @@ if run_optimize:
         plt.savefig(fname=graphspath + 'fit_vs_data_Pareto.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
-
 
     ### fit of Pareto_data_gauss_noise_1
     print('best fit for Pareto_data_gauss_noise_1:', Pareto_data_gauss_noise_1_parms[0][0])
@@ -505,7 +497,7 @@ if run_optimize:
     plt.show()
     plt.close()
 
-    ### Pareto_data_het_noise_2 (LRtest)
+    ### Pareto_data_het_noise_2
     print('best fit for Pareto_data_het_noise_2_parms:', Pareto_data_het_noise_2_parms[0][0])
 
     # generate new data based on fitted parms and best model
@@ -523,7 +515,6 @@ if run_optimize:
         plt.savefig(fname=graphspath + 'fit_vs_data_Pareto_Het2.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
-
 
     ### nonParto GB1
     print('best fit for nonPareto_data_GB1_parms:', GB1_non_Pareto_parms[0][0])
@@ -544,7 +535,6 @@ if run_optimize:
     plt.show()
     plt.close()
 
-
     ### nonPareto GB
     print('best fit for nonPareto_data_GB_parms:', GB_non_Pareto_parms[0][0])
 
@@ -563,4 +553,3 @@ if run_optimize:
         plt.savefig(fname=graphspath + 'fit_vs_data_nonPareto_GB.' + type, dpi=300, format=type)
     plt.show()
     plt.close()
-

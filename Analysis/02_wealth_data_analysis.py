@@ -27,8 +27,7 @@ if os.getlogin() == 'Fabian' and os.name == 'posix':
 define functions
 -------------------------
 """
-def weighted_quantile(values, quantiles, sample_weight=None,
-                      values_sorted=False, old_style=False):
+def weighted_quantile(values, quantiles, sample_weight=None, values_sorted=False, old_style=False):
     """ Very close to numpy.percentile, but supports weights.
     source: https://stackoverflow.com/questions/21844024/weighted-percentile-using-numpy
     NOTE: quantiles should be in [0, 1]
@@ -119,7 +118,6 @@ def prep_fit_results_for_table(result):
     del out[17] # remove bic
     return out # returns: parameters, cis, aic, mse, rrmse, ll, ... (always same structure)
 
-
 """
 ------------------------
 PSID data preparation
@@ -173,7 +171,6 @@ dfSOEP = dfSOEP_wealth.merge(dfSOEP_hhweights, left_on='hid', right_on='hid')
 dfSOEP = dfSOEP.rename(index=str, columns={2002: 'wealth_02', 2007: 'wealth_07', 2012: 'wealth_12',
                                            'shhrf': 'weight_02', 'xhhrf': 'weight_07', 'bchhrf': 'weight_12'})
 
-
 # check
 # dfSOEP_wealth.head()
 # dfSOEP_hhweights.head()
@@ -214,7 +211,6 @@ for year in ['02', '07', '12']:
     # # weighted avg
     globals()['w_wgt_mean_soep_{}'.format(year)] = np.average(dfSOEP['wealth_{}'.format(year)][~np.isnan(dfSOEP['wealth_{}'.format(year)])], weights=dfSOEP['weight_{}'.format(year)][~np.isnan(dfSOEP['wealth_{}'.format(year)])])
 
-
 # weighted, psid: wealth
 for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
     # weighted pcts
@@ -243,7 +239,6 @@ with ExcelWriter(descriptivespath + 'wealth_descriptives.xlsx', mode='w') as wri
     df_unweighted_descriptives_w.to_excel(writer, sheet_name='unweighted_wealth_descriptives', index=False)
     df_weighted_descriptives_w.to_excel(writer, sheet_name='weighted_wealth_descriptives', index=False)
 
-
 """
 -----------------------------
 Fit data
@@ -253,7 +248,7 @@ Fit data
 x0 = (-1, .5, 1, 1)
 bootstraps = (400, 400, 400, 400)
 
-for b in [100000, 500000, 1000000, 1500000, 2500000, 5000000]:
+for b in [500000, 1000000, 1500000, 2500000]:
 
     for year in ['01', '03', '05', '07', '09', '11', '13', '15', '17']:
 
@@ -312,7 +307,6 @@ for b in [100000, 500000, 1000000, 1500000, 2500000, 5000000]:
         globals()['fit_result_soep_{}_{}'.format(year, 'AIC2')] = result[2]
         globals()['fit_soep_{}_{}'.format(year, 'AIC2')] = prep_fit_results_for_table(result[2])
         globals()['bm_soep_{}_{}'.format(year, 'AIC2')] = result[2][0]
-
 
     """
     -----------------------------
@@ -407,11 +401,11 @@ for b in [100000, 500000, 1000000, 1500000, 2500000, 5000000]:
         df_wealth_results_AIC.to_excel(writer, sheet_name='wealth_fit_results_AIC_{}'.format(b), index=False)
         df_wealth_results_AIC2.to_excel(writer, sheet_name='wealth_fit_results_AIC2_{}'.format(b), index=False)
 
-
 """
 -----------------------------
 Plot fit vs data
 -----------------------------
+NOTE: Rerun optimizations for selected years to retrieve plots (plot=True)
 """
 
 b = 5000000
@@ -427,7 +421,7 @@ plt.rcParams['figure.figsize'] = 10, 8
 
 # get plots, rerun wealth 2017
 test = Paretobranchfit(x=dfPSID['wealth_17'], weights=dfPSID['weight_17'], b=b, x0=x0,
-                bootstraps=bootstraps, return_bestmodel=True, plot=False, ci=True,
+                bootstraps=bootstraps, return_bestmodel=True, plot=True, ci=True,
                 rejection_criterion=['LRtest', 'AIC', 'AIC_alternative'],
                 plot_cosmetics={'bins': 300, 'col_data': 'blue', 'col_fit': 'red'})
 

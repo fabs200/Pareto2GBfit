@@ -1,6 +1,5 @@
 from numpy import linspace, random
 import numpy as np
-
 import scipy.optimize as opt
 import scipy.integrate as integrate
 from scipy import linalg  # invert matrix
@@ -8,6 +7,16 @@ from scipy.misc import derivative
 from scipy.special import beta, betainc, digamma, gamma, gammaln, hyp2f1
 import progressbar
 
+"""
+NOTE:
+    pdf: probability density fct
+    cdf: cumulative density fct
+    cdf_ne: cdf numerically evaluated
+    icdf: inverted density fct
+    icdf_ne: icdf numerically evaluated
+    Pareto_hess: hessian of Pareto Log-Likelihood
+    Pareto_jac: Jacobian of Pareto Log-Likelihood
+"""
 
 """ 
 ---------------------------------------------------
@@ -46,17 +55,17 @@ def Pareto_cdf_ne(x, b, p):
     if np.min(x)>b:
         pass
     else:
-        raise Exception('error: xmin should not be lower than b!. xmin={}<b={}'.format(np.min(x),b))
+        raise Exception('error: xmin should not be lower than b!. xmin={}<b={}'.format(np.min(x), b))
     # Generate cdf via numeric evaluation of pdf
     for i in x:
         F_temp.append(integrate.quad(lambda x: Pareto_pdf(x, b, p), b, i)[0])
     return F_temp
 
-def Pareto_icdf_ne(x, b, p): # feed x with a linspace (-> range, size); Note: size needs to be sufficiently large!
+def Pareto_icdf_ne(x, b, p):
     """
-    First, F (=cdf) is generated numerically based on the linspace x (arg). Second, random.uniform (=u) is generated
-    and passed to icdf() (inverted cdf). Based on F,In icdf() x gets interpolated.
-    :param x: linspace
+    First, F (=cdf) is generated numerically based on linspace x. Second, random.uniform (=u) is generated
+    and passed to icdf() (inverted cdf). Based on u and F, icdf() interpolates x.
+    :param x: feed x with a linspace (-> range, size); Note: size needs to be sufficiently large!
     :param b: location parameter, fixed
     :param p:
     :return: simulated x and u [,] (1x2)
@@ -99,7 +108,6 @@ def Pareto_hess(x, b, p):
     hess = [[δ2ll_δb2, δ2ll_δbδp], [δ2ll_δpδb, δ2ll_δp2]]
     return hess
 
-
 """ 
 ---------------------------------------------------
 IB1 
@@ -114,8 +122,8 @@ def IB1_cdf(x, b, p, q):
 
 def IB1_icdf_ne(x, b, p, q):
     """
-    First, F (=cdf) is generated numerically based on the linspace x (arg). Second, random.uniform (=u) is generated
-    and passed to icdf() (inverted cdf). Based on F,In icdf() x gets interpolated.
+    First, F (=cdf) is generated numerically based on linspace x. Second, random.uniform (=u) is generated
+    and passed to icdf() (inverted cdf). Based on u and F, icdf() interpolates x.
     :param x: linspace
     :param b: location parameter, fixed
     :param p:
@@ -139,7 +147,7 @@ def IB1_icdf_ne(x, b, p, q):
 
 def IB1_jac(x, b, p, q):
     """
-    Jacobian of Pareto neg. log-likelihood, can be used in opt.minimize() to fasten the optimization, no Hessian found
+    Jacobian of neg. log-likelihood of IB1, can be used in opt.minimize() to fasten the optimization, no Hessian found
     """
     x = np.array(x)
     n = len(x)
@@ -148,7 +156,6 @@ def IB1_jac(x, b, p, q):
     δll_δq = -n(digamma(q) - digamma(q+p))
     jac = (δll_δb, δll_δp, δll_δq)
     return np.transpose(jac)
-
 
 """ 
 ---------------------------------------------------
@@ -195,8 +202,8 @@ def GB1_cdf_ne(x, a, b, p, q):
 
 def GB1_icdf_ne(x, a, b, p, q):
     """
-    First, F (=cdf) is generated numerically based on the linspace x (arg). Second, random.uniform (=u) is generated
-    and passed to icdf() (inverted cdf). Based on F,In icdf() x gets interpolated.
+    First, F (=cdf) is generated numerically based on linspace x. Second, random.uniform (=u) is generated
+    and passed to icdf() (inverted cdf). Based on u and F, icdf() interpolates x.
     :param x: linspace
     :param b: location parameter, fixed
     :param p:
@@ -224,7 +231,6 @@ def GB1_icdf_ne(x, a, b, p, q):
         return icdf_F
         bar.finish()
     return icdf(u), u
-
 
 """ 
 ---------------------------------------------------
@@ -281,8 +287,8 @@ def GB_cdf_ne(x, a, b, c, p, q):
 
 def GB_icdf_ne(x, a, b, c, p, q):
     """
-    First, F (=cdf) is generated numerically based on the linspace x (arg). Second, random.uniform (=u) is generated
-    and passed to icdf() (inverted cdf). Based on F,In icdf() x gets interpolated.
+    First, F (=cdf) is generated numerically based on linspace x. Second, random.uniform (=u) is generated
+    and passed to icdf() (inverted cdf). Based on u and F, icdf() interpolates x.
     :param x: linspace
     :param b: location parameter, fixed
     :param p:
@@ -315,17 +321,3 @@ def GB_icdf_ne(x, a, b, c, p, q):
             bar.update(idx+1)
         return icdf_F
     return icdf(u), u
-
-"""
----------------------
-other 
----------------------
-"""
-def namestr(obj, namespace):
-    """
-    retrieve variable name of a list
-    :param obj: e.g. Pareto_data which is an numpy.array
-    :param namespace: globals()
-    :return: ['Pareto_data']
-    """
-    return [name for name in namespace if namespace[name] is obj]
